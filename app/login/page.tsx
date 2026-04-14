@@ -24,13 +24,26 @@ function LoginContent() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError('');
+
+    // Client-side validation before hitting the API
+    if (mode === 'register') {
+      if (fullName.trim().length < 2) {
+        setError('Please enter your full name.');
+        return;
+      }
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters.');
+        return;
+      }
+    }
+
+    setLoading(true);
     try {
       if (mode === 'login') {
         await signIn(email, password);
       } else {
-        await signUp(email, password, fullName);
+        await signUp(email, password, fullName.trim());
       }
       router.push(redirect);
     } catch (err) {

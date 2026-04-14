@@ -30,7 +30,13 @@ async function apiFetch<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: 'Unknown error' }));
-    throw new Error(error.message || `HTTP ${res.status}`);
+    // Surface validation detail arrays (e.g. FastAPI 422 detail field)
+    const detail = error.detail;
+    if (Array.isArray(detail) && detail.length > 0) {
+      const msg = detail.map((d: { msg?: string; message?: string }) => d.msg || d.message).filter(Boolean).join(', ');
+      throw new Error(msg || `HTTP ${res.status}`);
+    }
+    throw new Error(error.message || error.detail || `HTTP ${res.status}`);
   }
 
   if (res.status === 204) return {} as T;
