@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (loginVal: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signUpDealer: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
   ensureGuestToken: () => Promise<string>;
 }
@@ -148,6 +149,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(me);
   }
 
+  async function signUpDealer(email: string, password: string, fullName: string) {
+    const tokens = await register({ email, password, full_name: fullName, role: 'dealer' });
+    persist(tokens);
+    const me = await getMe(tokens.access_token);
+    setUser(me);
+  }
+
   async function signOut() {
     if (refreshTimer.current) clearTimeout(refreshTimer.current);
     if (token) await logout(token).catch(() => {});
@@ -177,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, signIn, signUp, signOut, ensureGuestToken }}>
+    <AuthContext.Provider value={{ user, token, loading, signIn, signUp, signUpDealer, signOut, ensureGuestToken }}>
       {children}
     </AuthContext.Provider>
   );

@@ -79,6 +79,7 @@ export async function register(data: {
   email: string;
   password: string;
   full_name: string;
+  role?: string;
 }): Promise<AuthTokens> {
   return apiFetch<AuthTokens>('/auth/register', {
     method: 'POST',

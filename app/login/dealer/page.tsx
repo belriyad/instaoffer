@@ -11,7 +11,7 @@ import Navbar from '@/components/Navbar';
 function DealerLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUpDealer } = useAuth();
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail]         = useState('');
@@ -49,8 +49,9 @@ function DealerLoginContent() {
         await signIn(email, password);
         router.push(redirect);
       } else {
-        await signUp(email, password, fullName.trim());
-        router.push(redirect);
+        await signUpDealer(email, password, fullName.trim());
+        setSuccess('Account created! Our team will approve your dealer access within 24 hours. Redirecting to dashboard…');
+        setTimeout(() => router.push(redirect), 2500);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong.';

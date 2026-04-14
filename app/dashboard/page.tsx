@@ -33,9 +33,11 @@ export default function DashboardPage() {
   const [filterMake, setFilterMake] = useState('');
   const [filterStatus, setFilterStatus] = useState('open');
 
+  const isApprovedDealer = user?.role === 'dealer' || user?.role === 'admin';
+
   useEffect(() => {
-    if (!loading && (!user || (user.role !== 'dealer' && user.role !== 'admin'))) {
-      router.push('/login');
+    if (!loading && !user) {
+      router.push('/login/dealer');
     }
   }, [user, loading, router]);
 
@@ -97,6 +99,20 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Pending approval banner */}
+        {!isApprovedDealer && (
+          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+            <span className="text-2xl">⏳</span>
+            <div>
+              <div className="font-bold text-amber-800">Account pending dealer approval</div>
+              <div className="text-sm text-amber-700 mt-0.5">
+                Your account has been created. Our team will upgrade it to dealer access within 24 hours.
+                You&apos;ll receive an email at <strong>{user?.email}</strong> once approved.
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
@@ -126,7 +142,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Leads tab */}
-        {tab === 'Leads' && (
+        {tab === 'Leads' && !isApprovedDealer && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+            <span className="text-5xl block mb-4">🔒</span>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Leads unlock after approval</h3>
+            <p className="text-gray-500 text-sm max-w-sm mx-auto">
+              Once our team approves your dealer account, you&apos;ll see all available car sell requests here and be able to place bids.
+            </p>
+          </div>
+        )}
+        {tab === 'Leads' && isApprovedDealer && (
           <div>
             {/* Filters */}
             <div className="flex flex-wrap gap-3 mb-4">
