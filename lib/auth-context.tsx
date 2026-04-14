@@ -17,6 +17,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const TOKEN_KEY = 'instaoffer_token';
 const REFRESH_KEY = 'instaoffer_refresh';
+const GUEST_TOKEN_KEY = 'instaoffer_guest_token';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signIn(loginVal: string, password: string) {
     const tokens = await login({ login: loginVal, password });
+    localStorage.removeItem(GUEST_TOKEN_KEY);
     persist(tokens);
     const me = await getMe(tokens.access_token);
     setUser(me);
@@ -55,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signUp(email: string, password: string, fullName: string) {
     const tokens = await register({ email, password, full_name: fullName });
+    localStorage.removeItem(GUEST_TOKEN_KEY);
     persist(tokens);
     const me = await getMe(tokens.access_token);
     setUser(me);
@@ -66,13 +69,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_KEY);
+    localStorage.removeItem(GUEST_TOKEN_KEY);
     setToken(null);
     setUser(null);
   }
 
   async function ensureGuestToken(): Promise<string> {
+    // If user is already authenticated, use their token
     if (token) return token;
+
+    // Reuse a cached guest token if available
+    const cached = localStorage.getItem(GUEST_TOKEN_KEY);
+    if (cached) return cached;
+
+    // Otherwise fetch a new guest token and cache it
     const tokens = await guestLogin();
+    localStorage.setItem(GUEST_TOKEN_KEY, tokens.access_token);
     return tokens.access_token;
   }
 

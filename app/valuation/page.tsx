@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Car, AlertCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { CAR_MAKES, CAR_MODELS, YEARS, CONDITIONS, FUEL_TYPES, GEAR_TYPES, CAR_TYPES, QATAR_CITIES, formatQAR, formatKM } from '@/lib/utils';
 import { getMLEstimate, getMarketComps, MLEstimate, OfferComps } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 import EstimateResult from './EstimateResult';
 
 export interface ValuationData {
@@ -28,6 +29,7 @@ const TOTAL_STEPS = 6;
 function ValuationContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { ensureGuestToken } = useAuth();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<ValuationData>({
     make: searchParams.get('make') || '',
@@ -76,6 +78,9 @@ function ValuationContent() {
     setLoading(true);
     setError('');
     try {
+      // Obtain a valid auth token — reuses cached guest token if user is not signed in
+      const authToken = await ensureGuestToken();
+
       const [est, comp] = await Promise.all([
         getMLEstimate({
           make: data.make,
@@ -87,14 +92,14 @@ function ValuationContent() {
           gear_type: data.gear_type || undefined,
           city: data.city || undefined,
           trim: data.trim || undefined,
-        }),
+        }, authToken),
         getMarketComps({
           make: data.make,
           class_name: data.class_name,
           year: data.year!,
           km: data.km!,
           model: data.model || undefined,
-        }).catch(() => null),
+        }, authToken).catch(() => null),
       ]);
       setEstimate(est);
       setComps(comp);

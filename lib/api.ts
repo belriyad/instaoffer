@@ -92,13 +92,13 @@ export interface ValuationParams {
   seller_type?: string;
 }
 
-export async function getMLEstimate(params: ValuationParams): Promise<MLEstimate> {
+export async function getMLEstimate(params: ValuationParams, token?: string): Promise<MLEstimate> {
   const qs = new URLSearchParams(
     Object.entries(params)
       .filter(([, v]) => v !== undefined && v !== '')
       .map(([k, v]) => [k, String(v)])
   ).toString();
-  return apiFetch<MLEstimate>(`/ml/estimate?${qs}`);
+  return apiFetch<MLEstimate>(`/ml/estimate?${qs}`, {}, token);
 }
 
 // ─── Market Comps ─────────────────────────────────────────────────────────────
@@ -128,13 +128,13 @@ export async function getMarketComps(params: {
   year: number;
   km: number;
   model?: string;
-}): Promise<OfferComps> {
+}, token?: string): Promise<OfferComps> {
   const qs = new URLSearchParams(
     Object.entries(params)
       .filter(([, v]) => v !== undefined && v !== '')
       .map(([k, v]) => [k, String(v)])
   ).toString();
-  return apiFetch<OfferComps>(`/instant-offers/comps?${qs}`);
+  return apiFetch<OfferComps>(`/instant-offers/comps?${qs}`, {}, token);
 }
 
 // ─── Instant Offers ───────────────────────────────────────────────────────────
