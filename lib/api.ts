@@ -1,13 +1,16 @@
-// All API traffic is routed through the Next.js proxy at /api/proxy/* so that:
-//  1. The real backend URL is never exposed to the browser
-//  2. CORS is never an issue (same-origin requests only from the client)
-//  3. A single env var (API_BASE_URL, server-side only) controls the target
-const PROXY_PREFIX =
-  typeof window === 'undefined'
-    ? // Server-side: call the backend directly (no network round-trip through proxy)
-      process.env.API_BASE_URL || 'http://174.165.78.29:8090/api'
-    : // Client-side: use the same-origin proxy route
-      '/api/proxy';
+// CORS is enabled on the backend (Access-Control-Allow-Origin: *).
+// Call the backend directly from the browser — no proxy needed.
+// The base URL is a NEXT_PUBLIC_ env var so it's available on both server and client.
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  'http://174.165.78.29:8090/api';
+
+// ─── Image proxy helper ────────────────────────────────────────────────────────
+// Car listing images from external sources must go through the backend proxy.
+export function imgProxyUrl(originalUrl: string): string {
+  if (!originalUrl) return '';
+  return `${BASE_URL}/img-proxy?url=${encodeURIComponent(originalUrl)}`;
+}
 
 async function apiFetch<T>(
   path: string,
@@ -23,7 +26,7 @@ async function apiFetch<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${PROXY_PREFIX}${path}`, {
+  const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers,
   });
@@ -54,6 +57,13 @@ export interface AuthTokens {
 
 export async function guestLogin(): Promise<AuthTokens> {
   return apiFetch<AuthTokens>('/auth/guest/login', { method: 'POST' });
+}
+
+export async function refreshToken(refresh: string): Promise<AuthTokens> {
+  return apiFetch<AuthTokens>('/auth/refresh', {
+    method: 'POST',
+    body: JSON.stringify({ refresh_token: refresh }),
+  });
 }
 
 export async function register(data: {
