@@ -8,23 +8,15 @@ import { CheckCircle2, X, MessageSquare, ChevronLeft, Clock, Shield, AlertCircle
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getOfferRequestDetail, OfferRequest, acceptBid, rejectBid } from '@/lib/api';
+import { getOfferRequestDetail, OfferRequest, OfferBid, acceptBid, rejectBid } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
 
-interface OfferBidWithDealer {
-  bid_uid: string;
-  amount_qar: number;
-  message: string | null;
-  status: string;
-  dealer_id: string;
-  expires_at: string | null;
-  created_at: string;
-}
+type RequestWithBids = OfferRequest & { bids: OfferBid[] };
 
 export default function OfferDetailPage({ params }: { params: Promise<{ uid: string }> }) {
   const { token, loading } = useAuth();
   const router = useRouter();
-  const [request, setRequest] = useState<OfferRequest & { bids?: OfferBidWithDealer[] } | null>(null);
+  const [request, setRequest] = useState<RequestWithBids | null>(null);
   const [fetching, setFetching] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -43,7 +35,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
       setFetching(true);
       setFetchError(null);
       getOfferRequestDetail(uid, token)
-        .then(r => setRequest(r as OfferRequest & { bids?: OfferBidWithDealer[] }))
+        .then(r => setRequest(r as RequestWithBids))
         .catch(err => setFetchError(err instanceof Error ? err.message : 'Failed to load offer'))
         .finally(() => setFetching(false));
     }
@@ -55,7 +47,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
     try {
       await acceptBid(uid, bidUid, token);
       const updated = await getOfferRequestDetail(uid, token);
-      setRequest(updated as OfferRequest & { bids?: OfferBidWithDealer[] });
+      setRequest(updated as RequestWithBids);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to accept offer');
     } finally {
@@ -69,7 +61,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
     try {
       await rejectBid(uid, bidUid, token);
       const updated = await getOfferRequestDetail(uid, token);
-      setRequest(updated as OfferRequest & { bids?: OfferBidWithDealer[] });
+      setRequest(updated as RequestWithBids);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to reject offer');
     } finally {
@@ -113,8 +105,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
     );
   }
 
-  const bids = request.bids || [];
-  const pendingBids = bids.filter(b => b.status === 'pending');
+  const bids = request.bids ?? [];
   const acceptedBid = bids.find(b => b.status === 'accepted');
 
   return (

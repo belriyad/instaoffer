@@ -234,12 +234,21 @@ export async function createOfferRequest(
   }, token);
 }
 
-export async function getMyOfferRequests(token: string): Promise<{ rows: OfferRequest[] }> {
+export async function getMyOfferRequests(token: string): Promise<{ rows: OfferRequest[]; total: number }> {
   return apiFetch('/instant-offers/requests/mine', {}, token);
 }
 
-export async function getOfferRequestDetail(uid: string, token: string): Promise<OfferRequest> {
-  return apiFetch(`/instant-offers/requests/${uid}`, {}, token);
+export async function getOfferRequestDetail(
+  uid: string,
+  token: string
+): Promise<OfferRequest & { bids: OfferBid[]; market_comps?: unknown }> {
+  // API returns { request: {...}, bids: [...], market_comps: {...} }
+  const res = await apiFetch<{
+    request: OfferRequest;
+    bids: OfferBid[];
+    market_comps?: unknown;
+  }>(`/instant-offers/requests/${uid}`, {}, token);
+  return { ...res.request, bids: res.bids ?? [], market_comps: res.market_comps };
 }
 
 export async function placeBid(
