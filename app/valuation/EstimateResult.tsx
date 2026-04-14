@@ -152,7 +152,16 @@ export default function EstimateResult({ estimate, comps, data }: Props) {
           className="space-y-3"
         >
           <Link
-            href="/submit-offer"
+            href={`/submit-offer?${new URLSearchParams({
+              make:       data.make,
+              class_name: data.class_name,
+              year:       String(data.year ?? ''),
+              km:         String(data.km ?? ''),
+              condition:  data.condition,
+              city:       data.city,
+              ...(data.model ? { model: data.model } : {}),
+              ...(data.trim  ? { trim:  data.trim  } : {}),
+            }).toString()}`}
             className="flex items-center justify-center gap-2 w-full bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold py-4 rounded-xl text-lg transition-all shadow-md"
           >
             Get Real Dealer Offers

@@ -4,31 +4,30 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, AlertCircle, CheckCircle2, Mail, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, CheckCircle2, Mail, Lock, User, Building2, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import Navbar from '@/components/Navbar';
 
-function LoginContent() {
+function DealerLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, signUp } = useAuth();
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [showPw, setShowPw]     = useState(false);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
-  const [success, setSuccess]   = useState('');
+  const [email, setEmail]         = useState('');
+  const [password, setPassword]   = useState('');
+  const [fullName, setFullName]   = useState('');
+  const [showPw, setShowPw]       = useState(false);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState('');
+  const [success, setSuccess]     = useState('');
 
-  const redirect = searchParams.get('redirect') || '/my-offers';
+  const redirect = searchParams.get('redirect') || '/dashboard';
 
   function switchMode(m: 'login' | 'register') {
     setMode(m);
     setError('');
     setSuccess('');
-    // Keep email, clear sensitive fields
     setPassword('');
     setFullName('');
   }
@@ -38,20 +37,10 @@ function LoginContent() {
     setError('');
     setSuccess('');
 
-    // ── Client-side validation ──────────────────────────────────────────────
     if (mode === 'register') {
-      if (fullName.trim().length < 2) {
-        setError('Please enter your full name (at least 2 characters).');
-        return;
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        setError('Please enter a valid email address.');
-        return;
-      }
-      if (password.length < 8) {
-        setError('Password must be at least 8 characters.');
-        return;
-      }
+      if (fullName.trim().length < 2) { setError('Please enter your full name.'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Please enter a valid email address.'); return; }
+      if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
     }
 
     setLoading(true);
@@ -64,14 +53,13 @@ function LoginContent() {
         router.push(redirect);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
-      // Map known API error strings to friendly messages
+      const msg = err instanceof Error ? err.message : 'Something went wrong.';
       const friendly: Record<string, string> = {
-        'Invalid credentials':       'Email or password is incorrect.',
-        'email already exists':      'An account with this email already exists. Try signing in.',
+        'Invalid credentials':               'Email or password is incorrect.',
+        'email already exists':              'An account with this email already exists.',
         'password must be at least 8 chars': 'Password must be at least 8 characters.',
-        'full_name is required':     'Please enter your full name.',
-        'Unauthorized':              'Session expired. Please try again.',
+        'full_name is required':             'Please enter your full name.',
+        'Unauthorized':                      'Session expired. Please try again.',
       };
       setError(friendly[msg] ?? msg);
     } finally {
@@ -91,24 +79,28 @@ function LoginContent() {
           transition={{ duration: 0.3 }}
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-md"
         >
-          {/* Logo */}
+          {/* Header */}
           <div className="text-center mb-8">
-            <Link href="/" className="inline-block">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#003087]/10 mb-4">
+              <Building2 size={28} className="text-[#003087]" />
+            </div>
+            <Link href="/" className="block">
               <div className="text-2xl font-black">
                 Insta<span className="text-[#ff6600]">Offer</span>
+                <span className="text-sm font-semibold text-gray-400 ml-2">for Dealers</span>
               </div>
             </Link>
-            <h1 className="text-2xl font-black text-gray-900 mt-4">
-              {mode === 'login' ? 'Welcome back' : 'Create your account'}
+            <h1 className="text-2xl font-black text-gray-900 mt-3">
+              {mode === 'login' ? 'Dealer Sign In' : 'Register as a Dealer'}
             </h1>
             <p className="text-gray-500 mt-1 text-sm">
               {mode === 'login'
-                ? 'Sign in to view your offers and messages'
-                : 'Sign up free — get real dealer offers on your car'}
+                ? 'Access your dealer dashboard and incoming offers'
+                : 'Start receiving qualified car sell requests instantly'}
             </p>
           </div>
 
-          {/* Mode tabs */}
+          {/* Tabs */}
           <div className="flex rounded-xl bg-gray-100 p-1 mb-6">
             {(['login', 'register'] as const).map((m) => (
               <button
@@ -121,13 +113,12 @@ function LoginContent() {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {m === 'login' ? 'Sign In' : 'Sign Up'}
+                {m === 'login' ? 'Sign In' : 'Register'}
               </button>
             ))}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-
             {/* Full Name — register only */}
             <AnimatePresence>
               {mode === 'register' && (
@@ -138,9 +129,7 @@ function LoginContent() {
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Full Name
-                  </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Dealership / Your Name</label>
                   <div className="relative">
                     <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
@@ -148,7 +137,7 @@ function LoginContent() {
                       value={fullName}
                       onChange={e => setFullName(e.target.value)}
                       autoComplete="name"
-                      placeholder="Your full name"
+                      placeholder="e.g. Al Mana Motors"
                       className={inputCls}
                     />
                   </div>
@@ -158,9 +147,7 @@ function LoginContent() {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Email Address
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Business Email</label>
               <div className="relative">
                 <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -169,7 +156,7 @@ function LoginContent() {
                   onChange={e => setEmail(e.target.value)}
                   autoComplete="email"
                   required
-                  placeholder="you@example.com"
+                  placeholder="dealer@example.com"
                   className={inputCls}
                 />
               </div>
@@ -208,9 +195,7 @@ function LoginContent() {
               {mode === 'register' && (
                 <p className="text-xs text-gray-400 mt-1.5 ml-1">
                   Minimum 8 characters
-                  {password.length >= 8 && (
-                    <span className="text-green-600 ml-2">✓</span>
-                  )}
+                  {password.length >= 8 && <span className="text-green-600 ml-2">✓</span>}
                 </p>
               )}
             </div>
@@ -245,45 +230,47 @@ function LoginContent() {
               )}
             </AnimatePresence>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#003087] hover:bg-[#0057b8] active:bg-[#002060] text-white font-bold py-4 rounded-xl text-base transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+              className="w-full bg-[#003087] hover:bg-[#0057b8] active:bg-[#002060] text-white font-bold py-4 rounded-xl text-base transition-all flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
             >
-              {loading ? (
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : mode === 'login' ? 'Sign In' : 'Create Free Account'}
+              {loading
+                ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                : mode === 'login'
+                  ? <><ChevronRight size={18} /> Go to Dashboard</>
+                  : <><ChevronRight size={18} /> Create Dealer Account</>
+              }
             </button>
           </form>
 
-          {/* Trust note */}
-          <p className="text-center text-xs text-gray-400 mt-6">
+          {/* Separator */}
+          <div className="my-6 border-t border-gray-100" />
+
+          {/* Switch to customer */}
+          <p className="text-center text-sm text-gray-500">
+            Selling your car instead?{' '}
+            <Link href="/login" className="text-[#003087] font-semibold hover:underline">
+              Customer login →
+            </Link>
+          </p>
+
+          <p className="text-center text-xs text-gray-400 mt-4">
             By continuing, you agree to our{' '}
             <Link href="/terms" className="underline hover:text-gray-600">Terms</Link>
             {' '}and{' '}
             <Link href="/privacy" className="underline hover:text-gray-600">Privacy Policy</Link>.
-            <br />Your phone number is never shared without your approval.
           </p>
-
-          <div className="mt-4 border-t border-gray-100 pt-4">
-            <p className="text-center text-sm text-gray-500">
-              Are you a dealer?{' '}
-              <Link href="/login/dealer" className="text-[#003087] font-semibold hover:underline">
-                Dealer login →
-              </Link>
-            </p>
-          </div>
         </motion.div>
       </div>
     </div>
   );
 }
 
-export default function LoginPage() {
+export default function DealerLoginPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#f5f7fa]" />}>
-      <LoginContent />
+      <DealerLoginContent />
     </Suspense>
   );
 }

@@ -62,6 +62,17 @@ function ValuationContent() {
     setData(d => ({ ...d, [key]: value }));
   }
 
+  // Steps where picking a tile immediately advances to the next step
+  const AUTO_ADVANCE_STEPS = new Set([1, 2, 3, 6]);
+
+  function pick<K extends keyof ValuationData>(key: K, value: ValuationData[K]) {
+    setData(d => ({ ...d, [key]: value }));
+    if (AUTO_ADVANCE_STEPS.has(step)) {
+      // Small delay so the selection highlight is visible before transition
+      setTimeout(() => setStep(s => s + 1), 180);
+    }
+  }
+
   function canProceed() {
     switch (step) {
       case 1: return !!data.make;
@@ -165,7 +176,7 @@ function ValuationContent() {
                   {CAR_MAKES.map(make => (
                     <button
                       key={make}
-                      onClick={() => { update('make', make); update('class_name', ''); }}
+                      onClick={() => { pick('make', make); update('class_name', ''); }}
                       className={`py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all ${
                         data.make === make
                           ? 'border-[#003087] bg-[#e8f0fd] text-[#003087]'
@@ -187,7 +198,7 @@ function ValuationContent() {
                     {models.map(model => (
                       <button
                         key={model}
-                        onClick={() => update('class_name', model)}
+                        onClick={() => pick('class_name', model)}
                         className={`py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all ${
                           data.class_name === model
                             ? 'border-[#003087] bg-[#e8f0fd] text-[#003087]'
@@ -230,7 +241,7 @@ function ValuationContent() {
                   {YEARS.map(y => (
                     <button
                       key={y}
-                      onClick={() => update('year', y)}
+                      onClick={() => pick('year', y)}
                       className={`py-3 rounded-xl border-2 text-sm font-bold transition-all ${
                         data.year === y
                           ? 'border-[#003087] bg-[#003087] text-white'
@@ -329,7 +340,7 @@ function ValuationContent() {
                   {CONDITIONS.map(c => (
                     <button
                       key={c.value}
-                      onClick={() => update('condition', c.value)}
+                      onClick={() => pick('condition', c.value)}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
                         data.condition === c.value
                           ? 'border-[#003087] bg-[#e8f0fd]'
