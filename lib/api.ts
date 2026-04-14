@@ -1,9 +1,15 @@
-// CORS is enabled on the backend (Access-Control-Allow-Origin: *).
-// Call the backend directly from the browser — no proxy needed.
-// The base URL is a NEXT_PUBLIC_ env var so it's available on both server and client.
+// The backend runs on plain HTTP.  When accessed from the browser on an HTTPS
+// page (e.g. Vercel) mixed-content rules block HTTP requests, so we route all
+// browser-side calls through our own Next.js proxy at /api/proxy/[...path].
+// Server-side (SSR / build-time) we call the backend directly — no restriction.
+const BACKEND_URL =
+  process.env.API_BASE_URL || 'http://174.165.78.29:8090/api';
+
+// In the browser use a relative path so the request stays on the same HTTPS origin.
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  'http://174.165.78.29:8090/api';
+  typeof window === 'undefined'
+    ? BACKEND_URL          // server: direct HTTP call (no mixed-content issue)
+    : '/api/proxy';        // browser: goes to our Next.js proxy route
 
 // ─── Image proxy helper ────────────────────────────────────────────────────────
 // Car listing images from external sources must go through the backend proxy.
