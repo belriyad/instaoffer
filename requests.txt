@@ -1,0 +1,147 @@
+# InstaOffer — Backend API Requests
+
+These are endpoints missing from the current Swagger contract that are required by the frontend.
+All requests should be implemented in the backend and added to the swagger.yaml.
+
+---
+
+## 1. Phone Number Approval Workflow
+
+**Endpoints needed:**
+
+```
+POST /instant-offers/requests/{request_uid}/phone-request
+  - Dealer requests phone number access
+  - Body: {}
+  - Auth: dealer bearerAuth
+
+POST /instant-offers/requests/{request_uid}/phone-request/approve
+  - Seller approves dealer phone request
+  - Body: { dealer_id: string }
+  - Auth: customer bearerAuth
+
+POST /instant-offers/requests/{request_uid}/phone-request/reject
+  - Seller rejects dealer phone request
+  - Body: { dealer_id: string }
+  - Auth: customer bearerAuth
+
+GET /instant-offers/requests/{request_uid}/phone-requests
+  - List all phone access requests for this offer request
+  - Auth: customer bearerAuth
+  - Returns: [{ dealer_id, status: pending|approved|rejected, requested_at, responded_at }]
+```
+
+---
+
+## 2. Mark Request as Pending After Bid Accepted
+
+**Current behavior:** When a seller accepts a bid, the request status should automatically transition to `pending` (currently no dedicated status for this).
+
+**Request:** Add `pending` to the enum of valid statuses for `OfferRequest.status`:
+```
+status: open | under_offer | accepted | rejected | expired | cancelled | pending
+```
+
+Also: prevent other dealers from bidding once status is `accepted` or `pending`.
+
+---
+
+## 3. Dealer Subscription Status Endpoint
+
+**Endpoint needed:**
+```
+GET /instant-offers/subscription
+  - Returns the active subscription for the currently authenticated dealer
+  - Auth: dealer bearerAuth
+  - Returns: {
+      is_active: boolean,
+      plan: string,
+      amount_qar: number,
+      started_at: string,
+      expires_at: string | null,
+      next_billing: string | null
+    }
+```
+
+---
+
+## 4. Saved Dealer Filter Endpoints
+
+**Endpoints needed:**
+```
+GET /instant-offers/filters
+  - List saved filters for the authenticated dealer
+  - Auth: dealer bearerAuth
+  - Returns: [{ id, name, makes, cities, min_year, max_year, max_km, match_count }]
+
+POST /instant-offers/filters
+  - Create a saved filter
+  - Body: { name: string, makes?: string[], cities?: string[], min_year?: int, max_year?: int, max_km?: int, condition?: string }
+  - Auth: dealer bearerAuth
+
+DELETE /instant-offers/filters/{filter_id}
+  - Delete a saved filter
+  - Auth: dealer bearerAuth
+```
+
+---
+
+## 5. Offer Expiration
+
+**Current state:** `expires_at` is a field on `OfferBidCreate` but is not enforced server-side.
+
+**Request:**
+- Implement a background job or middleware that marks bids as `expired` once `expires_at` is past.
+- Return `is_expired: boolean` computed field on bid objects.
+
+---
+
+## 6. Audit Log for Phone Approvals
+
+**Request:**
+```
+GET /instant-offers/requests/{request_uid}/phone-approval-log
+  - Returns timestamped log of all phone approval events for this request
+  - Auth: admin bearerAuth
+  - Returns: [{ dealer_id, action: requested|approved|rejected, timestamp, ip?: string }]
+```
+
+---
+
+## 7. Document Permission Control
+
+**Request:**
+- Add a permissions field to `OfferRequestCreate` and `OfferRequest`:
+```
+document_visibility: all_dealers | approved_only | none
+```
+- `all_dealers`: All subscribed dealers can see photos, registration, inspection docs.
+- `approved_only`: Only dealers whose phone request was approved can see docs.
+- `none`: No dealers can see any documents (listing only).
+
+**Endpoint needed:**
+```
+PATCH /instant-offers/requests/{request_uid}/document-visibility
+  - Update the document visibility for a request
+  - Body: { document_visibility: all_dealers | approved_only | none }
+  - Auth: customer bearerAuth
+```
+
+---
+
+## 8. Dealer Online/Offline Status
+
+**Request:**
+```
+GET /users/{user_id}/online-status
+  - Returns whether a dealer is currently online (last_seen within 5 min)
+  - Returns: { is_online: boolean, last_seen: string | null }
+```
+
+---
+
+## 9. WhatsApp After Approval
+
+**Request:**
+- Add a `whatsapp_number` field to `OfferRequest` responses visible only after phone approval.
+- Enforce at API level: return 403 if dealer has not been approved for phone access.
