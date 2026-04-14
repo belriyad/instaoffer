@@ -1,4 +1,13 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://174.165.78.29:8090/api';
+// All API traffic is routed through the Next.js proxy at /api/proxy/* so that:
+//  1. The real backend URL is never exposed to the browser
+//  2. CORS is never an issue (same-origin requests only from the client)
+//  3. A single env var (API_BASE_URL, server-side only) controls the target
+const PROXY_PREFIX =
+  typeof window === 'undefined'
+    ? // Server-side: call the backend directly (no network round-trip through proxy)
+      process.env.API_BASE_URL || 'http://192.168.4.244:8090/api'
+    : // Client-side: use the same-origin proxy route
+      '/api/proxy';
 
 async function apiFetch<T>(
   path: string,
@@ -14,7 +23,7 @@ async function apiFetch<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${PROXY_PREFIX}${path}`, {
     ...options,
     headers,
   });
