@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Server-side only — never exposed to the browser
-const BACKEND = process.env.API_BASE_URL || 'http://192.168.4.244:8090/api';
+const BACKEND = process.env.API_BASE_URL || 'http://174.165.78.29:8090/api';
 
 // Headers we do NOT forward to the backend
 const HOP_BY_HOP = new Set([
