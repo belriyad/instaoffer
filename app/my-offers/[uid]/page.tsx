@@ -26,6 +26,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
   const router = useRouter();
   const [request, setRequest] = useState<OfferRequest & { bids?: OfferBidWithDealer[] } | null>(null);
   const [fetching, setFetching] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [uid, setUid] = useState('');
 
@@ -39,9 +40,11 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
       return;
     }
     if (token && uid) {
+      setFetching(true);
+      setFetchError(null);
       getOfferRequestDetail(uid, token)
         .then(r => setRequest(r as OfferRequest & { bids?: OfferBidWithDealer[] }))
-        .catch(() => {})
+        .catch(err => setFetchError(err instanceof Error ? err.message : 'Failed to load offer'))
         .finally(() => setFetching(false));
     }
   }, [token, loading, uid, router]);
@@ -81,11 +84,34 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
         <div className="flex-1 flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
         </div>
+        <Footer />
       </div>
     );
   }
 
-  if (!request) return null;
+  if (fetchError || !request) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center max-w-md w-full shadow-sm">
+            <AlertCircle size={40} className="text-red-400 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Offer Not Found</h2>
+            <p className="text-sm text-gray-500 mb-6">
+              {fetchError || "This offer request doesn't exist or you don't have access to it."}
+            </p>
+            <Link
+              href="/my-offers"
+              className="inline-flex items-center gap-2 bg-[#003087] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#002070] transition-colors"
+            >
+              <ChevronLeft size={16} /> Back to My Offers
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const bids = request.bids || [];
   const pendingBids = bids.filter(b => b.status === 'pending');
