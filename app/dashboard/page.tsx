@@ -191,7 +191,7 @@ export default function DashboardPage() {
             <p className="text-gray-500 mb-6">Subscribe to access dealer features including leads, bids, and messaging.</p>
             <div className="bg-[#f5f7fa] rounded-xl p-4 mb-6 text-left">
               <div className="text-sm font-semibold text-gray-700 mb-1">{subscription.plan_name}</div>
-              <div className="text-3xl font-black text-[#003087]">{subscription.price_qar.toLocaleString()} QAR<span className="text-base font-normal text-gray-500">/mo</span></div>
+              <div className="text-3xl font-black text-[#003087]">{subscription.price_qar != null ? subscription.price_qar.toLocaleString() : '—'} QAR<span className="text-base font-normal text-gray-500">/mo</span></div>
             </div>
             <a
               href="/for-dealers"
@@ -255,7 +255,7 @@ export default function DashboardPage() {
             { label: 'Accepted', value: requests.filter(r => r.status === 'accepted').length, color: 'text-green-600' },
             {
               label: 'Subscription',
-              value: subscription ? `${subscription.price_qar.toLocaleString()} QAR/mo` : '—',
+              value: subscription?.price_qar != null ? `${subscription.price_qar.toLocaleString()} QAR/mo` : '—',
               color: 'text-gray-700',
             },
           ].map((s) => (
