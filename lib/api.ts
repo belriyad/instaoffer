@@ -191,7 +191,7 @@ export interface OfferRequest {
   asking_price_qar: number | null;
   contact_name: string | null;
   contact_phone: string | null;
-  status: 'open' | 'under_offer' | 'accepted' | 'rejected' | 'expired' | 'cancelled';
+  status: 'open' | 'pending' | 'under_offer' | 'accepted' | 'rejected' | 'expired' | 'cancelled';
   accepted_bid_id: number | null;
   expires_at: string | null;
   created_at: string;
@@ -390,6 +390,112 @@ export async function updateUser(
     method: 'PATCH',
     body: JSON.stringify(data),
   }, token);
+}
+
+// ─── Phone Number Requests (FE-001) ──────────────────────────────────────────
+
+export async function requestPhoneAccess(
+  requestUid: string,
+  token: string
+): Promise<void> {
+  return apiFetch(`/instant-offers/requests/${requestUid}/phone-request`, {
+    method: 'POST',
+  }, token);
+}
+
+export async function getPhoneRequests(
+  requestUid: string,
+  token: string
+): Promise<{ requests: import('./api-types').PhoneRequest[] }> {
+  return apiFetch(`/instant-offers/requests/${requestUid}/phone-requests`, {}, token);
+}
+
+export async function approvePhoneRequest(
+  requestUid: string,
+  dealerId: string,
+  token: string
+): Promise<void> {
+  return apiFetch(`/instant-offers/requests/${requestUid}/phone-request/approve`, {
+    method: 'POST',
+    body: JSON.stringify({ dealer_id: dealerId }),
+  }, token);
+}
+
+export async function rejectPhoneRequest(
+  requestUid: string,
+  dealerId: string,
+  token: string
+): Promise<void> {
+  return apiFetch(`/instant-offers/requests/${requestUid}/phone-request/reject`, {
+    method: 'POST',
+    body: JSON.stringify({ dealer_id: dealerId }),
+  }, token);
+}
+
+// ─── Dealer Subscription (FE-003) ────────────────────────────────────────────
+
+export async function getDealerSubscription(
+  token: string
+): Promise<import('./api-types').DealerSubscription> {
+  return apiFetch('/instant-offers/subscription', {}, token);
+}
+
+// ─── Saved Filters (FE-004) ───────────────────────────────────────────────────
+
+export async function getSavedFilters(
+  token: string
+): Promise<{ filters: import('./api-types').SavedFilter[] }> {
+  return apiFetch('/instant-offers/filters', {}, token);
+}
+
+export async function createSavedFilter(
+  data: import('./api-types').CreateSavedFilterRequest,
+  token: string
+): Promise<{ filter: import('./api-types').SavedFilter }> {
+  return apiFetch('/instant-offers/filters', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+}
+
+export async function deleteSavedFilter(
+  id: number,
+  token: string
+): Promise<void> {
+  return apiFetch(`/instant-offers/filters/${id}`, {
+    method: 'DELETE',
+  }, token);
+}
+
+// ─── Document Visibility (FE-007) ────────────────────────────────────────────
+
+export async function setDocumentVisibility(
+  requestUid: string,
+  visibility: 'all_dealers' | 'approved_only' | 'none',
+  token: string
+): Promise<void> {
+  return apiFetch(`/instant-offers/requests/${requestUid}/document-visibility`, {
+    method: 'PATCH',
+    body: JSON.stringify({ document_visibility: visibility }),
+  }, token);
+}
+
+// ─── Dealer Online Status (FE-008) ───────────────────────────────────────────
+
+export async function getDealerOnlineStatus(
+  dealerId: string,
+  token: string
+): Promise<{ is_online: boolean; last_seen: string | null }> {
+  return apiFetch(`/users/${dealerId}/online-status`, {}, token);
+}
+
+// ─── Phone Approval Audit Log (FE-006) ───────────────────────────────────────
+
+export async function getPhoneApprovalLog(
+  requestUid: string,
+  token: string
+): Promise<{ log: { dealer_id: string; action: string; timestamp: string; ip: string }[] }> {
+  return apiFetch(`/instant-offers/requests/${requestUid}/phone-approval-log`, {}, token);
 }
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
