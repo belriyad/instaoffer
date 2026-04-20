@@ -125,6 +125,7 @@ export interface ValuationParams {
   gear_type?: string;
   city?: string;
   seller_type?: string;
+  condition?: string;
 }
 
 export async function getMLEstimate(params: ValuationParams, token?: string): Promise<MLEstimate> {

@@ -103,6 +103,7 @@ function ValuationContent() {
           gear_type: data.gear_type || undefined,
           city: data.city || undefined,
           trim: data.trim || undefined,
+          condition: data.condition || undefined,
         }, authToken),
         getMarketComps({
           make: data.make,
