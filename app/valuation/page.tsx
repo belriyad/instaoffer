@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Car, AlertCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { CAR_MAKES, CAR_MODELS, YEARS, CONDITIONS, FUEL_TYPES, GEAR_TYPES, CAR_TYPES, QATAR_CITIES, formatQAR, formatKM } from '@/lib/utils';
-import { getMLEstimate, getMarketComps, MLEstimate, OfferComps } from '@/lib/api';
+import { getMLEstimate, getMLForecast, getMarketComps, MLEstimate, MLForecast, OfferComps } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import EstimateResult from './EstimateResult';
 
@@ -46,6 +46,7 @@ function ValuationContent() {
   });
   const [loading, setLoading] = useState(false);
   const [estimate, setEstimate] = useState<MLEstimate | null>(null);
+  const [forecast, setForecast] = useState<MLForecast | null>(null);
   const [comps, setComps] = useState<OfferComps | null>(null);
   const [error, setError] = useState('');
 
@@ -92,19 +93,21 @@ function ValuationContent() {
       // Obtain a valid auth token — reuses cached guest token if user is not signed in
       const authToken = await ensureGuestToken();
 
-      const [est, comp] = await Promise.all([
-        getMLEstimate({
-          make: data.make,
-          class_name: data.class_name,
-          manufacture_year: data.year!,
-          km: data.km!,
-          car_type: data.car_type || undefined,
-          fuel_type: data.fuel_type || undefined,
-          gear_type: data.gear_type || undefined,
-          city: data.city || undefined,
-          trim: data.trim || undefined,
-          condition: data.condition || undefined,
-        }, authToken),
+      const valuationParams = {
+        make: data.make,
+        class_name: data.class_name,
+        manufacture_year: data.year!,
+        km: data.km!,
+        car_type: data.car_type || undefined,
+        fuel_type: data.fuel_type || undefined,
+        gear_type: data.gear_type || undefined,
+        city: data.city || undefined,
+        trim: data.trim || undefined,
+        condition: data.condition || undefined,
+      };
+      const [est, fc, comp] = await Promise.all([
+        getMLEstimate(valuationParams, authToken),
+        getMLForecast(valuationParams, authToken).catch(() => null),
         getMarketComps({
           make: data.make,
           class_name: data.class_name,
@@ -114,6 +117,7 @@ function ValuationContent() {
         }, authToken).catch(() => null),
       ]);
       setEstimate(est);
+      setForecast(fc);
       setComps(comp);
       setStep(7); // result screen
     } catch {
@@ -133,7 +137,7 @@ function ValuationContent() {
   }
 
   if (step === 7 && estimate) {
-    return <EstimateResult estimate={estimate} comps={comps} data={data} />;
+    return <EstimateResult estimate={estimate} forecast={forecast} comps={comps} data={data} />;
   }
 
   return (

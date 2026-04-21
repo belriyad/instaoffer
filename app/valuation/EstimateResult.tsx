@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronRight, TrendingUp, Shield, ArrowRight, BarChart2 } from 'lucide-react';
-import { MLEstimate, OfferComps } from '@/lib/api';
+import { MLEstimate, MLForecast, OfferComps } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
 import { ValuationData } from './page';
 import Navbar from '@/components/Navbar';
@@ -11,11 +11,12 @@ import Footer from '@/components/Footer';
 
 interface Props {
   estimate: MLEstimate;
+  forecast: MLForecast | null;
   comps: OfferComps | null;
   data: ValuationData;
 }
 
-export default function EstimateResult({ estimate, comps, data }: Props) {
+export default function EstimateResult({ estimate, forecast, comps, data }: Props) {
   const low = estimate.confidence_range[0];
   const high = estimate.confidence_range[1];
   const mid = estimate.estimated_price_qar;
@@ -83,6 +84,43 @@ export default function EstimateResult({ estimate, comps, data }: Props) {
             )}
           </div>
         </motion.div>
+
+        {/* Price forecast */}
+        {forecast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                <TrendingUp size={18} className="text-[#003087]" />
+                Price Forecast
+              </h3>
+              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${forecast.market_trend_annual_pct >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                Market {forecast.market_trend_annual_pct >= 0 ? '↑' : '↓'} {Math.abs(forecast.market_trend_annual_pct)}%/yr
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {forecast.forecast.map((f) => {
+                const isPos = f.change_pct >= 0;
+                return (
+                  <div key={f.horizon} className="text-center p-3 bg-gray-50 rounded-xl">
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">{f.horizon}</div>
+                    <div className="font-bold text-gray-900 text-sm">{formatQAR(Math.round(f.estimated_price_qar))}</div>
+                    <div className={`text-xs font-semibold mt-0.5 ${isPos ? 'text-green-600' : 'text-red-500'}`}>
+                      {isPos ? '+' : ''}{f.change_pct}%
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-400 mt-3">
+              Combines depreciation + Qatar market trend. Assumes {forecast.annual_km_assumption.toLocaleString()} km/year.
+            </p>
+          </motion.div>
+        )}
 
         {/* Market comps */}
         {comps && comps.count > 0 && (
