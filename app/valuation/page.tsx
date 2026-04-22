@@ -178,9 +178,9 @@ function Screen1({
         )}
       </AnimatePresence>
 
-      {/* Trim — appears once model selected */}
+      {/* Trim — appears once model selected, only if trims are known */}
       <AnimatePresence>
-        {data.class_name && (
+        {data.class_name && trims.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -190,40 +190,21 @@ function Screen1({
             <p className="text-sm font-bold text-gray-700 mb-2">
               Trim <span className="text-gray-400 font-normal text-xs">(optional — improves accuracy)</span>
             </p>
-            {trims.length > 0 ? (
-              <div className="space-y-2">
-                <div className="flex flex-wrap gap-2">
-                  {trims.map(t => (
-                    <button
-                      key={t}
-                      onClick={() => onUpdate('trim', data.trim === t ? '' : t)}
-                      className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-all ${
-                        data.trim === t
-                          ? 'border-[#003087] bg-[#003087] text-white'
-                          : 'border-gray-200 text-gray-600 hover:border-[#003087] hover:text-[#003087]'
-                      }`}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="text"
-                  value={trims.includes(data.trim) ? '' : data.trim}
-                  onChange={e => onUpdate('trim', e.target.value)}
-                  placeholder="Or type a trim…"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 text-gray-600"
-                />
-              </div>
-            ) : (
-              <input
-                type="text"
-                value={data.trim}
-                onChange={e => onUpdate('trim', e.target.value)}
-                placeholder="e.g. VXR, GXR, Sport, SE"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10"
-              />
-            )}
+            <div className="flex flex-wrap gap-2">
+              {trims.map(t => (
+                <button
+                  key={t}
+                  onClick={() => onUpdate('trim', data.trim === t ? '' : t)}
+                  className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-all ${
+                    data.trim === t
+                      ? 'border-[#003087] bg-[#003087] text-white'
+                      : 'border-gray-200 text-gray-600 hover:border-[#003087] hover:text-[#003087]'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
