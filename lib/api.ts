@@ -526,6 +526,35 @@ export async function getPhoneApprovalLog(
   return apiFetch(`/instant-offers/requests/${requestUid}/phone-approval-log`, {}, token);
 }
 
+// ─── Buy Requests (Want to Buy) ───────────────────────────────────────────────
+
+export interface BuyRequestParams {
+  make: string;
+  class_name: string;
+  trim?: string;
+  year_min?: number;
+  year_max?: number;
+  km_max?: number;
+  budget_min_qar?: number;
+  budget_max_qar?: number;
+  city?: string;
+  condition?: string;
+  contact_name: string;
+  contact_phone: string;
+  contact_email?: string;
+  notes?: string;
+  estimate_qar?: number;
+}
+
+export async function createBuyRequest(
+  data: BuyRequestParams
+): Promise<{ ok: boolean; request_uid: string }> {
+  return apiFetch('/buy-requests', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
 export async function adminGetAllRequests(token: string, params?: {

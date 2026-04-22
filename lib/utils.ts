@@ -63,3 +63,66 @@ export const FUEL_TYPES = ['Petrol', 'Diesel', 'Hybrid', 'Electric'];
 export const GEAR_TYPES = ['Automatic', 'Manual'];
 export const CAR_TYPES = ['Sedan', 'SUV', 'Pickup', 'Hatchback', 'Coupe', 'Van', 'Convertible', 'Wagon'];
 export const WARRANTY_STATUSES = ['Under Warranty', 'No Warranty', 'Extended Warranty'];
+
+// Common trims per model — improves ML estimate accuracy
+export const CAR_TRIMS: Record<string, string[]> = {
+  // Toyota
+  'Land Cruiser': ['VXS', 'VXR', 'GXR', 'EX', 'EXR', 'GT', 'Base'],
+  'Prado':        ['VXL', 'TXL', 'TX', 'GXL', 'GXR'],
+  'Fortuner':     ['EXR', 'GXR', 'SR5', 'EX', 'Base'],
+  'Camry':        ['XSE', 'XLE', 'SE', 'LE', 'XSE V6', 'XLE V6'],
+  'Hilux':        ['SR5', 'GLX', 'GR-S', 'Adventure', 'Base'],
+  'RAV4':         ['XLE', 'XSE', 'Adventure', 'TRD Off-Road', 'Limited'],
+  'Corolla':      ['XSE', 'SE', 'LE', 'XLE', 'Hybrid'],
+  'Yaris':        ['SE', 'LE', 'XLE', 'Sport'],
+  'Avalon':       ['XSE', 'XLE', 'Limited', 'Touring'],
+  'Sequoia':      ['SR5', 'TRD Pro', 'Limited', 'Platinum', 'Capstone'],
+  // Lexus
+  'LX':           ['LX 570', 'LX 600', 'LX 450d', 'Sport', 'Black Edition'],
+  'GX':           ['GX 460', 'GX 550', 'Premium', 'Luxury', 'Overtrail'],
+  'RX':           ['RX 300', 'RX 350', 'RX 400h', 'RX 500h', 'F Sport'],
+  'ES':           ['ES 250', 'ES 300h', 'ES 350', 'F Sport', 'Luxury'],
+  'IS':           ['IS 250', 'IS 300', 'IS 350', 'F Sport'],
+  // Nissan
+  'Patrol':       ['SE', 'LE', 'LE Platinum', 'Nismo', 'Ti', 'Base'],
+  'X-Trail':      ['SE', 'LE', 'SL', 'Platinum', 'Base'],
+  'Altima':       ['S', 'SV', 'SL', 'SR', 'Platinum'],
+  'Pathfinder':   ['S', 'SV', 'SL', 'Rock Creek', 'Platinum'],
+  // BMW
+  '3 Series':     ['320i', '330i', '340i', 'M Sport', 'M3', 'Touring'],
+  '5 Series':     ['520i', '530i', '540i', 'M550i', 'M5', 'M Sport'],
+  '7 Series':     ['730i', '740i', '750i', 'M760i', 'Alpina B7'],
+  'X5':           ['xDrive40i', 'xDrive50i', 'M50i', 'M Sport', 'X5 M'],
+  'X6':           ['xDrive40i', 'xDrive50i', 'M50i', 'X6 M'],
+  'X7':           ['xDrive40i', 'xDrive50i', 'M50i', 'Alpina XB7'],
+  // Mercedes-Benz
+  'G-Class':      ['G 500', 'G 550', 'AMG G 63', 'AMG G 65', 'AMG Line'],
+  'GLS':          ['GLS 450', 'GLS 600', 'AMG GLS 63', 'Maybach GLS 600'],
+  'GLE':          ['GLE 350', 'GLE 450', 'GLE 53 AMG', 'AMG GLE 63', 'Coupe'],
+  'GLC':          ['GLC 200', 'GLC 300', 'AMG GLC 43', 'AMG GLC 63', 'Coupe'],
+  'S-Class':      ['S 450', 'S 500', 'S 580', 'AMG S 63', 'Maybach S 580'],
+  'E-Class':      ['E 200', 'E 250', 'E 300', 'E 350', 'AMG E 53', 'AMG Line'],
+  'C-Class':      ['C 180', 'C 200', 'C 300', 'AMG C 43', 'AMG C 63'],
+  // Dodge
+  'RAM 1500':     ['SLT', 'Big Horn', 'Rebel', 'Laramie', 'TRX', 'Limited'],
+  'RAM 2500':     ['SLT', 'Big Horn', 'Laramie', 'Power Wagon', 'Limited'],
+  'Charger':      ['SXT', 'GT', 'R/T', 'Scat Pack', 'SRT Hellcat'],
+  'Challenger':   ['SXT', 'GT', 'R/T', 'Scat Pack', 'SRT Hellcat', '392'],
+  // Chevrolet
+  'Tahoe':        ['LS', 'LT', 'RST', 'Z71', 'Premier', 'High Country'],
+  'Suburban':     ['LS', 'LT', 'RST', 'Z71', 'Premier', 'High Country'],
+  // GMC
+  'Yukon':        ['SLE', 'SLT', 'AT4', 'Denali', 'Denali Ultimate'],
+  // Jeep
+  'Wrangler':     ['Sport', 'Sahara', 'Rubicon', '4xe', '392', 'Unlimited'],
+  'Grand Cherokee': ['Laredo', 'Limited', 'Trailhawk', 'Overland', 'Summit', 'SRT'],
+  // Land Rover
+  'Range Rover':  ['Standard', 'SE', 'HSE', 'Autobiography', 'SVR', 'SV'],
+  // Hyundai
+  'Palisade':     ['SE', 'SEL', 'XRT', 'Limited', 'Calligraphy'],
+  'Tucson':       ['SE', 'SEL', 'N Line', 'XRT', 'Limited'],
+  'Santa Fe':     ['SE', 'SEL', 'XRT', 'Limited', 'Calligraphy'],
+  // Kia
+  'Sorento':      ['LX', 'S', 'EX', 'SX', 'X-Line SX', 'SX Prestige'],
+  'Telluride':    ['LX', 'S', 'EX', 'SX', 'X-Line SX', 'SX Prestige'],
+};

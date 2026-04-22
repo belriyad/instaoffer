@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Car, AlertCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import { CAR_MAKES, CAR_MODELS, YEARS, CONDITIONS, FUEL_TYPES, GEAR_TYPES, CAR_TYPES, QATAR_CITIES, formatQAR, formatKM } from '@/lib/utils';
+import { CAR_MAKES, CAR_MODELS, CAR_TRIMS, YEARS, CONDITIONS, FUEL_TYPES, GEAR_TYPES, CAR_TYPES, QATAR_CITIES, formatQAR, formatKM } from '@/lib/utils';
 import { getMLEstimate, getMLForecast, getMarketComps, MLEstimate, MLForecast, OfferComps } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import EstimateResult from './EstimateResult';
@@ -228,13 +228,40 @@ function ValuationContent() {
                 )}
                 <div className="mt-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Trim / Variant <span className="text-gray-400 font-normal">(optional but improves accuracy)</span></label>
-                  <input
-                    type="text"
-                    value={data.trim}
-                    onChange={e => update('trim', e.target.value)}
-                    placeholder="e.g. GXR, VXR, SE, Sport"
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/20"
-                  />
+                  {CAR_TRIMS[data.class_name] ? (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {CAR_TRIMS[data.class_name].map(t => (
+                          <button
+                            key={t}
+                            onClick={() => update('trim', data.trim === t ? '' : t)}
+                            className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-all ${
+                              data.trim === t
+                                ? 'border-[#003087] bg-[#003087] text-white'
+                                : 'border-gray-200 text-gray-600 hover:border-[#003087] hover:text-[#003087]'
+                            }`}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                      <input
+                        type="text"
+                        value={CAR_TRIMS[data.class_name].includes(data.trim) ? '' : data.trim}
+                        onChange={e => update('trim', e.target.value)}
+                        placeholder="Or type a different trim..."
+                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/20 text-gray-600"
+                      />
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={data.trim}
+                      onChange={e => update('trim', e.target.value)}
+                      placeholder="e.g. GXR, VXR, SE, Sport"
+                      className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/20"
+                    />
+                  )}
                 </div>
               </StepWrapper>
             )}

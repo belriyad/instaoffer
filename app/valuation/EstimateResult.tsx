@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, TrendingUp, Shield, ArrowRight, BarChart2 } from 'lucide-react';
+import { ChevronRight, TrendingUp, Shield, ArrowRight, BarChart2, ShoppingCart } from 'lucide-react';
 import { MLEstimate, MLForecast, OfferComps } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
 import { ValuationData } from './page';
@@ -204,6 +204,24 @@ export default function EstimateResult({ estimate, forecast, comps, data }: Prop
           >
             Get Real Dealer Offers
             <ChevronRight size={20} />
+          </Link>
+          <Link
+            href={`/buy-request?${new URLSearchParams({
+              make:       data.make,
+              class_name: data.class_name,
+              year:       String(data.year ?? ''),
+              km:         String(data.km ?? ''),
+              condition:  data.condition,
+              city:       data.city,
+              estimate:   String(Math.round(mid)),
+              low:        String(Math.round(low)),
+              high:       String(Math.round(high)),
+              ...(data.trim  ? { trim: data.trim } : {}),
+            }).toString()}`}
+            className="flex items-center justify-center gap-2 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-4 rounded-xl text-lg transition-all shadow-md"
+          >
+            <ShoppingCart size={20} />
+            I Want to Buy This Car
           </Link>
           <Link
             href="/valuation"
