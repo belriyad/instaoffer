@@ -106,7 +106,7 @@ export async function logout(token: string): Promise<void> {
 export interface MLEstimate {
   estimated_price_qar: number;
   confidence_range: [number, number];
-  segment: 'budget' | 'premium';
+  segment: string;
   model_version: string;
   r2: number;
   mape: number;

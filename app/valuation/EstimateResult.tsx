@@ -21,7 +21,6 @@ export default function EstimateResult({ estimate, forecast, comps, data }: Prop
   const high = estimate.confidence_range[1];
   const mid = estimate.estimated_price_qar;
   const rangeWidth = high - low;
-  const midPct = ((mid - low) / rangeWidth) * 100;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
@@ -65,7 +64,7 @@ export default function EstimateResult({ estimate, forecast, comps, data }: Prop
               <BarChart2 size={12} />
               Model accuracy: {(100 - estimate.mape).toFixed(0)}%
             </div>
-            <div className="flex items-center gap-1.5 bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full text-xs font-semibold capitalize">
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold capitalize ${estimate.segment === 'premium' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
               {estimate.segment} segment
             </div>
             {comps && (

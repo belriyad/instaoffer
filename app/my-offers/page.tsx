@@ -19,6 +19,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   rejected: { label: 'Rejected', color: 'bg-red-50 text-red-700' },
   expired: { label: 'Expired', color: 'bg-gray-100 text-gray-500' },
   cancelled: { label: 'Cancelled', color: 'bg-gray-100 text-gray-500' },
+  pending:   { label: 'Pending Review', color: 'bg-yellow-50 text-yellow-700' },
 };
 
 function MyOffersContent() {
