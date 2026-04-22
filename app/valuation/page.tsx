@@ -63,8 +63,9 @@ function ValuationContent() {
     setData(d => ({ ...d, [key]: value }));
   }
 
-  // Steps where picking a tile immediately advances to the next step
-  const AUTO_ADVANCE_STEPS = new Set([1, 2, 3, 6]);
+  // Steps where picking a tile immediately advances to the next step.
+  // Step 2 is excluded because it has a second input (trim) below the model tiles.
+  const AUTO_ADVANCE_STEPS = new Set([1, 3, 6]);
 
   function pick<K extends keyof ValuationData>(key: K, value: ValuationData[K]) {
     setData(d => ({ ...d, [key]: value }));
@@ -80,7 +81,7 @@ function ValuationContent() {
       case 2: return !!data.class_name;
       case 3: return !!data.year;
       case 4: return !!data.km && data.km > 0;
-      case 5: return !!data.car_type && !!data.fuel_type;
+      case 5: return true; // all fields optional — model works without them
       case 6: return !!data.condition;
       default: return true;
     }
@@ -319,7 +320,7 @@ function ValuationContent() {
 
             {/* Step 5: Type & Fuel */}
             {step === 5 && (
-              <StepWrapper title="Tell us more about the car" subtitle="Body type and fuel help improve your estimate">
+              <StepWrapper title="Tell us more about the car" subtitle="Optional — skipping still gives a good estimate">
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-3">Body Type</label>
