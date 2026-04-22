@@ -102,8 +102,8 @@ export default function EstimateResult({ estimate, forecast, comps, data }: Prop
                 Market {forecast.market_trend_annual_pct >= 0 ? '↑' : '↓'} {Math.abs(forecast.market_trend_annual_pct)}%/yr
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              {forecast.forecast.map((f) => {
+            <div className="grid grid-cols-2 gap-3">
+              {forecast.forecast.filter(f => f.horizon !== '12m').map((f) => {
                 const isPos = f.change_pct >= 0;
                 return (
                   <div key={f.horizon} className="text-center p-3 bg-gray-50 rounded-xl">
