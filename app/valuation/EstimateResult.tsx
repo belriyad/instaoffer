@@ -47,23 +47,15 @@ export default function EstimateResult({ estimate, forecast, comps, data }: Prop
               {formatQAR(Math.round(mid))}
             </div>
 
-            {/* Range bar */}
-            <div className="mt-6 px-4">
-              <div className="flex justify-between text-xs text-gray-400 mb-1">
-                <span>Low: {formatQAR(Math.round(low))}</span>
-                <span>High: {formatQAR(Math.round(high))}</span>
-              </div>
-              <div className="h-3 bg-gray-100 rounded-full relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-200 via-[#003087] to-blue-200 opacity-30 rounded-full" />
-                <div
-                  className="absolute top-0 bottom-0 w-1 bg-[#003087] rounded-full"
-                  style={{ left: `${midPct}%`, transform: 'translateX(-50%)' }}
-                />
-              </div>
-              <div className="flex justify-between text-xs font-medium text-gray-500 mt-1">
-                <span>Conservative</span>
-                <span>Optimistic</span>
-              </div>
+            {/* Tight range display */}
+            <div className="mt-4 inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-4 py-2">
+              <span className="text-xs text-gray-400 font-medium">Range</span>
+              <span className="text-sm font-bold text-gray-700">{formatQAR(Math.round(low))}</span>
+              <span className="text-gray-300">–</span>
+              <span className="text-sm font-bold text-gray-700">{formatQAR(Math.round(high))}</span>
+              <span className="text-xs text-[#003087] font-semibold bg-[#e8f0fd] px-2 py-0.5 rounded-full">
+                ±{((rangeWidth / 2 / mid) * 100).toFixed(1)}%
+              </span>
             </div>
           </div>
 
