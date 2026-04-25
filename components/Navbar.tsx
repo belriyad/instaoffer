@@ -23,7 +23,14 @@ export default function Navbar() {
       <div className="bg-[#003087] text-white text-xs py-1 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <span>Qatar&apos;s #1 Car Instant Offer Platform</span>
-          <span>🇶🇦 Designed for Qatar</span>
+          <span className="flex items-center gap-3">
+            <span>🇶🇦 Designed for Qatar</span>
+            {process.env.NEXT_PUBLIC_DEPLOY_TIME && (
+              <span className="text-white/50 font-mono">
+                deployed {process.env.NEXT_PUBLIC_DEPLOY_TIME}
+              </span>
+            )}
+          </span>
         </div>
       </div>
 

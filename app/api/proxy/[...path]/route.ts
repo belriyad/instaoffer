@@ -37,6 +37,7 @@ async function handler(req: NextRequest, { params }: { params: Promise<{ path: s
     body = await req.arrayBuffer();
   }
 
+  const t0 = Date.now();
   let backendRes: Response;
   try {
     backendRes = await fetch(targetUrl, {
@@ -47,9 +48,19 @@ async function handler(req: NextRequest, { params }: { params: Promise<{ path: s
       redirect: 'manual',
     });
   } catch (err) {
-    console.error('[proxy] backend unreachable:', err);
+    const ms = Date.now() - t0;
+    console.error(JSON.stringify({ ts: new Date().toISOString(), method: req.method, path: `/${pathStr}${search}`, status: 502, ms, error: String(err) }));
     return NextResponse.json({ message: 'Backend unreachable' }, { status: 502 });
   }
+
+  const ms = Date.now() - t0;
+  console.log(JSON.stringify({
+    ts:     new Date().toISOString(),
+    method: req.method,
+    path:   `/${pathStr}${search}`,
+    status: backendRes.status,
+    ms,
+  }));
 
   // Copy response headers (strip hop-by-hop)
   const resHeaders = new Headers();
