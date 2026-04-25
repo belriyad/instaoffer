@@ -555,6 +555,114 @@ export async function createBuyRequest(
   });
 }
 
+// ─── Dealer acquisition intelligence ─────────────────────────────────────────
+
+export interface DealerStats {
+  open_leads: number;
+  good_deals: number;
+  hot_this_week: number;
+  offers_sent: number;
+  offers_accepted: number;
+  win_rate_pct: number;
+  saved_filters: number;
+}
+
+export interface GoodDealRow {
+  product_id: string;
+  title: string;
+  manufacture_year: number;
+  make: string;
+  class_name: string;
+  trim: string;
+  km: number;
+  price_qar: number;
+  expected_price_qar: number | null;
+  discount_pct: number;
+  discount_qar: number | null;
+  city: string | null;
+  seller_type: string | null;
+  main_image_url: string | null;
+  url: string | null;
+}
+
+export interface MarginTier {
+  offer_qar: number;
+  gross_qar: number;
+  gross_pct: number;
+  roi_pct: number;
+}
+
+export interface MarginCalcResult {
+  ok: boolean;
+  reason?: string;
+  market_est_qar?: number;
+  market_low_qar?: number;
+  market_high_qar?: number;
+  confidence?: string;
+  segment?: string;
+  model_mape_pct?: number;
+  fixed_costs_qar?: number;
+  tiers?: { conservative: MarginTier; target: MarginTier; aggressive: MarginTier };
+  your_price?: MarginTier;
+}
+
+export interface DealerLead {
+  request_uid: string;
+  make: string;
+  class_name: string;
+  trim?: string;
+  year_min?: number;
+  year_max?: number;
+  km_max?: number;
+  budget_min_qar?: number;
+  budget_max_qar?: number;
+  city?: string;
+  condition?: string;
+  notes?: string;
+  estimate_qar?: number;
+  created_at: string;
+}
+
+export async function getDealerStats(token: string): Promise<DealerStats> {
+  return apiFetch('/dealer/stats', {}, token);
+}
+
+export async function getDealerGoodDeals(
+  params: { min_discount?: number; limit?: number; offset?: number },
+  token: string
+): Promise<{ rows: GoodDealRow[]; total: number; threshold_pct: number }> {
+  const qs = '?' + new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, String(v)])
+  ).toString();
+  return apiFetch(`/dealer/good-deals${qs}`, {}, token);
+}
+
+export async function getDealerMarginCalc(
+  params: { make: string; class_name: string; trim?: string; year: number; km: number; buy_price?: number },
+  token: string
+): Promise<MarginCalcResult> {
+  const qs = '?' + new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, String(v)])
+  ).toString();
+  return apiFetch(`/dealer/margin-calc${qs}`, {}, token);
+}
+
+export async function getDealerLeads(
+  params: { limit?: number; offset?: number },
+  token: string
+): Promise<{ rows: DealerLead[]; total: number }> {
+  const qs = '?' + new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, String(v)])
+  ).toString();
+  return apiFetch(`/dealer/leads${qs}`, {}, token);
+}
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
 export async function adminGetAllRequests(token: string, params?: {

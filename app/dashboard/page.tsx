@@ -266,6 +266,26 @@ export default function DashboardPage() {
           ))}
         </div>
 
+        {/* Quick links to acquisition tools */}
+        {isApprovedDealer && (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {[
+              { href: '/dashboard/good-deals', label: 'Good Deal Feed', sub: 'Listings below market' },
+              { href: '/dashboard/margin',     label: 'Margin Calculator', sub: 'Estimate acquisition ROI' },
+              { href: '/dashboard/analytics',  label: 'Analytics',       sub: 'Performance & activity' },
+            ].map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:border-[#003087] hover:shadow-md transition-all group"
+              >
+                <p className="font-bold text-gray-900 text-sm group-hover:text-[#003087] transition-colors">{item.label}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{item.sub}</p>
+              </Link>
+            ))}
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-fit">
           {TABS.map(t => (
