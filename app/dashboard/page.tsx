@@ -8,7 +8,7 @@ import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Settings, Bookma
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids } from '@/lib/api';
+import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids, imgProxyUrl } from '@/lib/api';
 import { formatQAR, formatDate, formatKM, CAR_MAKES } from '@/lib/utils';
 import {
   OFFER_REQUEST_STATUS_CONFIG,
@@ -420,6 +420,20 @@ export default function DashboardPage() {
                       className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow"
                     >
                       <div className="flex items-start justify-between gap-4">
+                        {(() => {
+                          let thumbUrl: string | null = null;
+                          try {
+                            const urls = JSON.parse(req.photo_urls_json || '[]');
+                            if (Array.isArray(urls) && urls.length > 0) thumbUrl = urls[0];
+                          } catch { /* ignore */ }
+                          return thumbUrl ? (
+                            <img
+                              src={imgProxyUrl(thumbUrl)}
+                              alt={`${req.make} ${req.class_name}`}
+                              className="w-20 h-16 object-cover rounded-xl flex-shrink-0"
+                            />
+                          ) : null;
+                        })()}
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <h3 className="font-bold text-gray-900">
