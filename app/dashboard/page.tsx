@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Settings, Bookmark, X, Calendar } from 'lucide-react';
+import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Bell, Settings, Bookmark, X, Calendar, ExternalLink } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids, imgProxyUrl, getDealerMarginCalc, MarginCalcResult, withdrawBid } from '@/lib/api';
+import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids, MyBid, withdrawBid, getDealerMarginCalc, MarginCalcResult, getNotifications } from '@/lib/api';
 import { formatQAR, formatDate, formatKM, CAR_MAKES } from '@/lib/utils';
 import {
   OFFER_REQUEST_STATUS_CONFIG,
@@ -40,8 +40,19 @@ export default function DashboardPage() {
   const [bidMessage, setBidMessage] = useState('');
   const [bidExpiresAt, setBidExpiresAt] = useState('');
   const [bidSubmitting, setBidSubmitting] = useState(false);
-  const [bidMarginHint, setBidMarginHint] = useState<MarginCalcResult | null>(null);
+
+  // My Bids tab
+  const [myBids, setMyBids] = useState<MyBid[]>([]);
+  const [bidsLoading, setBidsLoading] = useState(false);
   const [withdrawingBid, setWithdrawingBid] = useState<string | null>(null);
+
+  // Inline margin suggestion in bid modal
+  const [marginSuggestion, setMarginSuggestion] = useState<MarginCalcResult | null>(null);
+  const [marginLoading, setMarginLoading] = useState(false);
+
+  // Bell notifications
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<{ id: number; title: string; body: string; created_at: string }[]>([]);
 
   // Filters
   const [filterMake, setFilterMake] = useState('');
@@ -56,10 +67,6 @@ export default function DashboardPage() {
   // FE-004: Saved Filters
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
   const [savingFilter, setSavingFilter] = useState(false);
-
-  // My Bids
-  const [myBids, setMyBids] = useState<(BidWithExpiry & { request_uid?: string; make?: string; class_name?: string; year?: number; km?: number })[]>([]);
-  const [myBidsFetching, setMyBidsFetching] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -89,19 +96,31 @@ export default function DashboardPage() {
     }
   }, [token]);
 
-  // My Bids: fetch when tab is active
+  // Load my bids when switching to My Bids or Messages tab
   useEffect(() => {
-    if (token && tab === 'My Bids') {
-      setMyBidsFetching(true);
+    if (token && (tab === 'My Bids' || tab === 'Messages') && myBids.length === 0 && !bidsLoading) {
+      setBidsLoading(true);
       getDealerBids(token)
-        .then(data => {
-          const bids = ((data as { bids?: unknown[] }).bids ?? (data as unknown[])) as typeof myBids;
-          setMyBids(Array.isArray(bids) ? bids : []);
-        })
+        .then(res => setMyBids(res.rows ?? []))
         .catch(() => {})
-        .finally(() => setMyBidsFetching(false));
+        .finally(() => setBidsLoading(false));
     }
-  }, [token, tab]);
+  }, [tab, token]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch margin suggestion when bid modal opens
+  useEffect(() => {
+    if (!bidModal || !token) { setMarginSuggestion(null); return; }
+    setMarginLoading(true);
+    getDealerMarginCalc({
+      make: bidModal.request.make,
+      class_name: bidModal.request.class_name,
+      year: bidModal.request.year,
+      km: bidModal.request.km,
+    }, token)
+      .then(setMarginSuggestion)
+      .catch(() => setMarginSuggestion(null))
+      .finally(() => setMarginLoading(false));
+  }, [bidModal, token]);
 
   useEffect(() => {
     if (token) {
@@ -140,19 +159,29 @@ export default function DashboardPage() {
     }
   }
 
-  // Issue #31: Withdraw bid
   async function handleWithdrawBid(bidUid: string) {
     if (!token || !confirm('Withdraw this bid?')) return;
     setWithdrawingBid(bidUid);
     try {
       await withdrawBid(bidUid, token);
-      const res = await getDealerBids(token) as { bids?: BidWithExpiry[] };
-      setMyBids(res.bids || []);
+      setMyBids(prev => prev.map(b => b.bid_uid === bidUid ? { ...b, status: 'withdrawn' } : b));
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to withdraw bid');
     } finally {
       setWithdrawingBid(null);
     }
+  }
+
+  function handleBellClick() {
+    if (!notifOpen && token && user) {
+      getNotifications(user.id, token)
+        .then((res: unknown) => {
+          const data = res as { notifications?: { id: number; title: string; body: string; created_at: string }[] };
+          setNotifications(data.notifications ?? []);
+        })
+        .catch(() => setNotifications([]));
+    }
+    setNotifOpen(prev => !prev);
   }
 
   // FE-004: Apply a saved filter to the current feed state
@@ -208,10 +237,8 @@ export default function DashboardPage() {
     );
   }
 
-  // FE-003: Subscription gate — only block non-approved-dealer roles.
-  // Approved dealers (role === 'dealer' | 'admin') always get access while
-  // BE-003 subscription enforcement is pending.
-  if (!isApprovedDealer && subLoadState === 'inactive' && subscription) {
+  // FE-003: Subscription gate
+  if (subLoadState === 'inactive' && subscription) {
     return (
       <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
         <Navbar />
@@ -263,8 +290,31 @@ export default function DashboardPage() {
               )}
             </p>
           </div>
-          <div className="hidden md:flex items-center gap-3">
-            {/* Notification bell — TODO: wire up notification drawer when BE ships */}
+          <div className="hidden md:flex items-center gap-3 relative">
+            <button
+              onClick={handleBellClick}
+              className="flex items-center gap-1.5 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#003087] transition-colors"
+            >
+              <Bell size={16} /> Notifications
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 top-10 z-30 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <span className="text-sm font-bold text-gray-900">Notifications</span>
+                  <button onClick={() => setNotifOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+                </div>
+                <div className="max-h-72 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="px-4 py-8 text-center text-sm text-gray-400">No new notifications</div>
+                  ) : notifications.map(n => (
+                    <div key={n.id} className="px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                      <p className="text-sm font-semibold text-gray-800">{n.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{n.body}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -286,7 +336,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: 'Open Leads', value: requests.filter(r => r.status === 'open').length, color: 'text-[#003087]' },
-            { label: 'My Active Bids', value: myBids.filter((b: BidWithExpiry) => b.status === 'pending').length, color: 'text-orange-600' },
+            { label: 'My Active Bids', value: '—', color: 'text-orange-600' },
             { label: 'Accepted', value: requests.filter(r => r.status === 'accepted').length, color: 'text-green-600' },
             {
               label: 'Subscription',
@@ -436,22 +486,18 @@ export default function DashboardPage() {
                       transition={{ delay: i * 0.04 }}
                       className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                        {/* #33: photo thumbnail */}
                         {(() => {
-                          let thumbUrl: string | null = null;
                           try {
-                            const urls = JSON.parse(req.photo_urls_json || '[]');
-                            if (Array.isArray(urls) && urls.length > 0) thumbUrl = urls[0];
-                          } catch { /* ignore */ }
-                          return thumbUrl ? (
-                            <img
-                              src={imgProxyUrl(thumbUrl)}
-                              alt={`${req.make} ${req.class_name}`}
-                              className="w-20 h-16 object-cover rounded-xl flex-shrink-0"
-                            />
-                          ) : null;
+                            const urls = req.photo_urls_json ? JSON.parse(req.photo_urls_json) as string[] : [];
+                            return urls[0] ? (
+                              <img src={urls[0]} alt="" className="w-16 h-16 rounded-xl object-cover flex-shrink-0 bg-gray-100" />
+                            ) : null;
+                          } catch { return null; }
                         })()}
-                        <div className="flex-1">
+                        <div className="flex items-start justify-between gap-4 flex-1">
+                          <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <h3 className="font-bold text-gray-900">
                               {req.year} {req.make} {req.class_name}
@@ -492,19 +538,11 @@ export default function DashboardPage() {
                           <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
                             <Clock size={11} /> {formatDate(req.created_at)}
                           </p>
-                        </div>
-                        <div className="flex flex-col gap-2 flex-shrink-0">
+                          </div>
+                          <div className="flex flex-col gap-2 flex-shrink-0">
                           {!isBiddingClosed(req.status as OfferRequestStatus) && (
                             <button
-                              onClick={() => {
-                                setBidModal({ request: req });
-                                setBidMarginHint(null);
-                                if (token) {
-                                  getDealerMarginCalc({ make: req.make, class_name: req.class_name, year: req.year, km: req.km }, token)
-                                    .then(r => setBidMarginHint(r))
-                                    .catch(() => {/* ignore */});
-                                }
-                              }}
+                              onClick={() => setBidModal({ request: req })}
                               className="flex items-center gap-1.5 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-4 py-2 rounded-xl text-sm transition-all"
                             >
                               <Send size={14} /> Send Offer
@@ -516,6 +554,7 @@ export default function DashboardPage() {
                           >
                             <MessageSquare size={14} /> Message
                           </Link>
+                          </div>
                         </div>
                       </div>
                     </motion.div>
@@ -527,123 +566,106 @@ export default function DashboardPage() {
         )}
 
         {tab === 'My Bids' && (
-          <div>
-            {myBidsFetching ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
-              </div>
-            ) : myBids.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-                <Send size={36} className="text-gray-200 mx-auto mb-3" />
-                <p className="text-gray-500 font-medium">No bids submitted yet</p>
-                <p className="text-sm text-gray-400 mt-1">Your submitted offers will appear here</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {myBids.map((bid, i) => {
-                  const expired = isBidExpired(bid);
-                  const expiryLabel = formatBidExpiry(bid.expires_at);
-                  return (
-                    <motion.div
-                      key={bid.bid_uid}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04 }}
-                      className={`bg-white rounded-2xl border border-gray-100 p-5 shadow-sm transition-opacity ${expired ? 'opacity-60' : ''}`}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            {bid.make && bid.year && (
-                              <h3 className="font-bold text-gray-900">{bid.year} {bid.make} {bid.class_name}</h3>
-                            )}
-                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                              bid.status === 'accepted' ? 'bg-green-50 text-green-700' :
-                              bid.status === 'rejected' ? 'bg-red-50 text-red-700' :
-                              bid.status === 'withdrawn' ? 'bg-gray-100 text-gray-500' :
-                              expired ? 'bg-gray-100 text-gray-400' :
-                              'bg-blue-50 text-blue-700'
-                            }`}>
-                              {expired ? 'Expired' : bid.status === 'pending' ? 'Awaiting response' : bid.status}
-                            </span>
-                          </div>
-                          <div className="text-2xl font-black text-gray-900 mb-1">{formatQAR(bid.amount_qar)}</div>
-                          {bid.message && (
-                            <p className="text-sm text-gray-500 italic mb-1">&ldquo;{bid.message}&rdquo;</p>
-                          )}
-                          <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
-                            <Clock size={11} /> {formatDate(bid.created_at)}
-                            {expiryLabel && !expired && (
-                              <span className="ml-2 text-amber-600 font-medium">{expiryLabel}</span>
-                            )}
-                          </p>
+          bidsLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+            </div>
+          ) : myBids.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+              <Send size={36} className="text-gray-200 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">No bids submitted yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {myBids.map(bid => {
+                const statusColors: Record<string, string> = {
+                  pending: 'bg-blue-50 text-blue-700',
+                  accepted: 'bg-green-50 text-green-700',
+                  rejected: 'bg-red-50 text-red-700',
+                  withdrawn: 'bg-gray-100 text-gray-500',
+                  expired: 'bg-gray-100 text-gray-400',
+                };
+                return (
+                  <div key={bid.bid_uid} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h3 className="font-bold text-gray-900">{bid.year} {bid.make} {bid.class_name}</h3>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColors[bid.status] ?? 'bg-gray-100 text-gray-500'}`}>
+                            {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
+                          </span>
                         </div>
-                        {bid.request_uid && (
-                          <div className="flex flex-col gap-2 flex-shrink-0">
-                            <Link
-                              href={`/my-offers/${bid.request_uid}`}
-                              className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-4 py-2 rounded-xl text-sm transition-all"
-                            >
-                              <Car size={14} /> View Offer
-                            </Link>
-                            <Link
-                              href={`/messages/${bid.request_uid}?recipient=${bid.customer_id || bid.request_uid}`}
-                              className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-4 py-2 rounded-xl text-sm transition-all"
-                            >
-                              <MessageSquare size={14} /> Message
-                            </Link>
-                            {bid.status === 'pending' && (
-                              <button
-                                onClick={() => handleWithdrawBid(bid.bid_uid)}
-                                disabled={withdrawingBid === bid.bid_uid}
-                                className="flex items-center justify-center gap-1.5 border border-red-200 hover:border-red-400 text-red-500 hover:text-red-700 font-semibold px-4 py-2 rounded-xl text-sm transition-all disabled:opacity-60"
-                              >
-                                <X size={14} /> {withdrawingBid === bid.bid_uid ? 'Withdrawing…' : 'Withdraw'}
-                              </button>
-                            )}
-                          </div>
+                        <div className="flex flex-wrap gap-3 text-sm text-gray-500">
+                          <span>{formatKM(bid.km)}</span>
+                          <span>·</span>
+                          <span>{bid.city}</span>
+                        </div>
+                        <p className="text-lg font-black text-[#003087] mt-2">{formatQAR(bid.amount_qar)}</p>
+                        {bid.message && <p className="text-sm text-gray-500 mt-1 line-clamp-1">{bid.message}</p>}
+                        <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                          <Clock size={11} /> {formatDate(bid.created_at)}
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2 flex-shrink-0">
+                        {/* #30: View Offer link */}
+                        <Link
+                          href={`/messages/${bid.request_uid}?recipient=${bid.customer_id}`}
+                          className="flex items-center gap-1.5 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-3 py-2 rounded-xl text-sm transition-all"
+                        >
+                          <ExternalLink size={13} /> View Offer
+                        </Link>
+                        {/* #31: Withdraw button */}
+                        {bid.status === 'pending' && (
+                          <button
+                            onClick={() => handleWithdrawBid(bid.bid_uid)}
+                            disabled={withdrawingBid === bid.bid_uid}
+                            className="flex items-center gap-1.5 border border-red-200 text-red-600 hover:bg-red-50 font-semibold px-3 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
+                          >
+                            {withdrawingBid === bid.bid_uid ? (
+                              <span className="w-3 h-3 border border-red-300 border-t-red-600 rounded-full animate-spin" />
+                            ) : <X size={13} />}
+                            Withdraw
+                          </button>
                         )}
                       </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
         )}
         {tab === 'Messages' && (
-          <div>
-            {myBids.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-                <MessageSquare size={36} className="text-gray-200 mx-auto mb-3" />
-                <p className="text-gray-500 font-medium">No conversations yet</p>
-                <p className="text-sm text-gray-400 mt-1">Conversations appear once you place a bid</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {myBids
-                  .filter((b, idx, arr) => arr.findIndex(x => x.request_uid === b.request_uid) === idx)
-                  .map((bid: BidWithExpiry) => (
-                    <Link
-                      key={bid.request_uid}
-                      href={`/messages/${bid.request_uid}?recipient=${bid.customer_id || bid.request_uid}`}
-                      className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 p-4 hover:border-[#003087] hover:shadow-sm transition-all"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center flex-shrink-0">
-                        <Car size={18} className="text-[#003087]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">
-                          {bid.year} {bid.make} {bid.class_name}
-                        </p>
-                        <p className="text-sm text-gray-400 truncate">Your bid: {formatQAR(bid.amount_qar)}</p>
-                      </div>
-                      <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />
-                    </Link>
-                  ))}
-              </div>
-            )}
-          </div>
+          bidsLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+            </div>
+          ) : myBids.filter(b => b.status !== 'withdrawn').length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+              <MessageSquare size={36} className="text-gray-200 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">No conversations yet</p>
+              <p className="text-sm text-gray-400 mt-1">Submit a bid on a lead to start messaging the seller</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {myBids.filter(b => b.status !== 'withdrawn').map(bid => (
+                <Link
+                  key={bid.bid_uid}
+                  href={`/messages/${bid.request_uid}?recipient=${bid.customer_id}`}
+                  className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 px-5 py-4 shadow-sm hover:shadow-md hover:border-[#003087] transition-all"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare size={18} className="text-[#003087]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-900 truncate">{bid.year} {bid.make} {bid.class_name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{bid.city} · Your offer: {formatQAR(bid.amount_qar)}</p>
+                  </div>
+                  <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
+                </Link>
+              ))}
+            </div>
+          )
         )}
         {tab === 'Settings' && (
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
@@ -667,30 +689,30 @@ export default function DashboardPage() {
             className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl"
           >
             <h2 className="text-xl font-black text-gray-900 mb-1">Send Offer</h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-gray-500 mb-6">
               {bidModal.request.year} {bidModal.request.make} {bidModal.request.class_name} · {formatKM(bidModal.request.km)}
             </p>
 
-            {/* Issue #32: Inline margin suggestion */}
-            {bidMarginHint === null && (
-              <div className="bg-gray-50 rounded-xl p-3 mb-4 text-xs text-gray-400 animate-pulse">Loading market estimate…</div>
-            )}
-            {bidMarginHint?.ok && bidMarginHint.market_est_qar && (
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4 text-sm">
-                <p className="font-semibold text-[#003087] mb-1">Market estimate: {formatQAR(bidMarginHint.market_est_qar)}</p>
-                {bidMarginHint.tiers && (
-                  <div className="flex gap-3 text-xs text-gray-600">
-                    <span>Conservative: {formatQAR(bidMarginHint.tiers.conservative.offer_qar)}</span>
-                    <span>·</span>
-                    <span>Target: {formatQAR(bidMarginHint.tiers.target.offer_qar)}</span>
-                    <span>·</span>
-                    <span>Aggressive: {formatQAR(bidMarginHint.tiers.aggressive.offer_qar)}</span>
-                  </div>
-                )}
+            {/* #32: Inline margin suggestion */}
+            {marginLoading && (
+              <div className="mb-4 bg-gray-50 rounded-xl px-4 py-3 text-xs text-gray-400 flex items-center gap-2">
+                <span className="w-3 h-3 border border-gray-300 border-t-gray-500 rounded-full animate-spin" />
+                Loading market estimate…
               </div>
             )}
-            {bidMarginHint !== null && !bidMarginHint.ok && (
-              <div className="bg-gray-50 rounded-xl p-3 mb-4 text-xs text-gray-400">No market estimate available for this vehicle.</div>
+            {marginSuggestion?.ok && marginSuggestion.market_est_qar && (
+              <div className="mb-4 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                <p className="text-xs font-bold text-blue-700 mb-1">Market Estimate</p>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  <span className="font-bold text-gray-900">{formatQAR(marginSuggestion.market_est_qar)}</span>
+                  {marginSuggestion.market_low_qar && marginSuggestion.market_high_qar && (
+                    <span className="text-gray-500 text-xs">{formatQAR(marginSuggestion.market_low_qar)} – {formatQAR(marginSuggestion.market_high_qar)}</span>
+                  )}
+                  {marginSuggestion.tiers?.target && (
+                    <span className="text-blue-700 font-semibold text-xs">Suggested bid: {formatQAR(marginSuggestion.tiers.target.offer_qar)}</span>
+                  )}
+                </div>
+              </div>
             )}
 
             <div className="space-y-4">
@@ -732,7 +754,7 @@ export default function DashboardPage() {
 
             <div className="flex gap-2 mt-6">
               <button
-                onClick={() => { setBidModal(null); setBidExpiresAt(''); setBidMarginHint(null); }}
+                onClick={() => { setBidModal(null); setBidExpiresAt(''); }}
                 className="flex-1 border border-gray-200 text-gray-700 font-semibold py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors"
               >
                 Cancel
