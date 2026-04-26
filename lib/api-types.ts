@@ -104,6 +104,8 @@ export interface BidWithExpiry {
   id: number;
   bid_uid: string;
   request_id: number;
+  /** Enriched by the API — the string UID of the offer request */
+  request_uid: string;
   dealer_id: string;
   amount_qar: number;
   message: string | null;
@@ -114,6 +116,13 @@ export interface BidWithExpiry {
   status: 'pending' | 'accepted' | 'rejected' | 'withdrawn' | 'expired';
   created_at: string;
   updated_at: string;
+  /** Enriched fields from the joined offer request */
+  make?: string;
+  class_name?: string;
+  year?: number;
+  km?: number;
+  city?: string;
+  customer_id?: string;
 }
 
 /**

@@ -612,9 +612,37 @@ export default function DashboardPage() {
           </div>
         )}
         {tab === 'Messages' && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-            <MessageSquare size={36} className="text-gray-200 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">Conversations with sellers will appear here</p>
+          <div>
+            {myBids.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+                <MessageSquare size={36} className="text-gray-200 mx-auto mb-3" />
+                <p className="text-gray-500 font-medium">No conversations yet</p>
+                <p className="text-sm text-gray-400 mt-1">Conversations appear once you place a bid</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {myBids
+                  .filter((b, idx, arr) => arr.findIndex(x => x.request_uid === b.request_uid) === idx)
+                  .map((bid: BidWithExpiry) => (
+                    <Link
+                      key={bid.request_uid}
+                      href={`/messages/${bid.request_uid}?recipient=${bid.request_uid}`}
+                      className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 p-4 hover:border-[#003087] hover:shadow-sm transition-all"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center flex-shrink-0">
+                        <Car size={18} className="text-[#003087]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">
+                          {bid.year} {bid.make} {bid.class_name}
+                        </p>
+                        <p className="text-sm text-gray-400 truncate">Your bid: {formatQAR(bid.amount_qar)}</p>
+                      </div>
+                      <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />
+                    </Link>
+                  ))}
+              </div>
+            )}
           </div>
         )}
         {tab === 'Settings' && (
