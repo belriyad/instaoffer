@@ -24,6 +24,9 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
   const router = useRouter();
   const searchParams = useSearchParams();
   const dealerId = searchParams.get('dealer');
+  // ?recipient= is set when a dealer opens chat from their dashboard (recipient = seller's customer_id)
+  // ?dealer= is set when a seller opens chat from their offer detail (recipient = dealer's id)
+  const recipientId = searchParams.get('recipient') || searchParams.get('dealer') || '';
 
   const [uid, setUid] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -83,7 +86,7 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
     setText('');
     setSending(true);
     try {
-      await sendMessage(uid, { recipient_id: dealerId ?? '', body: content }, token);
+      await sendMessage(uid, { recipient_id: recipientId, body: content }, token);
       await loadMessages();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to send message');
@@ -150,8 +153,8 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
             </div>
             <div>
               <p className="font-bold text-gray-900 text-sm">Offer Chat</p>
-              {dealerId && (
-                <p className="text-xs text-gray-400">Dealer ID: {dealerId}</p>
+              {recipientId && (
+                <p className="text-xs text-gray-400">Recipient ID: {recipientId}</p>
               )}
             </div>
             <div className="ml-auto flex items-center gap-1.5 text-xs text-green-600">
@@ -171,7 +174,7 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
             ) : (
               <AnimatePresence initial={false}>
                 {messages.map((msg) => {
-                  const isMe = msg.sender_id === user?.id || msg.sender_role === user?.role;
+                  const isMe = msg.sender_id === user?.id;
                   return (
                     <motion.div
                       key={msg.id}

@@ -8,7 +8,7 @@ import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Bell, Settings, 
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter } from '@/lib/api';
+import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids } from '@/lib/api';
 import { formatQAR, formatDate, formatKM, CAR_MAKES } from '@/lib/utils';
 import {
   OFFER_REQUEST_STATUS_CONFIG,
@@ -55,6 +55,10 @@ export default function DashboardPage() {
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
   const [savingFilter, setSavingFilter] = useState(false);
 
+  // My Bids
+  const [myBids, setMyBids] = useState<(BidWithExpiry & { request_uid?: string; make?: string; class_name?: string; year?: number; km?: number })[]>([]);
+  const [myBidsFetching, setMyBidsFetching] = useState(false);
+
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login/dealer');
@@ -82,6 +86,20 @@ export default function DashboardPage() {
         .catch(() => {});
     }
   }, [token]);
+
+  // My Bids: fetch when tab is active
+  useEffect(() => {
+    if (token && tab === 'My Bids') {
+      setMyBidsFetching(true);
+      getDealerBids(token)
+        .then(data => {
+          const bids = ((data as { bids?: unknown[] }).bids ?? (data as unknown[])) as typeof myBids;
+          setMyBids(Array.isArray(bids) ? bids : []);
+        })
+        .catch(() => {})
+        .finally(() => setMyBidsFetching(false));
+    }
+  }, [token, tab]);
 
   useEffect(() => {
     if (token) {
@@ -456,7 +474,7 @@ export default function DashboardPage() {
                             </button>
                           )}
                           <Link
-                            href={`/messages/${req.request_uid}`}
+                            href={`/messages/${req.request_uid}?recipient=${req.customer_id}`}
                             className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-4 py-2 rounded-xl text-sm transition-all"
                           >
                             <MessageSquare size={14} /> Message
@@ -472,9 +490,73 @@ export default function DashboardPage() {
         )}
 
         {tab === 'My Bids' && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-            <Send size={36} className="text-gray-200 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">Your submitted bids will appear here</p>
+          <div>
+            {myBidsFetching ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+              </div>
+            ) : myBids.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                <Send size={36} className="text-gray-200 mx-auto mb-3" />
+                <p className="text-gray-500 font-medium">No bids submitted yet</p>
+                <p className="text-sm text-gray-400 mt-1">Your submitted offers will appear here</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {myBids.map((bid, i) => {
+                  const expired = isBidExpired(bid);
+                  const expiryLabel = formatBidExpiry(bid.expires_at);
+                  return (
+                    <motion.div
+                      key={bid.bid_uid}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      className={`bg-white rounded-2xl border border-gray-100 p-5 shadow-sm transition-opacity ${expired ? 'opacity-60' : ''}`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            {bid.make && bid.year && (
+                              <h3 className="font-bold text-gray-900">{bid.year} {bid.make} {bid.class_name}</h3>
+                            )}
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                              bid.status === 'accepted' ? 'bg-green-50 text-green-700' :
+                              bid.status === 'rejected' ? 'bg-red-50 text-red-700' :
+                              bid.status === 'withdrawn' ? 'bg-gray-100 text-gray-500' :
+                              expired ? 'bg-gray-100 text-gray-400' :
+                              'bg-blue-50 text-blue-700'
+                            }`}>
+                              {expired ? 'Expired' : bid.status === 'pending' ? 'Awaiting response' : bid.status}
+                            </span>
+                          </div>
+                          <div className="text-2xl font-black text-gray-900 mb-1">{formatQAR(bid.amount_qar)}</div>
+                          {bid.message && (
+                            <p className="text-sm text-gray-500 italic mb-1">&ldquo;{bid.message}&rdquo;</p>
+                          )}
+                          <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                            <Clock size={11} /> {formatDate(bid.created_at)}
+                            {expiryLabel && !expired && (
+                              <span className="ml-2 text-amber-600 font-medium">{expiryLabel}</span>
+                            )}
+                          </p>
+                        </div>
+                        {bid.request_uid && (
+                          <div className="flex flex-col gap-2 flex-shrink-0">
+                            <Link
+                              href={`/messages/${bid.request_uid}?recipient=${bid.request_uid}`}
+                              className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-4 py-2 rounded-xl text-sm transition-all"
+                            >
+                              <MessageSquare size={14} /> Message
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
         {tab === 'Messages' && (
