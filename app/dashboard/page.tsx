@@ -587,7 +587,7 @@ export default function DashboardPage() {
                               <Car size={14} /> View Offer
                             </Link>
                             <Link
-                              href={`/messages/${bid.request_uid}?recipient=${bid.request_uid}`}
+                              href={`/messages/${bid.request_uid}?recipient=${bid.customer_id || bid.request_uid}`}
                               className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-4 py-2 rounded-xl text-sm transition-all"
                             >
                               <MessageSquare size={14} /> Message
@@ -626,7 +626,7 @@ export default function DashboardPage() {
                   .map((bid: BidWithExpiry) => (
                     <Link
                       key={bid.request_uid}
-                      href={`/messages/${bid.request_uid}?recipient=${bid.request_uid}`}
+                      href={`/messages/${bid.request_uid}?recipient=${bid.customer_id || bid.request_uid}`}
                       className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 p-4 hover:border-[#003087] hover:shadow-sm transition-all"
                     >
                       <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center flex-shrink-0">
