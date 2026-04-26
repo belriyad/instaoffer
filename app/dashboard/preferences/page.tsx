@@ -49,8 +49,8 @@ export default function PreferencesPage() {
   useEffect(() => {
     if (!token) return;
     getDealerPreferences(token)
-      .then((data: Partial<Prefs>) => {
-        setPrefs(prev => ({ ...prev, ...data }));
+      .then((data) => {
+        setPrefs(prev => ({ ...prev, ...(data as Partial<Prefs>) }));
       })
       .catch(() => {/* use defaults */})
       .finally(() => setFetching(false));
