@@ -173,8 +173,10 @@ export default function DashboardPage() {
     );
   }
 
-  // FE-003: Subscription gate
-  if (subLoadState === 'inactive' && subscription) {
+  // FE-003: Subscription gate — only block non-approved-dealer roles.
+  // Approved dealers (role === 'dealer' | 'admin') always get access while
+  // BE-003 subscription enforcement is pending.
+  if (!isApprovedDealer && subLoadState === 'inactive' && subscription) {
     return (
       <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
         <Navbar />
