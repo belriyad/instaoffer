@@ -332,6 +332,10 @@ export async function getDealerBids(token: string) {
   return apiFetch('/instant-offers/bids/mine', {}, token);
 }
 
+export async function withdrawBid(bidUid: string, token: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/instant-offers/bids/${bidUid}/withdraw`, { method: 'POST' }, token);
+}
+
 export async function getAllOfferRequests(token: string, params?: {
   status?: string;
   make?: string;

@@ -8,7 +8,7 @@ import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Settings, Bookma
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids, imgProxyUrl, getDealerMarginCalc, MarginCalcResult } from '@/lib/api';
+import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids, imgProxyUrl, getDealerMarginCalc, MarginCalcResult, withdrawBid } from '@/lib/api';
 import { formatQAR, formatDate, formatKM, CAR_MAKES } from '@/lib/utils';
 import {
   OFFER_REQUEST_STATUS_CONFIG,
@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const [bidExpiresAt, setBidExpiresAt] = useState('');
   const [bidSubmitting, setBidSubmitting] = useState(false);
   const [bidMarginHint, setBidMarginHint] = useState<MarginCalcResult | null>(null);
+  const [withdrawingBid, setWithdrawingBid] = useState<string | null>(null);
 
   // Filters
   const [filterMake, setFilterMake] = useState('');
@@ -136,6 +137,21 @@ export default function DashboardPage() {
       alert(err instanceof Error ? err.message : 'Failed to submit bid');
     } finally {
       setBidSubmitting(false);
+    }
+  }
+
+  // Issue #31: Withdraw bid
+  async function handleWithdrawBid(bidUid: string) {
+    if (!token || !confirm('Withdraw this bid?')) return;
+    setWithdrawingBid(bidUid);
+    try {
+      await withdrawBid(bidUid, token);
+      const res = await getDealerBids(token) as { bids?: BidWithExpiry[] };
+      setMyBids(res.bids || []);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to withdraw bid');
+    } finally {
+      setWithdrawingBid(null);
     }
   }
 
@@ -576,6 +592,15 @@ export default function DashboardPage() {
                             >
                               <MessageSquare size={14} /> Message
                             </Link>
+                            {bid.status === 'pending' && (
+                              <button
+                                onClick={() => handleWithdrawBid(bid.bid_uid)}
+                                disabled={withdrawingBid === bid.bid_uid}
+                                className="flex items-center justify-center gap-1.5 border border-red-200 hover:border-red-400 text-red-500 hover:text-red-700 font-semibold px-4 py-2 rounded-xl text-sm transition-all disabled:opacity-60"
+                              >
+                                <X size={14} /> {withdrawingBid === bid.bid_uid ? 'Withdrawing…' : 'Withdraw'}
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
