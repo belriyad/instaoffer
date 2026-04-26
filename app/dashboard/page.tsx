@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Bell, Settings, Bookmark, X, Plus, CheckCircle2, Calendar } from 'lucide-react';
+import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Settings, Bookmark, X, Calendar } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
@@ -247,9 +247,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="hidden md:flex items-center gap-3">
-            <button className="flex items-center gap-1.5 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#003087] transition-colors">
-              <Bell size={16} /> Notifications
-            </button>
+            {/* Notification bell — TODO: wire up notification drawer when BE ships */}
           </div>
         </div>
 
@@ -271,7 +269,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: 'Open Leads', value: requests.filter(r => r.status === 'open').length, color: 'text-[#003087]' },
-            { label: 'My Active Bids', value: '—', color: 'text-orange-600' },
+            { label: 'My Active Bids', value: myBids.filter((b: BidWithExpiry) => b.status === 'pending').length, color: 'text-orange-600' },
             { label: 'Accepted', value: requests.filter(r => r.status === 'accepted').length, color: 'text-green-600' },
             {
               label: 'Subscription',
@@ -543,6 +541,12 @@ export default function DashboardPage() {
                         </div>
                         {bid.request_uid && (
                           <div className="flex flex-col gap-2 flex-shrink-0">
+                            <Link
+                              href={`/my-offers/${bid.request_uid}`}
+                              className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-4 py-2 rounded-xl text-sm transition-all"
+                            >
+                              <Car size={14} /> View Offer
+                            </Link>
                             <Link
                               href={`/messages/${bid.request_uid}?recipient=${bid.request_uid}`}
                               className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-4 py-2 rounded-xl text-sm transition-all"

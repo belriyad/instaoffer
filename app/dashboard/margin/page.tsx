@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calculator, TrendingUp, TrendingDown } from 'lucide-react';
+import Link from 'next/link';
+import { Calculator, TrendingUp, TrendingDown, ArrowLeft } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
@@ -109,6 +110,9 @@ export default function MarginCalculatorPage() {
       <Navbar />
       <div className="max-w-2xl mx-auto w-full px-4 py-8 flex-1">
         <div className="mb-6">
+          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] transition-colors mb-3">
+            <ArrowLeft size={15} /> Back to Dashboard
+          </Link>
           <h1 className="text-3xl font-black text-gray-900 flex items-center gap-2">
             <Calculator size={28} className="text-[#003087]" /> Margin Calculator
           </h1>

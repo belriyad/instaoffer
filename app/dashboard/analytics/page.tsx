@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BarChart2, TrendingUp, Users, Bookmark } from 'lucide-react';
+import Link from 'next/link';
+import { BarChart2, TrendingUp, Users, Bookmark, ArrowLeft } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
@@ -61,6 +62,9 @@ export default function AnalyticsPage() {
       <Navbar />
       <div className="max-w-4xl mx-auto w-full px-4 py-8 flex-1">
         <div className="mb-6">
+          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] transition-colors mb-3">
+            <ArrowLeft size={15} /> Back to Dashboard
+          </Link>
           <h1 className="text-3xl font-black text-gray-900">Analytics</h1>
           <p className="text-gray-500 mt-1">Acquisition performance and deal activity.</p>
         </div>
