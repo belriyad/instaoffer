@@ -20,11 +20,14 @@ const PASSWORD = process.env.DEALER_PASSWORD ?? 'password123';
 setup('authenticate as dealer', async ({ page }) => {
   await page.goto('/login/dealer');
 
-  await page.getByLabel(/email/i).fill(EMAIL);
-  await page.getByLabel(/password/i).fill(PASSWORD);
-  await page.getByRole('button', { name: /sign in|log in/i }).click();
+  // Make sure we're on the Sign In tab (not Register)
+  await page.getByRole('button', { name: 'Sign In' }).click();
 
-  // Wait until we land on the dashboard
+  await page.getByPlaceholder(/dealer@example\.com/i).fill(EMAIL);
+  await page.getByPlaceholder(/••••••••/i).fill(PASSWORD);
+
+  // Submit the form and wait for redirect to dashboard
+  await page.getByRole('button', { name: /go to dashboard/i }).click();
   await page.waitForURL('**/dashboard', { timeout: 15_000 });
   await expect(page).toHaveURL(/\/dashboard/);
 

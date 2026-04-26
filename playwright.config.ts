@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+import path from 'path';
+
+// Load .env.test so DEALER_EMAIL / DEALER_PASSWORD are available in auth.setup.ts
+config({ path: path.resolve(__dirname, '.env.test') });
 
 /**
  * InstaOffer – Playwright configuration
