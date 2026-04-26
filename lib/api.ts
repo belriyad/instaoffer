@@ -328,32 +328,7 @@ export async function sendMessage(
   }, token);
 }
 
-export interface MyBid {
-  id: number;
-  bid_uid: string;
-  request_id: number;
-  dealer_id: string;
-  amount_qar: number;
-  message: string | null;
-  expires_at: string | null;
-  is_expired: boolean;
-  status: 'pending' | 'accepted' | 'rejected' | 'withdrawn' | 'expired';
-  created_at: string;
-  updated_at: string;
-  // joined from offer_requests
-  request_uid: string;
-  make: string;
-  class_name: string;
-  model: string | null;
-  year: number;
-  km: number;
-  city: string;
-  condition: string;
-  request_status: string;
-  customer_id: string;
-}
-
-export async function getDealerBids(token: string): Promise<{ rows: MyBid[]; total: number }> {
+export async function getDealerBids(token: string) {
   return apiFetch('/instant-offers/bids/mine', {}, token);
 }
 
