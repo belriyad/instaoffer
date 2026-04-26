@@ -8,7 +8,7 @@ import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Settings, Bookma
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids, imgProxyUrl } from '@/lib/api';
+import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids, imgProxyUrl, getDealerMarginCalc, MarginCalcResult } from '@/lib/api';
 import { formatQAR, formatDate, formatKM, CAR_MAKES } from '@/lib/utils';
 import {
   OFFER_REQUEST_STATUS_CONFIG,
@@ -40,6 +40,7 @@ export default function DashboardPage() {
   const [bidMessage, setBidMessage] = useState('');
   const [bidExpiresAt, setBidExpiresAt] = useState('');
   const [bidSubmitting, setBidSubmitting] = useState(false);
+  const [bidMarginHint, setBidMarginHint] = useState<MarginCalcResult | null>(null);
 
   // Filters
   const [filterMake, setFilterMake] = useState('');
@@ -479,7 +480,15 @@ export default function DashboardPage() {
                         <div className="flex flex-col gap-2 flex-shrink-0">
                           {!isBiddingClosed(req.status as OfferRequestStatus) && (
                             <button
-                              onClick={() => setBidModal({ request: req })}
+                              onClick={() => {
+                                setBidModal({ request: req });
+                                setBidMarginHint(null);
+                                if (token) {
+                                  getDealerMarginCalc({ make: req.make, class_name: req.class_name, year: req.year, km: req.km }, token)
+                                    .then(r => setBidMarginHint(r))
+                                    .catch(() => {/* ignore */});
+                                }
+                              }}
                               className="flex items-center gap-1.5 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-4 py-2 rounded-xl text-sm transition-all"
                             >
                               <Send size={14} /> Send Offer
@@ -605,9 +614,31 @@ export default function DashboardPage() {
             className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl"
           >
             <h2 className="text-xl font-black text-gray-900 mb-1">Send Offer</h2>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm text-gray-500 mb-4">
               {bidModal.request.year} {bidModal.request.make} {bidModal.request.class_name} · {formatKM(bidModal.request.km)}
             </p>
+
+            {/* Issue #32: Inline margin suggestion */}
+            {bidMarginHint === null && (
+              <div className="bg-gray-50 rounded-xl p-3 mb-4 text-xs text-gray-400 animate-pulse">Loading market estimate…</div>
+            )}
+            {bidMarginHint?.ok && bidMarginHint.market_est_qar && (
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4 text-sm">
+                <p className="font-semibold text-[#003087] mb-1">Market estimate: {formatQAR(bidMarginHint.market_est_qar)}</p>
+                {bidMarginHint.tiers && (
+                  <div className="flex gap-3 text-xs text-gray-600">
+                    <span>Conservative: {formatQAR(bidMarginHint.tiers.conservative.offer_qar)}</span>
+                    <span>·</span>
+                    <span>Target: {formatQAR(bidMarginHint.tiers.target.offer_qar)}</span>
+                    <span>·</span>
+                    <span>Aggressive: {formatQAR(bidMarginHint.tiers.aggressive.offer_qar)}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            {bidMarginHint !== null && !bidMarginHint.ok && (
+              <div className="bg-gray-50 rounded-xl p-3 mb-4 text-xs text-gray-400">No market estimate available for this vehicle.</div>
+            )}
 
             <div className="space-y-4">
               <div>
@@ -648,7 +679,7 @@ export default function DashboardPage() {
 
             <div className="flex gap-2 mt-6">
               <button
-                onClick={() => { setBidModal(null); setBidExpiresAt(''); }}
+                onClick={() => { setBidModal(null); setBidExpiresAt(''); setBidMarginHint(null); }}
                 className="flex-1 border border-gray-200 text-gray-700 font-semibold py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors"
               >
                 Cancel
