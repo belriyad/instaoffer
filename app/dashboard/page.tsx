@@ -349,8 +349,11 @@ export default function DashboardPage() {
 
         {/* Pending Offers — sent offers awaiting seller approval */}
         {isApprovedDealer && (() => {
-          const pendingBids = myBids.filter(b => b.status === 'pending' && !isBidExpired(b));
-          if (pendingBids.length === 0) return null;
+          const pendingBids = myBids.filter(b =>
+            !isBidExpired(b) &&
+            !['accepted', 'rejected', 'withdrawn', 'expired'].includes(b.status as string)
+          );
+          if (pendingBids.length === 0 && !myBidsFetching) return null;
           return (
             <div className="mb-6">
               <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-3 flex items-center gap-2">
