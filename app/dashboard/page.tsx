@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Settings, Bookmark, X, Calendar } from 'lucide-react';
+import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Settings, Bookmark, X, Calendar, AlertCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
@@ -61,6 +61,13 @@ export default function DashboardPage() {
   const [myBids, setMyBids] = useState<(BidWithExpiry & { request_uid?: string; make?: string; class_name?: string; year?: number; km?: number })[]>([]);
   const [myBidsFetching, setMyBidsFetching] = useState(false);
 
+  // Live countdown — ticks every 30 seconds
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login/dealer');
@@ -89,18 +96,20 @@ export default function DashboardPage() {
     }
   }, [token]);
 
-  // My Bids: fetch when tab is active
+  // My Bids: fetch on load and when tab is active
   useEffect(() => {
-    if (token && tab === 'My Bids') {
-      setMyBidsFetching(true);
-      getDealerBids(token)
-        .then(data => {
-          const bids = ((data as { bids?: unknown[] }).bids ?? (data as unknown[])) as typeof myBids;
-          setMyBids(Array.isArray(bids) ? bids : []);
-        })
-        .catch(() => {})
-        .finally(() => setMyBidsFetching(false));
-    }
+    if (!token) return;
+    // Only re-fetch when switching to My Bids tab after initial load
+    if (tab !== 'My Bids' && myBids.length > 0) return;
+    setMyBidsFetching(true);
+    getDealerBids(token)
+      .then(data => {
+        const bids = ((data as { bids?: unknown[] }).bids ?? (data as unknown[])) as typeof myBids;
+        setMyBids(Array.isArray(bids) ? bids : []);
+      })
+      .catch(() => {})
+      .finally(() => setMyBidsFetching(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, tab]);
 
   useEffect(() => {
@@ -194,6 +203,23 @@ export default function DashboardPage() {
       // Revert on failure by refetching
       getSavedFilters(token).then(res => setSavedFilters(res.filters ?? [])).catch(() => {});
     }
+  }
+
+  // Live countdown helper: returns { label, urgent } given an ISO expiry string
+  function timeLeft(expiresAt: string | null | undefined): { label: string; urgent: boolean } | null {
+    if (!expiresAt) return null;
+    const ms = new Date(expiresAt).getTime() - now;
+    if (ms <= 0) return null; // already expired — handled separately
+    const totalMins = Math.floor(ms / 60_000);
+    const hours = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    const urgent = hours < 2;
+    if (hours >= 24) {
+      const days = Math.floor(hours / 24);
+      return { label: `${days}d ${hours % 24}h left`, urgent: false };
+    }
+    if (hours > 0) return { label: `${hours}h ${mins}m left`, urgent };
+    return { label: `${mins}m left`, urgent: true };
   }
 
   if (loading || subLoadState === 'loading') {
@@ -320,6 +346,81 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+
+        {/* Pending Offers — sent offers awaiting seller approval */}
+        {isApprovedDealer && (() => {
+          const pendingBids = myBids.filter(b => b.status === 'pending' && !isBidExpired(b));
+          if (pendingBids.length === 0) return null;
+          return (
+            <div className="mb-6">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                <Send size={14} className="text-[#ff6600]" />
+                Sent Offers — Awaiting Response
+                <span className="bg-[#ff6600] text-white text-xs font-bold px-2 py-0.5 rounded-full">{pendingBids.length}</span>
+              </h2>
+              <div className="space-y-2">
+                {pendingBids.map(bid => {
+                  const tl = timeLeft(bid.expires_at);
+                  return (
+                    <motion.div
+                      key={bid.bid_uid}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`bg-white rounded-2xl border p-4 shadow-sm flex items-center gap-4 ${tl?.urgent ? 'border-amber-300' : 'border-gray-100'}`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tl?.urgent ? 'bg-amber-50' : 'bg-[#003087]/5'}`}>
+                        {tl?.urgent
+                          ? <AlertCircle size={20} className="text-amber-500" />
+                          : <Send size={18} className="text-[#003087]" />
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-gray-900 text-sm">
+                            {bid.year} {bid.make} {bid.class_name}
+                          </span>
+                          <span className="text-lg font-black text-[#003087]">{formatQAR(bid.amount_qar)}</span>
+                        </div>
+                        <div className="flex items-center gap-3 mt-0.5">
+                          {tl ? (
+                            <span className={`text-xs font-semibold flex items-center gap-1 ${tl.urgent ? 'text-amber-600' : 'text-gray-500'}`}>
+                              <Clock size={11} />
+                              {tl.label}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400 flex items-center gap-1">
+                              <Clock size={11} /> No expiry set
+                            </span>
+                          )}
+                          {bid.message && (
+                            <span className="text-xs text-gray-400 italic truncate max-w-[180px]">&ldquo;{bid.message}&rdquo;</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {bid.request_uid && (
+                          <Link
+                            href={`/my-offers/${bid.request_uid}`}
+                            className="flex items-center gap-1 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-3 py-1.5 rounded-xl text-xs transition-all"
+                          >
+                            <Car size={12} /> View
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => handleWithdrawBid(bid.bid_uid)}
+                          disabled={withdrawingBid === bid.bid_uid}
+                          className="flex items-center gap-1 border border-red-100 hover:border-red-400 text-red-400 hover:text-red-600 font-semibold px-3 py-1.5 rounded-xl text-xs transition-all disabled:opacity-50"
+                        >
+                          <X size={12} /> {withdrawingBid === bid.bid_uid ? '…' : 'Withdraw'}
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-fit">
@@ -542,7 +643,7 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {myBids.map((bid, i) => {
                   const expired = isBidExpired(bid);
-                  const expiryLabel = formatBidExpiry(bid.expires_at);
+                  const tl = timeLeft(bid.expires_at);
                   return (
                     <motion.div
                       key={bid.bid_uid}
@@ -573,8 +674,10 @@ export default function DashboardPage() {
                           )}
                           <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
                             <Clock size={11} /> {formatDate(bid.created_at)}
-                            {expiryLabel && !expired && (
-                              <span className="ml-2 text-amber-600 font-medium">{expiryLabel}</span>
+                            {tl && !expired && (
+                              <span className={`ml-2 font-semibold ${tl.urgent ? 'text-amber-600' : 'text-gray-500'}`}>
+                                · {tl.label}
+                              </span>
                             )}
                           </p>
                         </div>
