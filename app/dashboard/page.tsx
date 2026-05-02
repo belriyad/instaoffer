@@ -104,10 +104,20 @@ export default function DashboardPage() {
     setMyBidsFetching(true);
     getDealerBids(token)
       .then(data => {
-        const bids = ((data as { bids?: unknown[] }).bids ?? (data as unknown[])) as typeof myBids;
-        setMyBids(Array.isArray(bids) ? bids : []);
+        // Handle all common API response shapes
+        const raw = data as Record<string, unknown>;
+        const arr =
+          Array.isArray(data) ? data :
+          Array.isArray(raw.bids) ? raw.bids :
+          Array.isArray(raw.items) ? raw.items :
+          Array.isArray(raw.results) ? raw.results :
+          Array.isArray(raw.data) ? raw.data :
+          [];
+        console.log('[DealerBids] raw response:', JSON.stringify(data).slice(0, 300));
+        console.log('[DealerBids] parsed', arr.length, 'bids, statuses:', (arr as {status?:string}[]).map(b => b.status));
+        setMyBids(arr as typeof myBids);
       })
-      .catch(() => {})
+      .catch((err) => { console.error('[DealerBids] error:', err); })
       .finally(() => setMyBidsFetching(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, tab]);
@@ -155,8 +165,9 @@ export default function DashboardPage() {
     setWithdrawingBid(bidUid);
     try {
       await withdrawBid(bidUid, token);
-      const res = await getDealerBids(token) as { bids?: BidWithExpiry[] };
-      setMyBids(res.bids || []);
+      const data = await getDealerBids(token) as Record<string, unknown>;
+      const arr = Array.isArray(data) ? data : Array.isArray(data.bids) ? data.bids : Array.isArray(data.items) ? data.items : [];
+      setMyBids(arr as BidWithExpiry[]);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to withdraw bid');
     } finally {
