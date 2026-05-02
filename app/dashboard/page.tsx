@@ -108,6 +108,7 @@ export default function DashboardPage() {
         const raw = data as Record<string, unknown>;
         const arr =
           Array.isArray(data) ? data :
+          Array.isArray(raw.rows) ? raw.rows :
           Array.isArray(raw.bids) ? raw.bids :
           Array.isArray(raw.items) ? raw.items :
           Array.isArray(raw.results) ? raw.results :
@@ -166,7 +167,7 @@ export default function DashboardPage() {
     try {
       await withdrawBid(bidUid, token);
       const data = await getDealerBids(token) as Record<string, unknown>;
-      const arr = Array.isArray(data) ? data : Array.isArray(data.bids) ? data.bids : Array.isArray(data.items) ? data.items : [];
+      const arr = Array.isArray(data) ? data : Array.isArray(data.rows) ? data.rows : Array.isArray(data.bids) ? data.bids : Array.isArray(data.items) ? data.items : [];
       setMyBids(arr as BidWithExpiry[]);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to withdraw bid');
