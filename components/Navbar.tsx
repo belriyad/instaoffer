@@ -45,6 +45,9 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-6">
+            <Link href="/cars" className="text-sm font-semibold text-gray-700 hover:text-[#003087] transition-colors">
+              New Cars
+            </Link>
             <Link href="/valuation" className="text-sm font-semibold text-gray-700 hover:text-[#003087] transition-colors">
               Get Valuation
             </Link>
@@ -126,6 +129,9 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {mobileOpen && (
           <div className="md:hidden py-4 border-t border-gray-100 space-y-1">
+            <Link href="/cars" className="block px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-lg" onClick={() => setMobileOpen(false)}>
+              New Cars
+            </Link>
             <Link href="/valuation" className="block px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-lg" onClick={() => setMobileOpen(false)}>
               Get Valuation
             </Link>
