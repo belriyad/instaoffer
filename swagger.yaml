@@ -6,10 +6,10 @@ info:
     API contract for listings, valuation, alerts, notifications, push/WhatsApp channels,
     authentication, user/profile management, and listing CRUD.
 servers:
+  - url: http://192.168.4.244:8090/api
+    description: LXC production (LAN)
   - url: http://localhost:8090/api
     description: Local development
-  - url: http://192.168.1.149:8090/api
-    description: LAN backend
 tags:
   - name: Auth
   - name: Users
@@ -23,6 +23,8 @@ tags:
   - name: Collector
   - name: MLValuation
   - name: InstantOffers
+  - name: Wakalat
+    description: Wakalat Qatar dealer inventory — new cars, trims & prices
 security:
   - bearerAuth: []
   - guestToken: []
@@ -1515,6 +1517,195 @@ paths:
       responses:
         "200":
           description: All bids
+
+  # BE-001: Phone Approval Workflow
+  /instant-offers/requests/{request_uid}/phone-request:
+    post:
+      tags: [InstantOffers]
+      summary: Dealer requests access to seller's phone number
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RequestUid"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Phone request created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  status: { type: string }
+        "400":
+          description: Already requested or offer not found
+        "401":
+          description: Unauthorized
+        "403":
+          description: Dealer account required
+  /instant-offers/requests/{request_uid}/phone-request/approve:
+    post:
+      tags: [InstantOffers]
+      summary: Customer approves a dealer's phone access request
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RequestUid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dealer_id]
+              properties:
+                dealer_id: { type: string }
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  status: { type: string }
+  /instant-offers/requests/{request_uid}/phone-request/reject:
+    post:
+      tags: [InstantOffers]
+      summary: Customer rejects a dealer's phone access request
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RequestUid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dealer_id]
+              properties:
+                dealer_id: { type: string }
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  status: { type: string }
+  /instant-offers/requests/{request_uid}/phone-requests:
+    get:
+      tags: [InstantOffers]
+      summary: Customer views all phone access requests for their offer
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RequestUid"
+      responses:
+        "200":
+          description: List of phone access requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phone_requests:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PhoneAccessRequest"
+
+  # BE-003: Dealer Subscription
+  /instant-offers/subscription:
+    get:
+      tags: [InstantOffers]
+      summary: Get dealer's subscription status
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Subscription info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DealerSubscription"
+        "403":
+          description: Dealer account required
+
+  # BE-004: Saved Dealer Filters
+  /instant-offers/filters:
+    get:
+      tags: [InstantOffers]
+      summary: List dealer's saved filter presets
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Saved filters with match counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filters:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DealerSavedFilter"
+    post:
+      tags: [InstantOffers]
+      summary: Create a new saved filter preset
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DealerSavedFilterCreate"
+      responses:
+        "201":
+          description: Filter created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filter:
+                    $ref: "#/components/schemas/DealerSavedFilter"
+  /instant-offers/filters/{filter_id}:
+    delete:
+      tags: [InstantOffers]
+      summary: Delete a saved filter preset
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: filter_id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+        "403":
+          description: Not your filter
+        "404":
+          description: Filter not found
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1547,6 +1738,114 @@ components:
       required: true
       schema: { type: string }
   schemas:
+    WakalatFilterOptions:
+      type: object
+      properties:
+        makes:
+          type: array
+          items: { type: string }
+        models:
+          type: array
+          items: { type: string }
+        years:
+          type: array
+          items: { type: integer }
+        body_types:
+          type: array
+          items: { type: string }
+        dealers:
+          type: array
+          items: { type: string }
+        transmissions:
+          type: array
+          items: { type: string }
+        fuel_types:
+          type: array
+          items: { type: string }
+        drivetrains:
+          type: array
+          items: { type: string }
+        price_range:
+          type: object
+          properties:
+            min: { type: integer }
+            max: { type: integer }
+
+    WakalatTrim:
+      type: object
+      properties:
+        name: { type: string }
+        price_qar: { type: integer, nullable: true }
+        features:
+          type: array
+          items: { type: string }
+
+    WakalatImage:
+      type: object
+      properties:
+        url: { type: string, description: "API path e.g. /api/wakalat/images/cars/119.jpg" }
+        type: { type: string, enum: [thumbnail, card, detail] }
+
+    WakalatCarSummary:
+      type: object
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        car_id: { type: string }
+        make: { type: string }
+        model: { type: string }
+        year: { type: integer }
+        dealer: { type: string }
+        base_price_qar: { type: integer, nullable: true }
+        body_type: { type: string }
+        fuel_type: { type: string }
+        transmission: { type: string }
+        drivetrain: { type: string }
+        engine: { type: string }
+        horsepower_hp: { type: string }
+        thumbnail: { type: string, nullable: true, description: "API URL to thumbnail image" }
+        image_count: { type: integer }
+
+    WakalatCarDetail:
+      allOf:
+        - $ref: "#/components/schemas/WakalatCarSummary"
+        - type: object
+          properties:
+            displacement_cc: { type: string }
+            torque_nm: { type: string }
+            accel_0_100_s: { type: string }
+            top_speed_kmh: { type: string }
+            fuel_consumption_l100: { type: string }
+            tank_l: { type: string }
+            battery_kwh: { type: string }
+            dimensions_mm: { type: string }
+            features_json:
+              type: array
+              items: { type: string }
+            image_urls_json:
+              type: array
+              items: { type: string }
+            trims:
+              type: array
+              items:
+                $ref: "#/components/schemas/WakalatTrim"
+            images:
+              type: array
+              items:
+                $ref: "#/components/schemas/WakalatImage"
+
+    WakalatCarList:
+      type: object
+      properties:
+        total: { type: integer }
+        page: { type: integer }
+        per_page: { type: integer }
+        pages: { type: integer }
+        cars:
+          type: array
+          items:
+            $ref: "#/components/schemas/WakalatCarSummary"
+
     AuthTokens:
       type: object
       properties:
@@ -1798,7 +2097,7 @@ components:
         asking_price_qar: { type: integer, nullable: true }
         contact_name: { type: string, nullable: true }
         contact_phone: { type: string, nullable: true }
-        status: { type: string, enum: [open, under_offer, accepted, rejected, expired, cancelled] }
+        status: { type: string, enum: [open, under_offer, accepted, pending, rejected, expired, cancelled] }
         accepted_bid_id: { type: integer, nullable: true }
         expires_at: { type: string, format: date-time, nullable: true }
         created_at: { type: string, format: date-time }
@@ -1832,6 +2131,7 @@ components:
         message: { type: string, nullable: true }
         expires_at: { type: string, format: date-time, nullable: true }
         status: { type: string, enum: [pending, accepted, rejected, withdrawn, expired] }
+        is_expired: { type: boolean }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
     OfferBidCreate:
@@ -1878,3 +2178,190 @@ components:
         notify_push: { type: boolean }
         notify_whatsapp: { type: boolean }
         active: { type: boolean }
+    PhoneAccessRequest:
+      type: object
+      properties:
+        dealer_id: { type: string }
+        status: { type: string, enum: [pending, approved, rejected] }
+        requested_at: { type: string, format: date-time }
+        responded_at: { type: string, format: date-time, nullable: true }
+    DealerSubscription:
+      type: object
+      properties:
+        is_active: { type: boolean }
+        plan: { type: string, nullable: true }
+        amount_qar: { type: number, nullable: true }
+        started_at: { type: string, format: date-time, nullable: true }
+        expires_at: { type: string, format: date-time, nullable: true }
+        next_billing: { type: string, format: date-time, nullable: true }
+    DealerSavedFilter:
+      type: object
+      properties:
+        id: { type: integer }
+        dealer_id: { type: integer }
+        name: { type: string }
+        makes:
+          type: array
+          items: { type: string }
+        cities:
+          type: array
+          items: { type: string }
+        min_year: { type: integer, nullable: true }
+        max_year: { type: integer, nullable: true }
+        max_km: { type: integer, nullable: true }
+        condition: { type: string, nullable: true }
+        match_count: { type: integer }
+        created_at: { type: string, format: date-time }
+    DealerSavedFilterCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        makes:
+          type: array
+          items: { type: string }
+        cities:
+          type: array
+          items: { type: string }
+        min_year: { type: integer }
+        max_year: { type: integer }
+        max_km: { type: integer }
+        condition: { type: string }
+
+  # ── Wakalat Qatar ─────────────────────────────────────────────────────────
+  /wakalat/filters:
+    get:
+      tags: [Wakalat]
+      summary: Get all available filter options for the wakalat inventory
+      security: []
+      responses:
+        "200":
+          description: Filter options
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WakalatFilterOptions"
+
+  /wakalat/cars:
+    get:
+      tags: [Wakalat]
+      summary: List wakalat cars with flexible filtering and pagination
+      security: []
+      parameters:
+        - in: query
+          name: make
+          schema: { type: string }
+          description: Comma-separated makes (e.g. TOYOTA,BMW)
+        - in: query
+          name: model
+          schema: { type: string }
+          description: Comma-separated models
+        - in: query
+          name: dealer
+          schema: { type: string }
+          description: Comma-separated dealer names
+        - in: query
+          name: body_type
+          schema: { type: string }
+          description: Comma-separated body types (e.g. "SUV Cars,Sedan Cars")
+        - in: query
+          name: fuel_type
+          schema: { type: string }
+          description: Comma-separated fuel types (e.g. Petrol,Electric,Hybrid)
+        - in: query
+          name: transmission
+          schema: { type: string }
+          description: Comma-separated transmissions (e.g. Automatic,Manual)
+        - in: query
+          name: drivetrain
+          schema: { type: string }
+          description: Comma-separated drivetrains (e.g. "AWD - All Wheel Drive")
+        - in: query
+          name: year_min
+          schema: { type: integer }
+        - in: query
+          name: year_max
+          schema: { type: integer }
+        - in: query
+          name: price_min
+          schema: { type: integer }
+          description: Minimum base price in QAR
+        - in: query
+          name: price_max
+          schema: { type: integer }
+          description: Maximum base price in QAR
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Free-text search across make, model, dealer
+        - in: query
+          name: has_image
+          schema: { type: integer, enum: [0, 1] }
+          description: 1 = only cars with downloaded images
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [price_asc, price_desc, year_desc, year_asc, make_asc]
+          description: Sort order (default price_asc)
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 24, maximum: 100 }
+      responses:
+        "200":
+          description: Paginated car list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WakalatCarList"
+
+  /wakalat/cars/{slug}:
+    get:
+      tags: [Wakalat]
+      summary: Get full detail for a single wakalat car including trims and images
+      security: []
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+          example: TOYOTA-LAND-CRUISER-2026-42
+      responses:
+        "200":
+          description: Car detail with trims and images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  car:
+                    $ref: "#/components/schemas/WakalatCarDetail"
+        "404":
+          description: Car not found
+
+  /wakalat/images/{path}:
+    get:
+      tags: [Wakalat]
+      summary: Serve a downloaded wakalat image by relative path
+      security: []
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema: { type: string }
+          description: |
+            Relative path matching the directory structure:
+            cars/{id}.jpg | cars-blocks/{n}.jpg | cars-blocks-details/{n}.jpg
+          example: cars/119.jpg
+      responses:
+        "200":
+          description: Image binary
+          content:
+            image/jpeg:
+              schema: { type: string, format: binary }
+        "404":
+          description: Image not found
+
