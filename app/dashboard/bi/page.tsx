@@ -15,7 +15,7 @@ import {
   getDealerMarginCalc, getMarketComps,
   MLEstimate, MLForecast, MLTimeToSellEstimate, MarginCalcResult, OfferComps,
 } from '@/lib/api';
-import { formatQAR, formatKM, CAR_MAKES } from '@/lib/utils';
+import { formatQAR, formatKM, CAR_MAKES, FUEL_TYPES, GEAR_TYPES, CAR_TYPES, QATAR_CITIES, CONDITIONS } from '@/lib/utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -100,6 +100,11 @@ export default function BIPage() {
   const [km, setKm] = useState('');
   const [buyPrice, setBuyPrice] = useState('');
   const [trim, setTrim] = useState('');
+  const [fuelType, setFuelType] = useState('');
+  const [gearType, setGearType] = useState('');
+  const [carType, setCarType] = useState('');
+  const [city, setCity] = useState('');
+  const [condition, setCondition] = useState('');
   const [makeSearch, setMakeSearch] = useState('');
   const [showMakeDrop, setShowMakeDrop] = useState(false);
 
@@ -125,7 +130,12 @@ export default function BIPage() {
       class_name: className,
       manufacture_year: parseInt(year),
       km: parseInt(km),
-      trim: trim || undefined,
+      trim:      trim      || undefined,
+      fuel_type: fuelType  || undefined,
+      gear_type: gearType  || undefined,
+      car_type:  carType   || undefined,
+      city:      city      || undefined,
+      condition: condition || undefined,
     };
 
     try {
@@ -182,14 +192,19 @@ export default function BIPage() {
 
         {/* Vehicle Form */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-6">
-          <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <h2 className="font-bold text-gray-800 mb-1 flex items-center gap-2">
             <Car size={16} className="text-[#003087]" /> Vehicle Details
           </h2>
+          <p className="text-xs text-gray-400 mb-4">
+            More fields = more accurate estimate. The AI uses the same model as the seller valuation wizard.
+          </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* ── Required ── */}
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Required</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
 
             {/* Make — autocomplete */}
-            <div className="relative sm:col-span-1">
+            <div className="relative">
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Make *</label>
               <input
                 value={makeSearch || make}
@@ -245,22 +260,80 @@ export default function BIPage() {
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
               />
             </div>
+          </div>
 
-            {/* Trim (optional) */}
+          {/* ── Optional (improves accuracy) ── */}
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Optional — improves estimate accuracy</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+
+            {/* Trim */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Trim <span className="text-gray-300 font-normal normal-case">(optional)</span></label>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Trim</label>
               <input
                 value={trim}
                 onChange={e => setTrim(e.target.value)}
-                placeholder="XLE, M Sport…"
+                placeholder="XLE, M Sport, Platinum…"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
               />
             </div>
 
-            {/* Buy Price (optional — unlocks margin calc) */}
+            {/* Condition */}
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Condition</label>
+              <select value={condition} onChange={e => setCondition(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
+                <option value="">Select condition</option>
+                {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+
+            {/* Fuel Type */}
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Fuel Type</label>
+              <select value={fuelType} onChange={e => setFuelType(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
+                <option value="">Any fuel type</option>
+                {FUEL_TYPES.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+
+            {/* Gear Type */}
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Transmission</label>
+              <select value={gearType} onChange={e => setGearType(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
+                <option value="">Any transmission</option>
+                {GEAR_TYPES.map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
+
+            {/* Car Type */}
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Body Type</label>
+              <select value={carType} onChange={e => setCarType(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
+                <option value="">Any body type</option>
+                {CAR_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+
+            {/* City */}
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">City</label>
+              <select value={city} onChange={e => setCity(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
+                <option value="">Any city</option>
+                {QATAR_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* ── Dealer-only ── */}
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Dealer fields</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                Your Buy Price (QAR) <span className="text-gray-300 font-normal normal-case">(optional — unlocks margin analysis)</span>
+                Your Buy Price (QAR) <span className="text-gray-300 font-normal normal-case">(unlocks margin analysis)</span>
               </label>
               <input
                 type="number"
