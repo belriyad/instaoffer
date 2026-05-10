@@ -144,32 +144,41 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
             transition={{ delay: 0.15 }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6"
           >
-            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <TrendingUp size={18} className="text-[#003087]" />
-              Qatar Market Prices for {data.make} {data.class_name}
-            </h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                <BarChart2 size={18} className="text-[#003087]" />
+                Qatar Market Prices
+              </h3>
+              <span className="text-xs text-gray-400 font-medium">{comps.count} listings</span>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              {data.make} {data.class_name}
+            </p>
+            <div className="grid grid-cols-3 divide-x divide-gray-100">
               {[
-                { label: 'Lowest', value: comps.min },
-                { label: 'Average', value: comps.avg },
-                { label: 'Highest', value: comps.max },
-              ].map(({ label, value }) => (
-                <div key={label} className="text-center p-3 bg-gray-50 rounded-xl">
-                  <div className="text-xs text-gray-500 mb-1">{label}</div>
-                  <div className="font-bold text-gray-900 text-sm">{value ? formatQAR(Math.round(value)) : '—'}</div>
+                { label: 'Lowest',  value: comps.min, color: 'text-green-600' },
+                { label: 'Average', value: comps.avg, color: 'text-[#003087]' },
+                { label: 'Highest', value: comps.max, color: 'text-orange-500' },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="text-center px-3 py-2">
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">{label}</p>
+                  <p className={`text-base font-black ${color}`}>
+                    {value ? formatQAR(Math.round(value)) : '—'}
+                  </p>
                 </div>
               ))}
             </div>
+
             {comps.samples.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Similar listings</p>
+              <div className="mt-5 space-y-2">
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-2">Similar listings</p>
                 {comps.samples.slice(0, 3).map((s) => (
                   <div key={s.product_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                     <div>
                       <p className="text-sm font-semibold text-gray-800">{s.title}</p>
                       <p className="text-xs text-gray-500">{s.manufacture_year} · {formatKM(s.km)} · {s.city}</p>
                     </div>
-                    <div className="font-bold text-[#003087] text-sm">{formatQAR(s.price_qar)}</div>
+                    <div className="font-bold text-[#003087] text-sm whitespace-nowrap ml-3">{formatQAR(s.price_qar)}</div>
                   </div>
                 ))}
               </div>

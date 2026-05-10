@@ -395,50 +395,55 @@ export function PriceBandDisplay({ estimate }: { estimate: MLEstimate }) {
   const pct = rangeWidth > 0 ? (((mid - low) / rangeWidth) * 100).toFixed(0) : '50';
 
   return (
-    <div className="text-center py-4">
-      {/* Band label */}
-      <p className="text-xs font-bold text-[#003087] uppercase tracking-widest mb-1">Estimated Range</p>
-
-      {/* Main range */}
-      <div className="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3 mb-3">
-        <span className="text-xl font-black text-gray-700">{formatQAR(low)}</span>
-        <span className="text-gray-300 font-bold text-lg">–</span>
-        <span className="text-xl font-black text-gray-700">{formatQAR(high)}</span>
+    <div>
+      {/* AI badge */}
+      <div className="flex items-center justify-center gap-1.5 mb-5">
+        <span className="inline-flex items-center gap-1 bg-[#003087] text-white text-[11px] font-bold px-3 py-1 rounded-full tracking-wide uppercase">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="opacity-80">
+            <circle cx="5" cy="5" r="4" stroke="white" strokeWidth="1.5"/>
+            <path d="M5 3v2l1.5 1" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+          </svg>
+          AI Valuation
+        </span>
       </div>
 
-      {/* Midpoint as secondary */}
-      <p className="text-sm text-gray-500">
-        Midpoint estimate <span className="font-bold text-gray-800">{formatQAR(mid)}</span>
-        <span className="ml-2 text-[#003087] font-semibold text-xs">±{((rangeWidth / 2 / mid) * 100).toFixed(1)}%</span>
-      </p>
+      {/* Three-stat row: Low / Estimate / High */}
+      <div className="grid grid-cols-3 gap-0 mb-5">
+        <div className="text-center px-2">
+          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Low</p>
+          <p className="text-lg font-bold text-gray-500">{formatQAR(low)}</p>
+        </div>
+        <div className="text-center border-x border-gray-100 px-2">
+          <p className="text-[11px] font-semibold text-[#003087] uppercase tracking-wide mb-1">Estimate</p>
+          <p className="text-2xl font-black text-gray-900">{formatQAR(mid)}</p>
+        </div>
+        <div className="text-center px-2">
+          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1">High</p>
+          <p className="text-lg font-bold text-gray-500">{formatQAR(high)}</p>
+        </div>
+      </div>
 
       {/* Visual range bar */}
-      <div className="mt-4 mx-auto max-w-xs">
-        <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#003087]/20 via-[#003087]/60 to-[#003087]/20 rounded-full" />
-          {/* Midpoint marker */}
+      <div className="mx-auto max-w-xs mb-5">
+        <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-300 via-[#003087] to-gray-300 rounded-full" />
           <div
-            className="absolute top-0 bottom-0 w-0.5 bg-[#003087]"
-            style={{ left: `${pct}%` }}
+            className="absolute top-[-2px] bottom-[-2px] w-1 rounded-full bg-[#003087] ring-2 ring-white shadow"
+            style={{ left: `calc(${pct}% - 2px)` }}
           />
-        </div>
-        <div className="flex justify-between mt-1 text-[10px] text-gray-400">
-          <span>Low</span>
-          <span className="font-semibold text-[#003087]">Mid</span>
-          <span>High</span>
         </div>
       </div>
 
       {/* Accuracy badges */}
-      <div className="flex flex-wrap justify-center gap-2 mt-4">
-        <span className="bg-[#e8f0fd] text-[#003087] text-xs font-bold px-3 py-1 rounded-full">
-          Model accuracy: {(100 - estimate.mape).toFixed(0)}%
+      <div className="flex flex-wrap justify-center gap-2">
+        <span className="bg-[#e8f0fd] text-[#003087] text-[11px] font-bold px-3 py-1 rounded-full">
+          {(100 - estimate.mape).toFixed(0)}% accuracy
         </span>
-        <span className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1 rounded-full capitalize">
-          {estimate.segment} segment
+        <span className="bg-gray-100 text-gray-500 text-[11px] font-semibold px-3 py-1 rounded-full capitalize">
+          {estimate.segment}
         </span>
-        <span className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1 rounded-full">
-          R² {(estimate.r2 * 100).toFixed(1)}%
+        <span className="bg-gray-100 text-gray-500 text-[11px] font-semibold px-3 py-1 rounded-full">
+          ±{((rangeWidth / 2 / mid) * 100).toFixed(1)}% range
         </span>
       </div>
     </div>
