@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
 import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids, imgProxyUrl, getDealerMarginCalc, MarginCalcResult, withdrawBid } from '@/lib/api';
 import { formatQAR, formatDate, formatKM, CAR_MAKES } from '@/lib/utils';
+import { PriceSlider } from '@/lib/form-controls';
 import {
   OFFER_REQUEST_STATUS_CONFIG,
   isBiddingClosed,
@@ -36,7 +37,7 @@ export default function DashboardPage() {
   const [requests, setRequests] = useState<OfferRequest[]>([]);
   const [fetching, setFetching] = useState(true);
   const [bidModal, setBidModal] = useState<BidModal | null>(null);
-  const [bidAmount, setBidAmount] = useState('');
+  const [bidAmount, setBidAmount] = useState<number | null>(null);
   const [bidMessage, setBidMessage] = useState('');
   const [bidExpiresAt, setBidExpiresAt] = useState('');
   const [bidSubmitting, setBidSubmitting] = useState(false);
@@ -148,7 +149,7 @@ export default function DashboardPage() {
     setBidError('');
     try {
       await placeBid(bidModal.request.request_uid, {
-        amount_qar: Number(bidAmount),
+        amount_qar: bidAmount!,
         message: bidMessage || undefined,
         expires_at: bidExpiresAt || undefined,
       }, token);
@@ -911,13 +912,13 @@ export default function DashboardPage() {
                 </p>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => { setTab('My Bids'); setBidModal(null); setBidAmount(''); setBidMessage(''); setBidExpiresAt(''); setBidSuccess(false); setBidMarginHint(null); }}
+                    onClick={() => { setTab('My Bids'); setBidModal(null); setBidAmount(null); setBidMessage(''); setBidExpiresAt(''); setBidSuccess(false); setBidMarginHint(null); }}
                     className="flex-1 bg-[#003087] text-white font-bold py-3 rounded-xl text-sm hover:bg-[#0057b8] transition-colors"
                   >
                     View My Bids
                   </button>
                   <button
-                    onClick={() => { setBidModal(null); setBidAmount(''); setBidMessage(''); setBidExpiresAt(''); setBidSuccess(false); setBidMarginHint(null); }}
+                    onClick={() => { setBidModal(null); setBidAmount(null); setBidMessage(''); setBidExpiresAt(''); setBidSuccess(false); setBidMarginHint(null); }}
                     className="flex-1 border border-gray-200 text-gray-700 font-semibold py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors"
                   >
                     Close
@@ -960,12 +961,19 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1.5">Your Offer Amount (QAR) *</label>
-                    <input
-                      type="number"
+                    <PriceSlider
                       value={bidAmount}
-                      onChange={e => setBidAmount(e.target.value)}
-                      placeholder="e.g. 85000"
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-xl font-bold focus:outline-none focus:border-[#003087]"
+                      onChange={setBidAmount}
+                      label=""
+                      hint={
+                        bidMarginHint?.ok && bidMarginHint.tiers ? (
+                          <div className="flex gap-3 text-xs text-gray-500 flex-wrap">
+                            <span>Conservative: <strong>{formatQAR(bidMarginHint.tiers.conservative.offer_qar)}</strong></span>
+                            <span>Target: <strong className="text-[#003087]">{formatQAR(bidMarginHint.tiers.target.offer_qar)}</strong></span>
+                            <span>Aggressive: <strong>{formatQAR(bidMarginHint.tiers.aggressive.offer_qar)}</strong></span>
+                          </div>
+                        ) : undefined
+                      }
                     />
                   </div>
                   <div>

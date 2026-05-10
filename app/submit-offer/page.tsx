@@ -9,6 +9,7 @@ import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
 import { createOfferRequest } from '@/lib/api';
 import { CONDITIONS, QATAR_CITIES, formatKM } from '@/lib/utils';
+import { MakeSelect, ModelSelect, TrimSelect, YearTiles, KmBucketPicker, kmLabel, ConditionPicker, CityPicker, PriceSlider } from '@/lib/form-controls';
 
 function SubmitOfferContent() {
   const { user, token, loading } = useAuth();
@@ -34,7 +35,7 @@ function SubmitOfferContent() {
   const [extras, setExtras] = useState({
     color:            '',
     description:      '',
-    asking_price_qar: '',
+    asking_price_qar: null as number | null,
     contact_phone:    '',
     has_inspection:   false,
   });
@@ -44,8 +45,9 @@ function SubmitOfferContent() {
     make:       prefill.make,
     class_name: prefill.class_name,
     model:      prefill.model,
-    year:       prefill.year,
-    km:         prefill.km,
+    trim:       prefill.trim,
+    year:       prefill.year ? Number(prefill.year) : null as number | null,
+    km:         prefill.km ? Number(prefill.km) : null as number | null,
     condition:  prefill.condition,
     city:       prefill.city,
   });
@@ -63,11 +65,11 @@ function SubmitOfferContent() {
     }
   }, [user, loading, router, searchParams]);
 
-  function setExtra(key: keyof typeof extras, value: string | boolean) {
+  function setExtra<K extends keyof typeof extras>(key: K, value: typeof extras[K]) {
     setExtras(e => ({ ...e, [key]: value }));
   }
 
-  function setOverride(key: keyof typeof overrides, value: string) {
+  function setOverride<K extends keyof typeof overrides>(key: K, value: typeof overrides[K]) {
     setOverrides(o => ({ ...o, [key]: value }));
   }
 
@@ -85,13 +87,13 @@ function SubmitOfferContent() {
         make:             overrides.make,
         class_name:       overrides.class_name,
         model:            overrides.model || undefined,
-        year:             Number(overrides.year),
-        km:               Number(overrides.km),
+        year:             overrides.year,
+        km:               overrides.km,
         color:            extras.color || undefined,
         condition:        overrides.condition,
         city:             overrides.city,
         description:      extras.description || undefined,
-        asking_price_qar: extras.asking_price_qar ? Number(extras.asking_price_qar) : undefined,
+        asking_price_qar: extras.asking_price_qar ?? undefined,
         contact_phone:    extras.contact_phone || undefined,
         has_inspection:   extras.has_inspection || undefined,
       }, token);
@@ -148,8 +150,8 @@ function SubmitOfferContent() {
                   {[
                     { label: 'Make',      value: overrides.make },
                     { label: 'Model',     value: overrides.class_name },
-                    { label: 'Year',      value: overrides.year },
-                    { label: 'Mileage',   value: overrides.km ? formatKM(Number(overrides.km)) : '' },
+                    { label: 'Year',      value: overrides.year ? String(overrides.year) : '' },
+                    { label: 'Mileage',   value: overrides.km ? kmLabel(overrides.km) : '' },
                     { label: 'Condition', value: overrides.condition },
                     { label: 'City',      value: overrides.city },
                   ].map(({ label, value }) => (
@@ -188,38 +190,62 @@ function SubmitOfferContent() {
               /* ── Full manual form when no prefill ───────────────────────── */
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">Car Details</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div className="space-y-5">
+                  {/* Make */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Make *</label>
-                    <input type="text" value={overrides.make} onChange={e => setOverride('make', e.target.value)} required placeholder="e.g. Toyota" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]" />
+                    <p className="text-sm font-bold text-gray-700 mb-2">Make *</p>
+                    <MakeSelect
+                      value={overrides.make}
+                      onChange={m => setOverride('make', m)}
+                    />
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Model *</label>
-                    <input type="text" value={overrides.class_name} onChange={e => setOverride('class_name', e.target.value)} required placeholder="e.g. Land Cruiser" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Year *</label>
-                    <input type="number" value={overrides.year} onChange={e => setOverride('year', e.target.value)} required placeholder="e.g. 2020" min="1990" max={new Date().getFullYear() + 1} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Mileage (km) *</label>
-                    <input type="number" value={overrides.km} onChange={e => setOverride('km', e.target.value)} required min="0" placeholder="e.g. 85000" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">City *</label>
-                    <select value={overrides.city} onChange={e => setOverride('city', e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]">
-                      {QATAR_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Condition *</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {CONDITIONS.map(c => (
-                        <button type="button" key={c.value} onClick={() => setOverride('condition', c.value)} className={`py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${overrides.condition === c.value ? 'border-[#003087] bg-[#e8f0fd] text-[#003087]' : 'border-gray-200 text-gray-700'}`}>
-                          {c.label}
-                        </button>
-                      ))}
+
+                  {/* Model */}
+                  {overrides.make && (
+                    <div>
+                      <p className="text-sm font-bold text-gray-700 mb-2">Model *</p>
+                      <ModelSelect
+                        make={overrides.make}
+                        value={overrides.class_name}
+                        onChange={m => setOverride('class_name', m)}
+                      />
                     </div>
+                  )}
+
+                  {/* Trim */}
+                  {overrides.class_name && (
+                    <TrimSelect
+                      model={overrides.class_name}
+                      value={overrides.trim}
+                      onChange={t => setOverride('trim', t)}
+                    />
+                  )}
+
+                  {/* Year */}
+                  <div>
+                    <p className="text-sm font-bold text-gray-700 mb-2">Year *</p>
+                    <YearTiles value={overrides.year} onChange={y => setOverride('year', y)} />
+                  </div>
+
+                  {/* KM */}
+                  <div>
+                    <p className="text-sm font-bold text-gray-700 mb-2">
+                      Mileage * {overrides.km != null && <span className="text-gray-400 font-normal text-sm">— {kmLabel(overrides.km)}</span>}
+                    </p>
+                    <KmBucketPicker value={overrides.km} onChange={km => setOverride('km', km)} />
+                  </div>
+
+                  {/* City */}
+                  <div>
+                    <p className="text-sm font-bold text-gray-700 mb-2">City *</p>
+                    <CityPicker value={overrides.city} onChange={c => setOverride('city', c)} />
+                  </div>
+
+                  {/* Condition */}
+                  <div>
+                    <p className="text-sm font-bold text-gray-700 mb-2">Condition *</p>
+                    <ConditionPicker value={overrides.condition} onChange={c => setOverride('condition', c)} />
                   </div>
                 </div>
               </div>
@@ -238,9 +264,17 @@ function SubmitOfferContent() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Asking Price (QAR) <span className="text-gray-400 font-normal">optional</span>
+                    Asking Price <span className="text-gray-400 font-normal">optional — slide to set, leave at 0 to let dealers bid freely</span>
                   </label>
-                  <input type="number" value={extras.asking_price_qar} onChange={e => setExtra('asking_price_qar', e.target.value)} placeholder="Leave blank to let dealers bid freely" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]" />
+                  <PriceSlider
+                    value={extras.asking_price_qar}
+                    onChange={v => setExtra('asking_price_qar', v === 0 ? null : v)}
+                    label=""
+                    minValue={0}
+                  />
+                  {!extras.asking_price_qar && (
+                    <p className="text-xs text-gray-400 mt-1">No asking price — dealers will bid freely</p>
+                  )}
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Notes for Dealers</label>

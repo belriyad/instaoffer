@@ -15,7 +15,13 @@ import {
   getDealerMarginCalc, getMarketComps,
   MLEstimate, MLForecast, MLTimeToSellEstimate, MarginCalcResult, OfferComps,
 } from '@/lib/api';
-import { formatQAR, formatKM, CAR_MAKES, FUEL_TYPES, GEAR_TYPES, CAR_TYPES, QATAR_CITIES, CONDITIONS } from '@/lib/utils';
+import { formatQAR, formatKM } from '@/lib/utils';
+import {
+  MakeSelect, ModelSelect, TrimSelect,
+  YearTiles, KmBucketPicker, kmLabel,
+  ConditionPicker, CityPicker, PillGroupPicker, PriceSlider,
+} from '@/lib/form-controls';
+import { FUEL_TYPES, GEAR_TYPES, CAR_TYPES } from '@/lib/utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -96,26 +102,20 @@ export default function BIPage() {
   // Form state
   const [make, setMake] = useState('');
   const [className, setClassName] = useState('');
-  const [year, setYear] = useState('');
-  const [km, setKm] = useState('');
-  const [buyPrice, setBuyPrice] = useState('');
+  const [year, setYear] = useState<number | null>(null);
+  const [km, setKm] = useState<number | null>(null);
+  const [buyPrice, setBuyPrice] = useState<number | null>(null);
   const [trim, setTrim] = useState('');
   const [fuelType, setFuelType] = useState('');
   const [gearType, setGearType] = useState('');
   const [carType, setCarType] = useState('');
   const [city, setCity] = useState('');
   const [condition, setCondition] = useState('');
-  const [makeSearch, setMakeSearch] = useState('');
-  const [showMakeDrop, setShowMakeDrop] = useState(false);
 
   // Results state
   const [results, setResults] = useState<BIResults | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
-
-  const filteredMakes = CAR_MAKES.filter(m =>
-    m.toLowerCase().includes(makeSearch.toLowerCase())
-  ).slice(0, 8);
 
   const canRun = make && className && year && km;
 
@@ -128,8 +128,8 @@ export default function BIPage() {
     const params = {
       make,
       class_name: className,
-      manufacture_year: parseInt(year),
-      km: parseInt(km),
+      manufacture_year: year!,
+      km: km!,
       trim:      trim      || undefined,
       fuel_type: fuelType  || undefined,
       gear_type: gearType  || undefined,
@@ -142,14 +142,14 @@ export default function BIPage() {
       const [estimate, forecast, timeToSell, margin, comps] = await Promise.allSettled([
         getMLEstimate(params, token ?? undefined),
         getMLForecast(params, token ?? undefined),
-        getMLTimeToSell({ ...params, price_qar: buyPrice ? parseInt(buyPrice) : undefined }, token ?? undefined),
+        getMLTimeToSell({ ...params, price_qar: buyPrice ?? undefined }, token ?? undefined),
         buyPrice
           ? getDealerMarginCalc(
-              { make, class_name: className, trim: trim || undefined, year: parseInt(year), km: parseInt(km), buy_price: parseInt(buyPrice) },
+              { make, class_name: className, trim: trim || undefined, year: year!, km: km!, buy_price: buyPrice },
               token!
             )
           : Promise.resolve(null),
-        getMarketComps({ make, class_name: className, year: parseInt(year), km: parseInt(km) }, token ?? undefined),
+        getMarketComps({ make, class_name: className, year: year!, km: km! }, token ?? undefined),
       ]);
 
       setResults({
@@ -166,8 +166,6 @@ export default function BIPage() {
     }
   }
 
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 20 }, (_, i) => currentYear - i);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
@@ -199,150 +197,91 @@ export default function BIPage() {
             More fields = more accurate estimate. The AI uses the same model as the seller valuation wizard.
           </p>
 
-          {/* ── Required ── */}
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Required</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          {/* ── Make ── */}
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Make *</p>
+          <MakeSelect
+            value={make}
+            onChange={m => { setMake(m); setClassName(''); setTrim(''); }}
+          />
 
-            {/* Make — autocomplete */}
-            <div className="relative">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Make *</label>
-              <input
-                value={makeSearch || make}
-                onChange={e => { setMakeSearch(e.target.value); setMake(''); setShowMakeDrop(true); }}
-                onFocus={() => setShowMakeDrop(true)}
-                onBlur={() => setTimeout(() => setShowMakeDrop(false), 150)}
-                placeholder="Toyota, BMW…"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
-              />
-              {showMakeDrop && filteredMakes.length > 0 && (
-                <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden">
-                  {filteredMakes.map(m => (
-                    <button key={m} onMouseDown={() => { setMake(m); setMakeSearch(m); setShowMakeDrop(false); }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-[#003087]/5 transition-colors"
-                    >{m}</button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Class / Model */}
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Model / Class *</label>
-              <input
+          {/* ── Model ── */}
+          {make && (
+            <div className="mt-4">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                Model * <span className="normal-case text-gray-300">· {make}</span>
+              </p>
+              <ModelSelect
+                make={make}
                 value={className}
-                onChange={e => setClassName(e.target.value)}
-                placeholder="Camry, X5…"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
+                onChange={m => { setClassName(m); setTrim(''); }}
               />
             </div>
+          )}
 
-            {/* Year */}
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Year *</label>
-              <select
-                value={year}
-                onChange={e => setYear(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
-              >
-                <option value="">Select year</option>
-                {years.map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
+          {/* ── Trim ── */}
+          {className && (
+            <div className="mt-4">
+              <TrimSelect model={className} value={trim} onChange={setTrim} />
             </div>
+          )}
 
-            {/* KM */}
+          {/* ── Year ── */}
+          <div className="mt-5">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Year *</p>
+            <YearTiles value={year} onChange={setYear} />
+          </div>
+
+          {/* ── KM ── */}
+          <div className="mt-5">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+              Mileage * {km != null && <span className="normal-case text-gray-400 font-normal">— {kmLabel(km)}</span>}
+            </p>
+            <KmBucketPicker value={km} onChange={setKm} />
+          </div>
+
+          {/* ── Condition ── */}
+          <div className="mt-5">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Condition</p>
+            <ConditionPicker value={condition} onChange={setCondition} />
+          </div>
+
+          {/* ── City ── */}
+          <div className="mt-5">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">City</p>
+            <CityPicker value={city} onChange={setCity} />
+          </div>
+
+          {/* ── Fuel / Body / Transmission ── */}
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Mileage (KM) *</label>
-              <input
-                type="number"
-                value={km}
-                onChange={e => setKm(e.target.value)}
-                placeholder="85000"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
-              />
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Fuel</p>
+              <PillGroupPicker options={FUEL_TYPES} value={fuelType} onChange={setFuelType} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Transmission</p>
+              <PillGroupPicker options={GEAR_TYPES} value={gearType} onChange={setGearType} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Body</p>
+              <PillGroupPicker options={CAR_TYPES} value={carType} onChange={setCarType} />
             </div>
           </div>
 
-          {/* ── Optional (improves accuracy) ── */}
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Optional — improves estimate accuracy</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-
-            {/* Trim */}
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Trim</label>
-              <input
-                value={trim}
-                onChange={e => setTrim(e.target.value)}
-                placeholder="XLE, M Sport, Platinum…"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
-              />
-            </div>
-
-            {/* Condition */}
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Condition</label>
-              <select value={condition} onChange={e => setCondition(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
-                <option value="">Select condition</option>
-                {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-              </select>
-            </div>
-
-            {/* Fuel Type */}
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Fuel Type</label>
-              <select value={fuelType} onChange={e => setFuelType(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
-                <option value="">Any fuel type</option>
-                {FUEL_TYPES.map(f => <option key={f} value={f}>{f}</option>)}
-              </select>
-            </div>
-
-            {/* Gear Type */}
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Transmission</label>
-              <select value={gearType} onChange={e => setGearType(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
-                <option value="">Any transmission</option>
-                {GEAR_TYPES.map(g => <option key={g} value={g}>{g}</option>)}
-              </select>
-            </div>
-
-            {/* Car Type */}
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Body Type</label>
-              <select value={carType} onChange={e => setCarType(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
-                <option value="">Any body type</option>
-                {CAR_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-
-            {/* City */}
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">City</label>
-              <select value={city} onChange={e => setCity(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
-                <option value="">Any city</option>
-                {QATAR_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {/* ── Dealer-only ── */}
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Dealer fields</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                Your Buy Price (QAR) <span className="text-gray-300 font-normal normal-case">(unlocks margin analysis)</span>
-              </label>
-              <input
-                type="number"
-                value={buyPrice}
-                onChange={e => setBuyPrice(e.target.value)}
-                placeholder="75000"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
-              />
-            </div>
+          {/* ── Dealer: Buy Price ── */}
+          <div className="mt-5 border-t border-gray-100 pt-5">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+              Your Buy Price <span className="normal-case text-gray-300 font-normal">(optional — unlocks margin analysis)</span>
+            </p>
+            <PriceSlider
+              value={buyPrice}
+              onChange={setBuyPrice}
+              label=""
+              hint={<p className="text-xs text-gray-400">Leave at minimum to skip margin analysis</p>}
+              minValue={0}
+            />
+            {buyPrice === 0 && (
+              <p className="text-xs text-amber-600 mt-1">Set a buy price above 0 to enable margin analysis</p>
+            )}
           </div>
 
           {error && (
@@ -377,6 +316,7 @@ export default function BIPage() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-5"
             >
+
 
               {/* ── Fair Market Value ── */}
               {results.estimate && (
@@ -497,7 +437,7 @@ export default function BIPage() {
                   </p>
                 </ResultCard>
               )}
-              {buyPrice === '' && (
+              {buyPrice == null && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-sm text-amber-800 flex items-center gap-2">
                   <AlertCircle size={16} className="flex-shrink-0 text-amber-500" />
                   Add your <strong>buy price</strong> above to unlock margin tier analysis.

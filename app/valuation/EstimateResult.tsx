@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight, TrendingUp, Shield, ArrowRight, BarChart2, ShoppingCart, Clock } from 'lucide-react';
 import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
+import { PriceBandDisplay } from '@/lib/form-controls';
 import { ValuationData } from './page';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -18,11 +19,6 @@ interface Props {
 }
 
 export default function EstimateResult({ estimate, forecast, comps, timeToSell, data }: Props) {
-  const low = estimate.confidence_range[0];
-  const high = estimate.confidence_range[1];
-  const mid = estimate.estimated_price_qar;
-  const rangeWidth = high - low;
-
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
       <Navbar />
@@ -41,40 +37,16 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
             {data.city ? ` · ${data.city}` : ''}
           </div>
 
-          <div className="text-center py-6">
-            <p className="text-sm font-bold text-[#003087] uppercase tracking-widest mb-2">Estimated Market Value</p>
-            <div className="text-5xl md:text-6xl font-black text-gray-900 mb-2">
-              {formatQAR(Math.round(mid))}
-            </div>
+          <PriceBandDisplay estimate={estimate} />
 
-            {/* Tight range display */}
-            <div className="mt-4 inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-4 py-2">
-              <span className="text-xs text-gray-400 font-medium">Range</span>
-              <span className="text-sm font-bold text-gray-700">{formatQAR(Math.round(low))}</span>
-              <span className="text-gray-300">–</span>
-              <span className="text-sm font-bold text-gray-700">{formatQAR(Math.round(high))}</span>
-              <span className="text-xs text-[#003087] font-semibold bg-[#e8f0fd] px-2 py-0.5 rounded-full">
-                ±{((rangeWidth / 2 / mid) * 100).toFixed(1)}%
-              </span>
-            </div>
-          </div>
-
-          {/* Accuracy badges */}
-          <div className="flex flex-wrap justify-center gap-3 mt-2">
-            <div className="flex items-center gap-1.5 bg-[#e8f0fd] text-[#003087] px-3 py-1.5 rounded-full text-xs font-semibold">
-              <BarChart2 size={12} />
-              Model accuracy: {(100 - estimate.mape).toFixed(0)}%
-            </div>
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold capitalize ${estimate.segment === 'premium' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
-              {estimate.segment} segment
-            </div>
-            {comps && (
+          {comps && (
+            <div className="flex justify-center mt-3">
               <div className="flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-semibold">
                 <TrendingUp size={12} />
                 Based on {comps.count} similar cars
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Time-to-sell */}
@@ -255,9 +227,9 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
               km:         String(data.km ?? ''),
               condition:  data.condition,
               city:       data.city,
-              estimate:   String(Math.round(mid)),
-              low:        String(Math.round(low)),
-              high:       String(Math.round(high)),
+              estimate:   String(Math.round(estimate.estimated_price_qar)),
+              low:        String(Math.round(estimate.confidence_range[0])),
+              high:       String(Math.round(estimate.confidence_range[1])),
               ...(data.trim  ? { trim: data.trim } : {}),
             }).toString()}`}
             className="flex items-center justify-center gap-2 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-4 rounded-xl text-lg transition-all shadow-md"
