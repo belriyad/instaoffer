@@ -781,6 +781,39 @@ export async function getWakalatCar(slug: string): Promise<{ car: WakalatCarDeta
   return apiFetch<{ car: WakalatCarDetail }>(`/wakalat/cars/${slug}`);
 }
 
+// ─── ML Time-to-Sell ─────────────────────────────────────────────────────────
+
+export interface MLTimeToSellEstimate {
+  product_id?: string;
+  estimated_days_to_sell: number;
+  probability_by_horizon: Record<string, number>; // keys: "7","14","30","60","90"
+  model_version: string;
+  trained_at: string;
+}
+
+export async function getMLTimeToSell(
+  params: {
+    make: string;
+    class_name: string;
+    manufacture_year: number;
+    km: number;
+    price_qar?: number;
+    fuel_type?: string;
+    gear_type?: string;
+    car_type?: string;
+    city?: string;
+    trim?: string;
+  },
+  token?: string
+): Promise<MLTimeToSellEstimate> {
+  const qs = '?' + new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined && v !== '')
+      .map(([k, v]) => [k, String(v)])
+  ).toString();
+  return apiFetch<MLTimeToSellEstimate>(`/ml/time-to-sell${qs}`, {}, token);
+}
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
 export async function adminGetAllRequests(token: string, params?: {

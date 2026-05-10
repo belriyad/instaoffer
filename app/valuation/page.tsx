@@ -10,7 +10,7 @@ import {
   FUEL_TYPES, GEAR_TYPES, CAR_TYPES, QATAR_CITIES,
   formatKM,
 } from '@/lib/utils';
-import { getMLEstimate, getMLForecast, getMarketComps, MLEstimate, MLForecast, OfferComps } from '@/lib/api';
+import { getMLEstimate, getMLForecast, getMarketComps, getMLTimeToSell, MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import EstimateResult from './EstimateResult';
 
@@ -514,11 +514,12 @@ function ValuationContent() {
     city:       'Doha',
     trim:       searchParams.get('trim') || '',
   });
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
-  const [estimate, setEstimate] = useState<MLEstimate | null>(null);
-  const [forecast, setForecast] = useState<MLForecast | null>(null);
-  const [comps, setComps]       = useState<OfferComps | null>(null);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState('');
+  const [estimate, setEstimate]     = useState<MLEstimate | null>(null);
+  const [forecast, setForecast]     = useState<MLForecast | null>(null);
+  const [comps, setComps]           = useState<OfferComps | null>(null);
+  const [timeToSell, setTimeToSell] = useState<MLTimeToSellEstimate | null>(null);
 
   // If make+model pre-filled from query params, skip to screen 2
   useEffect(() => {
@@ -548,14 +549,16 @@ function ValuationContent() {
         trim:             data.trim       || undefined,
         condition:        data.condition  || undefined,
       };
-      const [est, fc, comp] = await Promise.all([
+      const [est, fc, comp, tts] = await Promise.all([
         getMLEstimate(params, authToken),
         getMLForecast(params, authToken).catch(() => null),
         getMarketComps({ make: data.make, class_name: data.class_name, year: data.year!, km: data.km! }, authToken).catch(() => null),
+        getMLTimeToSell(params, authToken).catch(() => null),
       ]);
       setEstimate(est);
       setForecast(fc);
       setComps(comp);
+      setTimeToSell(tts);
     } catch {
       setError('Could not get estimate. Please check your details and try again.');
     } finally {
@@ -564,7 +567,7 @@ function ValuationContent() {
   }
 
   if (estimate) {
-    return <EstimateResult estimate={estimate} forecast={forecast} comps={comps} data={data} />;
+    return <EstimateResult estimate={estimate} forecast={forecast} comps={comps} timeToSell={timeToSell} data={data} />;
   }
 
   return (

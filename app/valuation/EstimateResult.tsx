@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, TrendingUp, Shield, ArrowRight, BarChart2, ShoppingCart } from 'lucide-react';
-import { MLEstimate, MLForecast, OfferComps } from '@/lib/api';
+import { ChevronRight, TrendingUp, Shield, ArrowRight, BarChart2, ShoppingCart, Clock } from 'lucide-react';
+import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
 import { ValuationData } from './page';
 import Navbar from '@/components/Navbar';
@@ -13,10 +13,11 @@ interface Props {
   estimate: MLEstimate;
   forecast: MLForecast | null;
   comps: OfferComps | null;
+  timeToSell: MLTimeToSellEstimate | null;
   data: ValuationData;
 }
 
-export default function EstimateResult({ estimate, forecast, comps, data }: Props) {
+export default function EstimateResult({ estimate, forecast, comps, timeToSell, data }: Props) {
   const low = estimate.confidence_range[0];
   const high = estimate.confidence_range[1];
   const mid = estimate.estimated_price_qar;
@@ -75,6 +76,56 @@ export default function EstimateResult({ estimate, forecast, comps, data }: Prop
             )}
           </div>
         </motion.div>
+
+        {/* Time-to-sell */}
+        {timeToSell && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                <Clock size={18} className="text-[#003087]" />
+                Time to Sell
+              </h3>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#e8f0fd] text-[#003087]">
+                AI estimate
+              </span>
+            </div>
+            <div className="text-center py-3 mb-5">
+              <p className="text-5xl font-black text-gray-900">{timeToSell.estimated_days_to_sell}</p>
+              <p className="text-sm text-gray-500 mt-1">estimated days to sell</p>
+            </div>
+            <div className="space-y-2.5">
+              {([7, 14, 30, 60, 90] as const).map((horizon) => {
+                const prob = timeToSell.probability_by_horizon[String(horizon)] ?? 0;
+                const pct = Math.round(prob * 100);
+                return (
+                  <div key={horizon}>
+                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>Within {horizon} days</span>
+                      <span className="font-semibold text-gray-700">{pct}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${pct}%`,
+                          backgroundColor: pct >= 70 ? '#22c55e' : pct >= 40 ? '#003087' : '#f97316',
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-400 mt-4">
+              Probability of listing clearing (sold or removed) within each horizon, based on Qatar market data.
+            </p>
+          </motion.div>
+        )}
 
         {/* Price forecast */}
         {forecast && (
