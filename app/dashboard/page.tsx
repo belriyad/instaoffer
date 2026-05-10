@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Settings, Bookmark, X, Calendar, AlertCircle } from 'lucide-react';
+import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Settings, Bookmark, X, Calendar, AlertCircle, CheckCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
@@ -42,6 +42,13 @@ export default function DashboardPage() {
   const [bidSubmitting, setBidSubmitting] = useState(false);
   const [bidMarginHint, setBidMarginHint] = useState<MarginCalcResult | null>(null);
   const [withdrawingBid, setWithdrawingBid] = useState<string | null>(null);
+  const [withdrawConfirm, setWithdrawConfirm] = useState<string | null>(null); // bid_uid awaiting confirm
+  const [bidError, setBidError] = useState('');
+  const [bidSuccess, setBidSuccess] = useState(false);
+  const [dashError, setDashError] = useState('');
+  const [myBidsError, setMyBidsError] = useState('');
+  const [showSaveFilterInput, setShowSaveFilterInput] = useState(false);
+  const [saveFilterName, setSaveFilterName] = useState('');
 
   // Filters
   const [filterMake, setFilterMake] = useState('');
@@ -114,11 +121,9 @@ export default function DashboardPage() {
           Array.isArray(raw.results) ? raw.results :
           Array.isArray(raw.data) ? raw.data :
           [];
-        console.log('[DealerBids] raw response:', JSON.stringify(data).slice(0, 300));
-        console.log('[DealerBids] parsed', arr.length, 'bids, statuses:', (arr as {status?:string}[]).map(b => b.status));
         setMyBids(arr as typeof myBids);
       })
-      .catch((err) => { console.error('[DealerBids] error:', err); })
+      .catch((err) => { setMyBidsError(err instanceof Error ? err.message : 'Failed to load bids'); })
       .finally(() => setMyBidsFetching(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, tab]);
@@ -140,21 +145,25 @@ export default function DashboardPage() {
   async function handleBid() {
     if (!token || !bidModal || !bidAmount) return;
     setBidSubmitting(true);
+    setBidError('');
     try {
       await placeBid(bidModal.request.request_uid, {
         amount_qar: Number(bidAmount),
         message: bidMessage || undefined,
         expires_at: bidExpiresAt || undefined,
       }, token);
-      setBidModal(null);
-      setBidAmount('');
-      setBidMessage('');
-      setBidExpiresAt('');
-      // Refresh
-      const res = await getAllOfferRequests(token, { status: filterStatus || undefined, make: filterMake || undefined, limit: 50 }) as { rows?: OfferRequest[] };
-      setRequests(res.rows || []);
+      setBidSuccess(true);
+      // Refresh leads and bids in background
+      getAllOfferRequests(token, { status: filterStatus || undefined, make: filterMake || undefined, limit: 50 })
+        .then(res => setRequests((res as { rows?: OfferRequest[] }).rows || []))
+        .catch(() => {});
+      getDealerBids(token).then(data => {
+        const raw = data as Record<string, unknown>;
+        const arr = Array.isArray(data) ? data : Array.isArray(raw.rows) ? raw.rows : Array.isArray(raw.bids) ? raw.bids : Array.isArray(raw.items) ? raw.items : [];
+        setMyBids(arr as BidWithExpiry[]);
+      }).catch(() => {});
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to submit bid');
+      setBidError(err instanceof Error ? err.message : 'Failed to submit offer. Please try again.');
     } finally {
       setBidSubmitting(false);
     }
@@ -162,15 +171,17 @@ export default function DashboardPage() {
 
   // Issue #31: Withdraw bid
   async function handleWithdrawBid(bidUid: string) {
-    if (!token || !confirm('Withdraw this bid?')) return;
+    if (!token) return;
+    setWithdrawConfirm(null);
     setWithdrawingBid(bidUid);
+    setDashError('');
     try {
       await withdrawBid(bidUid, token);
       const data = await getDealerBids(token) as Record<string, unknown>;
       const arr = Array.isArray(data) ? data : Array.isArray(data.rows) ? data.rows : Array.isArray(data.bids) ? data.bids : Array.isArray(data.items) ? data.items : [];
       setMyBids(arr as BidWithExpiry[]);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to withdraw bid');
+      setDashError(err instanceof Error ? err.message : 'Failed to withdraw bid');
     } finally {
       setWithdrawingBid(null);
     }
@@ -186,20 +197,21 @@ export default function DashboardPage() {
 
   // FE-004: Save current filter preset
   async function handleSaveFilter() {
-    if (!token) return;
-    const name = window.prompt('Name this filter preset:');
-    if (!name) return;
+    if (!token || !saveFilterName.trim()) return;
     setSavingFilter(true);
+    setDashError('');
     try {
       const res = await createSavedFilter({
-        name,
+        name: saveFilterName.trim(),
         filters: {
           makes: filterMake ? [filterMake] : undefined,
         },
       }, token);
       setSavedFilters(prev => [...prev, res.filter]);
+      setSaveFilterName('');
+      setShowSaveFilterInput(false);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to save filter');
+      setDashError(err instanceof Error ? err.message : 'Failed to save filter');
     } finally {
       setSavingFilter(false);
     }
@@ -214,6 +226,7 @@ export default function DashboardPage() {
     } catch {
       // Revert on failure by refetching
       getSavedFilters(token).then(res => setSavedFilters(res.filters ?? [])).catch(() => {});
+      setDashError('Failed to delete filter — please try again.');
     }
   }
 
@@ -296,7 +309,7 @@ export default function DashboardPage() {
               {/* FE-003: Show subscription expiry */}
               {subscription?.is_active && subscription.expires_at && (
                 <span className="ml-2 inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">
-                  <Calendar size={10} /> Sub expires {new Date(subscription.expires_at).toLocaleDateString()}
+                  <Calendar size={10} /> Sub expires {formatDate(subscription.expires_at)}
                 </span>
               )}
             </p>
@@ -325,7 +338,7 @@ export default function DashboardPage() {
           {[
             { label: 'Open Leads', value: requests.filter(r => r.status === 'open').length, color: 'text-[#003087]' },
             { label: 'My Active Bids', value: myBids.filter((b: BidWithExpiry) => b.status === 'pending').length, color: 'text-orange-600' },
-            { label: 'Accepted', value: requests.filter(r => r.status === 'accepted').length, color: 'text-green-600' },
+            { label: 'My Accepted', value: myBids.filter((b: BidWithExpiry) => b.status === 'accepted').length, color: 'text-green-600' },
             {
               label: 'Subscription',
               value: subscription?.price_qar != null ? `${subscription.price_qar.toLocaleString()} QAR/mo` : '—',
@@ -359,22 +372,24 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Pending Offers — sent offers awaiting seller approval */}
+        {/* Pending Offers — only show bids expiring within 24h for urgency */}
         {isApprovedDealer && (() => {
-          const pendingBids = myBids.filter(b =>
-            !isBidExpired(b) &&
-            !['accepted', 'rejected', 'withdrawn', 'expired'].includes(b.status as string)
-          );
-          if (pendingBids.length === 0 && !myBidsFetching) return null;
+          const urgentBids = myBids.filter(b => {
+            if (isBidExpired(b) || ['accepted', 'rejected', 'withdrawn', 'expired'].includes(b.status as string)) return false;
+            if (!b.expires_at) return false; // no expiry = not urgent
+            const msLeft = new Date(b.expires_at).getTime() - now;
+            return msLeft > 0 && msLeft < 24 * 60 * 60 * 1000; // expiring within 24h
+          });
+          if (urgentBids.length === 0) return null;
           return (
             <div className="mb-6">
               <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-3 flex items-center gap-2">
-                <Send size={14} className="text-[#ff6600]" />
-                Sent Offers — Awaiting Response
-                <span className="bg-[#ff6600] text-white text-xs font-bold px-2 py-0.5 rounded-full">{pendingBids.length}</span>
+                <AlertCircle size={14} className="text-amber-500" />
+                Offers Expiring Soon
+                <span className="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{urgentBids.length}</span>
               </h2>
               <div className="space-y-2">
-                {pendingBids.map(bid => {
+                {urgentBids.map(bid => {
                   const tl = timeLeft(bid.expires_at);
                   return (
                     <motion.div
@@ -421,13 +436,26 @@ export default function DashboardPage() {
                             <Car size={12} /> View
                           </Link>
                         )}
-                        <button
-                          onClick={() => handleWithdrawBid(bid.bid_uid)}
-                          disabled={withdrawingBid === bid.bid_uid}
-                          className="flex items-center gap-1 border border-red-100 hover:border-red-400 text-red-400 hover:text-red-600 font-semibold px-3 py-1.5 rounded-xl text-xs transition-all disabled:opacity-50"
-                        >
-                          <X size={12} /> {withdrawingBid === bid.bid_uid ? '…' : 'Withdraw'}
-                        </button>
+                        {withdrawConfirm === bid.bid_uid ? (
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-red-600 font-semibold">Sure?</span>
+                            <button
+                              onClick={() => handleWithdrawBid(bid.bid_uid)}
+                              disabled={withdrawingBid === bid.bid_uid}
+                              className="bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 rounded-lg text-xs transition-all disabled:opacity-50"
+                            >
+                              {withdrawingBid === bid.bid_uid ? '…' : 'Yes'}
+                            </button>
+                            <button onClick={() => setWithdrawConfirm(null)} className="text-gray-400 hover:text-gray-600 px-2 py-1 text-xs">No</button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setWithdrawConfirm(bid.bid_uid)}
+                            className="flex items-center gap-1 border border-red-100 hover:border-red-400 text-red-400 hover:text-red-600 font-semibold px-3 py-1.5 rounded-xl text-xs transition-all"
+                          >
+                            <X size={12} /> Withdraw
+                          </button>
+                        )}
                       </div>
                     </motion.div>
                   );
@@ -437,18 +465,43 @@ export default function DashboardPage() {
           );
         })()}
 
+        {/* Global error banner */}
+        {dashError && (
+          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3 flex items-center justify-between text-sm font-medium">
+            <div className="flex items-center gap-2"><AlertCircle size={16} /> {dashError}</div>
+            <button onClick={() => setDashError('')} className="text-red-400 hover:text-red-600 ml-4"><X size={16} /></button>
+          </div>
+        )}
+
         {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-fit">
-          {TABS.map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${tab === t ? 'bg-white shadow-sm text-[#003087]' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        {(() => {
+          const openLeads = requests.filter(r => r.status === 'open').length;
+          const pendingBidsCount = myBids.filter(b => b.status === 'pending').length;
+          const convCount = myBids.filter((b, idx, arr) => arr.findIndex(x => x.request_uid === b.request_uid) === idx).length;
+          const tabCounts: Record<string, number> = {
+            'Leads': openLeads,
+            'My Bids': pendingBidsCount,
+            'Messages': convCount,
+          };
+          return (
+            <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-fit">
+              {TABS.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`flex items-center gap-1.5 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${tab === t ? 'bg-white shadow-sm text-[#003087]' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  {t}
+                  {tabCounts[t] > 0 && (
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${tab === t ? 'bg-[#003087] text-white' : 'bg-gray-300 text-gray-600'}`}>
+                      {tabCounts[t]}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Leads tab */}
         {tab === 'Leads' && !isApprovedDealer && (
@@ -484,14 +537,37 @@ export default function DashboardPage() {
                 {CAR_MAKES.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
 
-              {/* FE-004: Save filter button */}
-              <button
-                onClick={handleSaveFilter}
-                disabled={savingFilter}
-                className="flex items-center gap-1.5 border border-gray-200 bg-white px-3 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#003087] hover:text-[#003087] transition-colors disabled:opacity-50"
-              >
-                <Bookmark size={14} /> Save filter
-              </button>
+              {/* FE-004: Save filter inline input */}
+              {showSaveFilterInput ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={saveFilterName}
+                    onChange={e => setSaveFilterName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleSaveFilter(); if (e.key === 'Escape') { setShowSaveFilterInput(false); setSaveFilterName(''); } }}
+                    placeholder="Filter name…"
+                    autoFocus
+                    className="border border-[#003087] bg-white rounded-xl px-3 py-2 text-sm focus:outline-none w-36"
+                  />
+                  <button
+                    onClick={handleSaveFilter}
+                    disabled={savingFilter || !saveFilterName.trim()}
+                    className="bg-[#003087] text-white font-bold px-3 py-2 rounded-xl text-sm disabled:opacity-50 transition-all"
+                  >
+                    {savingFilter ? '…' : 'Save'}
+                  </button>
+                  <button onClick={() => { setShowSaveFilterInput(false); setSaveFilterName(''); }} className="text-gray-400 hover:text-gray-600 text-sm px-2 py-2">
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowSaveFilterInput(true)}
+                  className="flex items-center gap-1.5 border border-gray-200 bg-white px-3 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#003087] hover:text-[#003087] transition-colors"
+                >
+                  <Bookmark size={14} /> Save filter
+                </button>
+              )}
 
               <div className="flex items-center gap-1.5 text-sm text-gray-500">
                 <Filter size={14} />
@@ -610,22 +686,31 @@ export default function DashboardPage() {
                           </p>
                         </div>
                         <div className="flex flex-col gap-2 flex-shrink-0">
-                          {!isBiddingClosed(req.status as OfferRequestStatus) && (
-                            <button
-                              onClick={() => {
-                                setBidModal({ request: req });
-                                setBidMarginHint(null);
-                                if (token) {
-                                  getDealerMarginCalc({ make: req.make, class_name: req.class_name, year: req.year, km: req.km }, token)
-                                    .then(r => setBidMarginHint(r))
-                                    .catch(() => {/* ignore */});
-                                }
-                              }}
-                              className="flex items-center gap-1.5 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-4 py-2 rounded-xl text-sm transition-all"
-                            >
-                              <Send size={14} /> Send Offer
-                            </button>
-                          )}
+                          {!isBiddingClosed(req.status as OfferRequestStatus) && (() => {
+                            const alreadyBid = myBids.some(b => b.request_uid === req.request_uid && b.status === 'pending');
+                            return alreadyBid ? (
+                              <span className="flex items-center gap-1.5 bg-green-50 text-green-700 font-semibold px-4 py-2 rounded-xl text-sm border border-green-200">
+                                <Send size={14} /> Offer Sent
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setBidModal({ request: req });
+                                  setBidMarginHint(null);
+                                  setBidError('');
+                                  setBidSuccess(false);
+                                  if (token) {
+                                    getDealerMarginCalc({ make: req.make, class_name: req.class_name, year: req.year, km: req.km }, token)
+                                      .then(r => setBidMarginHint(r))
+                                      .catch(() => setBidMarginHint({ ok: false }));
+                                  }
+                                }}
+                                className="flex items-center gap-1.5 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-4 py-2 rounded-xl text-sm transition-all"
+                              >
+                                <Send size={14} /> Send Offer
+                              </button>
+                            );
+                          })()}
                           <Link
                             href={`/messages/${req.request_uid}?recipient=${req.customer_id}`}
                             className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-4 py-2 rounded-xl text-sm transition-all"
@@ -644,6 +729,12 @@ export default function DashboardPage() {
 
         {tab === 'My Bids' && (
           <div>
+            {myBidsError && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3 flex items-center justify-between text-sm font-medium">
+                <div className="flex items-center gap-2"><AlertCircle size={16} /> {myBidsError}</div>
+                <button onClick={() => setMyBidsError('')} className="text-red-400 hover:text-red-600 ml-4"><X size={16} /></button>
+              </div>
+            )}
             {myBidsFetching ? (
               <div className="flex items-center justify-center py-20">
                 <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
@@ -699,7 +790,7 @@ export default function DashboardPage() {
                         {bid.request_uid && (
                           <div className="flex flex-col gap-2 flex-shrink-0">
                             <Link
-                              href={`/my-offers/${bid.request_uid}`}
+                              href={`/buy-request?uid=${bid.request_uid}`}
                               className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#003087] text-gray-600 hover:text-[#003087] font-semibold px-4 py-2 rounded-xl text-sm transition-all"
                             >
                               <Car size={14} /> View Offer
@@ -711,13 +802,30 @@ export default function DashboardPage() {
                               <MessageSquare size={14} /> Message
                             </Link>
                             {bid.status === 'pending' && (
-                              <button
-                                onClick={() => handleWithdrawBid(bid.bid_uid)}
-                                disabled={withdrawingBid === bid.bid_uid}
-                                className="flex items-center justify-center gap-1.5 border border-red-200 hover:border-red-400 text-red-500 hover:text-red-700 font-semibold px-4 py-2 rounded-xl text-sm transition-all disabled:opacity-60"
-                              >
-                                <X size={14} /> {withdrawingBid === bid.bid_uid ? 'Withdrawing…' : 'Withdraw'}
-                              </button>
+                              withdrawConfirm === bid.bid_uid ? (
+                                <div className="flex flex-col gap-1.5 items-stretch">
+                                  <span className="text-xs text-red-600 font-semibold text-center">Withdraw this offer?</span>
+                                  <div className="flex gap-1.5">
+                                    <button
+                                      onClick={() => handleWithdrawBid(bid.bid_uid)}
+                                      disabled={withdrawingBid === bid.bid_uid}
+                                      className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 rounded-xl text-xs transition-all disabled:opacity-50"
+                                    >
+                                      {withdrawingBid === bid.bid_uid ? '…' : 'Yes, withdraw'}
+                                    </button>
+                                    <button onClick={() => setWithdrawConfirm(null)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-1.5 rounded-xl text-xs hover:bg-gray-50">
+                                      Keep
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setWithdrawConfirm(bid.bid_uid)}
+                                  className="flex items-center justify-center gap-1.5 border border-red-200 hover:border-red-400 text-red-500 hover:text-red-700 font-semibold px-4 py-2 rounded-xl text-sm transition-all"
+                                >
+                                  <X size={14} /> Withdraw
+                                </button>
+                              )
                             )}
                           </div>
                         )}
@@ -741,6 +849,7 @@ export default function DashboardPage() {
               <div className="space-y-2">
                 {myBids
                   .filter((b, idx, arr) => arr.findIndex(x => x.request_uid === b.request_uid) === idx)
+                  .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
                   .map((bid: BidWithExpiry) => (
                     <Link
                       key={bid.request_uid}
@@ -784,85 +893,116 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl"
           >
-            <h2 className="text-xl font-black text-gray-900 mb-1">Send Offer</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              {bidModal.request.year} {bidModal.request.make} {bidModal.request.class_name} · {formatKM(bidModal.request.km)}
-            </p>
+            {bidSuccess ? (
+              <div className="text-center py-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle size={36} className="text-green-500" />
+                </div>
+                <h2 className="text-xl font-black text-gray-900 mb-2">Offer Sent!</h2>
+                <p className="text-sm text-gray-500 mb-6">
+                  Your offer for the {bidModal.request.year} {bidModal.request.make} {bidModal.request.class_name} has been submitted successfully.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setTab('My Bids'); setBidModal(null); setBidAmount(''); setBidMessage(''); setBidExpiresAt(''); setBidSuccess(false); setBidMarginHint(null); }}
+                    className="flex-1 bg-[#003087] text-white font-bold py-3 rounded-xl text-sm hover:bg-[#0057b8] transition-colors"
+                  >
+                    View My Bids
+                  </button>
+                  <button
+                    onClick={() => { setBidModal(null); setBidAmount(''); setBidMessage(''); setBidExpiresAt(''); setBidSuccess(false); setBidMarginHint(null); }}
+                    className="flex-1 border border-gray-200 text-gray-700 font-semibold py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-black text-gray-900 mb-1">Send Offer</h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  {bidModal.request.year} {bidModal.request.make} {bidModal.request.class_name} · {formatKM(bidModal.request.km)}
+                </p>
 
-            {/* Issue #32: Inline margin suggestion */}
-            {bidMarginHint === null && (
-              <div className="bg-gray-50 rounded-xl p-3 mb-4 text-xs text-gray-400 animate-pulse">Loading market estimate…</div>
-            )}
-            {bidMarginHint?.ok && bidMarginHint.market_est_qar && (
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4 text-sm">
-                <p className="font-semibold text-[#003087] mb-1">Market estimate: {formatQAR(bidMarginHint.market_est_qar)}</p>
-                {bidMarginHint.tiers && (
-                  <div className="flex gap-3 text-xs text-gray-600">
-                    <span>Conservative: {formatQAR(bidMarginHint.tiers.conservative.offer_qar)}</span>
-                    <span>·</span>
-                    <span>Target: {formatQAR(bidMarginHint.tiers.target.offer_qar)}</span>
-                    <span>·</span>
-                    <span>Aggressive: {formatQAR(bidMarginHint.tiers.aggressive.offer_qar)}</span>
+                {bidError && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-sm text-red-700">{bidError}</div>
+                )}
+
+                {/* Issue #32: Inline margin suggestion */}
+                {bidMarginHint === null && (
+                  <div className="bg-gray-50 rounded-xl p-3 mb-4 text-xs text-gray-400 animate-pulse">Loading market estimate…</div>
+                )}
+                {bidMarginHint?.ok && bidMarginHint.market_est_qar && (
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4 text-sm">
+                    <p className="font-semibold text-[#003087] mb-1">Market estimate: {formatQAR(bidMarginHint.market_est_qar)}</p>
+                    {bidMarginHint.tiers && (
+                      <div className="flex gap-3 text-xs text-gray-600">
+                        <span>Conservative: {formatQAR(bidMarginHint.tiers.conservative.offer_qar)}</span>
+                        <span>·</span>
+                        <span>Target: {formatQAR(bidMarginHint.tiers.target.offer_qar)}</span>
+                        <span>·</span>
+                        <span>Aggressive: {formatQAR(bidMarginHint.tiers.aggressive.offer_qar)}</span>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
-            {bidMarginHint !== null && !bidMarginHint.ok && (
-              <div className="bg-gray-50 rounded-xl p-3 mb-4 text-xs text-gray-400">No market estimate available for this vehicle.</div>
-            )}
+                {bidMarginHint !== null && !bidMarginHint.ok && (
+                  <div className="bg-gray-50 rounded-xl p-3 mb-4 text-xs text-gray-400">No market estimate available for this vehicle.</div>
+                )}
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Your Offer Amount (QAR) *</label>
-                <input
-                  type="number"
-                  value={bidAmount}
-                  onChange={e => setBidAmount(e.target.value)}
-                  placeholder="e.g. 85000"
-                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-xl font-bold focus:outline-none focus:border-[#003087]"
-                  autoFocus
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Message to Seller <span className="text-gray-400 font-normal">(optional)</span></label>
-                <textarea
-                  value={bidMessage}
-                  onChange={e => setBidMessage(e.target.value)}
-                  rows={3}
-                  placeholder="e.g. I can arrange pickup at your location..."
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] resize-none"
-                />
-              </div>
-              {/* FE-005: Optional bid expiry date-time */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                  <Clock size={14} /> Offer Expires At <span className="text-gray-400 font-normal">(optional)</span>
-                </label>
-                <input
-                  type="datetime-local"
-                  value={bidExpiresAt}
-                  onChange={e => setBidExpiresAt(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
-                />
-              </div>
-              <p className="text-xs text-gray-400">This offer is non-binding and subject to physical inspection.</p>
-            </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">Your Offer Amount (QAR) *</label>
+                    <input
+                      type="number"
+                      value={bidAmount}
+                      onChange={e => setBidAmount(e.target.value)}
+                      placeholder="e.g. 85000"
+                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-xl font-bold focus:outline-none focus:border-[#003087]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">Message to Seller <span className="text-gray-400 font-normal">(optional)</span></label>
+                    <textarea
+                      value={bidMessage}
+                      onChange={e => setBidMessage(e.target.value)}
+                      rows={3}
+                      placeholder="e.g. I can arrange pickup at your location..."
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] resize-none"
+                    />
+                  </div>
+                  {/* FE-005: Optional bid expiry date-time */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                      <Clock size={14} /> Offer Expires At <span className="text-gray-400 font-normal">(optional)</span>
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={bidExpiresAt}
+                      onChange={e => setBidExpiresAt(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400">This offer is non-binding and subject to physical inspection.</p>
+                </div>
 
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={() => { setBidModal(null); setBidExpiresAt(''); setBidMarginHint(null); }}
-                className="flex-1 border border-gray-200 text-gray-700 font-semibold py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleBid}
-                disabled={!bidAmount || bidSubmitting}
-                className="flex-1 flex items-center justify-center gap-2 bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-3 rounded-xl text-sm transition-all disabled:opacity-60"
-              >
-                {bidSubmitting ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Send size={16} /> Submit Offer</>}
-              </button>
-            </div>
+                <div className="flex gap-2 mt-6">
+                  <button
+                    onClick={() => { setBidModal(null); setBidExpiresAt(''); setBidMarginHint(null); setBidError(''); }}
+                    className="flex-1 border border-gray-200 text-gray-700 font-semibold py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleBid}
+                    disabled={!bidAmount || bidSubmitting}
+                    className="flex-1 flex items-center justify-center gap-2 bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-3 rounded-xl text-sm transition-all disabled:opacity-60"
+                  >
+                    {bidSubmitting ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Send size={16} /> Submit Offer</>}
+                  </button>
+                </div>
+              </>
+            )}
           </motion.div>
         </div>
       )}
