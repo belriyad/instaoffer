@@ -161,7 +161,6 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
                 { label: 'Highest', value: comps.max, color: 'text-orange-500' },
               ].map(({ label, value, color }) => (
                 <div key={label} className="text-center px-3 py-2">
-                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">{label}</p>
                   <p className={`text-base font-black ${color}`}>
                     {value ? formatQAR(Math.round(value)) : '—'}
                   </p>
