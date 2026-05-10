@@ -254,6 +254,7 @@ export async function createOfferRequest(
     asking_price_qar?: number;
     contact_name?: string;
     contact_phone?: string;
+    has_inspection?: boolean;
   },
   token: string
 ): Promise<{ request: OfferRequest }> {

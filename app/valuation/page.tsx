@@ -134,6 +134,15 @@ function Screen1({
               </button>
             );
           })}
+          {/* Free-text fallback when search has no matches */}
+          {filtered.length === 0 && query.trim().length >= 2 && (
+            <button
+              onClick={() => selectMake(query.trim())}
+              className="col-span-3 sm:col-span-4 py-2.5 px-4 rounded-xl border-2 border-dashed border-[#003087] text-[#003087] text-xs font-bold hover:bg-[#e8f0fd] transition-all text-left"
+            >
+              Use &ldquo;{query.trim()}&rdquo; as make →
+            </button>
+          )}
         </div>
       </div>
 
@@ -380,6 +389,23 @@ function Screen2({
         </div>
       </div>
 
+      {/* City — always visible since it affects the estimate */}
+      <div>
+        <p className="text-sm font-bold text-gray-700 mb-3">City</p>
+        <div className="flex flex-wrap gap-2">
+          {QATAR_CITIES.map(c => (
+            <button key={c} onClick={() => onUpdate('city', c)}
+              className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-all ${
+                data.city === c
+                  ? 'border-[#003087] bg-[#003087] text-white'
+                  : 'border-gray-200 text-gray-600 hover:border-[#003087]'
+              }`}>
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Optional details accordion */}
       <div className="border border-gray-200 rounded-xl overflow-hidden">
         <button
@@ -400,22 +426,8 @@ function Screen2({
               className="overflow-hidden"
             >
               <div className="px-4 pb-4 space-y-4 border-t border-gray-100">
-                {/* City */}
-                <div className="pt-3">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">City</p>
-                  <div className="flex flex-wrap gap-2">
-                    {QATAR_CITIES.map(c => (
-                      <button key={c} onClick={() => onUpdate('city', c)}
-                        className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
-                          data.city === c ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-600 hover:border-[#003087]'
-                        }`}>
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                </div>
                 {/* Fuel */}
-                <div>
+                <div className="pt-3">
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Fuel</p>
                   <div className="flex flex-wrap gap-2">
                     {FUEL_TYPES.map(f => (
@@ -564,6 +576,29 @@ function ValuationContent() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
+          <div className="w-14 h-14 border-4 border-[#003087]/20 border-t-[#003087] rounded-full animate-spin mb-6" />
+          <p className="text-lg font-bold text-gray-900 mb-1">Analysing your car…</p>
+          <p className="text-sm text-gray-400 text-center max-w-xs">
+            Running Qatar market data, depreciation model, and time-to-sell estimate
+          </p>
+          <div className="mt-8 flex flex-col gap-2 w-full max-w-xs">
+            {['Fetching market comparables…', 'Running ML valuation model…', 'Calculating price forecast…'].map((step, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
+                <span className="w-4 h-4 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin flex-shrink-0" style={{ animationDelay: `${i * 0.2}s` }} />
+                {step}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (estimate) {

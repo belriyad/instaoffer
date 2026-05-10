@@ -52,8 +52,14 @@ function SubmitOfferContent() {
 
   useEffect(() => {
     if (!loading && !user) {
+      // Encode the full destination URL as the redirect value so params survive login
       const params = new URLSearchParams(searchParams.toString());
-      router.push(`/login?redirect=/submit-offer${params.toString() ? '&' + params.toString() : ''}`);
+      const dest = `/submit-offer${params.toString() ? '?' + params.toString() : ''}`;
+      router.push(`/login?redirect=${encodeURIComponent(dest)}`);
+    }
+    // S2: Pre-fill phone from user profile when user loads
+    if (user?.phone && !extras.contact_phone) {
+      setExtra('contact_phone', user.phone);
     }
   }, [user, loading, router, searchParams]);
 
@@ -87,6 +93,7 @@ function SubmitOfferContent() {
         description:      extras.description || undefined,
         asking_price_qar: extras.asking_price_qar ? Number(extras.asking_price_qar) : undefined,
         contact_phone:    extras.contact_phone || undefined,
+        has_inspection:   extras.has_inspection || undefined,
       }, token);
       router.push(`/my-offers?submitted=${result.request.request_uid}`);
     } catch (err) {
