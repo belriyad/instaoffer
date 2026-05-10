@@ -3,10 +3,10 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Car, AlertCircle } from 'lucide-react';
+import { ChevronRight, Car, AlertCircle, Lock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import {
-  FUEL_TYPES, GEAR_TYPES, CAR_TYPES, formatKM,
+  FUEL_TYPES, GEAR_TYPES, CAR_TYPES, formatKM, MODEL_DEFAULTS,
 } from '@/lib/utils';
 import {
   MakeSelect, ModelSelect, TrimSelect,
@@ -51,7 +51,7 @@ function Screen1({
         <p className="text-gray-400 text-sm mb-4">Start by selecting the make</p>
         <MakeSelect
           value={data.make}
-          onChange={make => { onUpdate('make', make); onUpdate('class_name', ''); onUpdate('trim', ''); }}
+          onChange={make => { onUpdate('make', make); onUpdate('class_name', ''); onUpdate('trim', ''); onUpdate('fuel_type', ''); onUpdate('gear_type', ''); onUpdate('car_type', ''); }}
         />
       </div>
 
@@ -64,7 +64,14 @@ function Screen1({
             <ModelSelect
               make={data.make}
               value={data.class_name}
-              onChange={m => { onUpdate('class_name', m); onUpdate('trim', ''); }}
+              onChange={m => {
+                onUpdate('class_name', m);
+                onUpdate('trim', '');
+                const d = MODEL_DEFAULTS[m] ?? {};
+                onUpdate('fuel_type', d.fuel_type ?? '');
+                onUpdate('gear_type', d.gear_type ?? '');
+                onUpdate('car_type',  d.car_type  ?? '');
+              }}
             />
           </motion.div>
         )}
@@ -152,45 +159,74 @@ function Screen2({
       </div>
 
       {/* Optional details accordion */}
-      <div className="border border-gray-200 rounded-xl overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setShowOptional(v => !v)}
-          className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-        >
-          <span>Improve accuracy <span className="text-gray-400 font-normal">(optional)</span></span>
-          <ChevronRight size={15} className={`transition-transform ${showOptional ? 'rotate-90' : ''}`} />
-        </button>
-
-        <AnimatePresence>
-          {showOptional && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="px-4 pb-4 space-y-4 border-t border-gray-100">
-                <div className="pt-3">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Fuel</p>
-                  <PillGroupPicker options={FUEL_TYPES} value={data.fuel_type} onChange={v => onUpdate('fuel_type', v)} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Body</p>
-                    <PillGroupPicker options={CAR_TYPES} value={data.car_type} onChange={v => onUpdate('car_type', v)} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Transmission</p>
-                    <PillGroupPicker options={GEAR_TYPES} value={data.gear_type} onChange={v => onUpdate('gear_type', v)} />
-                  </div>
-                </div>
+      {(() => {
+        const d = data.class_name ? (MODEL_DEFAULTS[data.class_name] ?? {}) : {};
+        const hasLocked = Object.keys(d).length > 0;
+        const hasUnlocked = !d.fuel_type || !d.gear_type || !d.car_type;
+        return (
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            {/* Locked auto-detected row — always visible if any field is known */}
+            {hasLocked && (
+              <div className="flex flex-wrap items-center gap-2 px-4 py-3 bg-[#f5f8ff] border-b border-gray-100">
+                <Lock size={11} className="text-[#003087] opacity-60" />
+                <span className="text-[10px] font-bold text-[#003087] uppercase tracking-widest opacity-70">Auto-detected</span>
+                {d.fuel_type && <span className="bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-2.5 py-0.5 rounded-full">{d.fuel_type}</span>}
+                {d.gear_type && <span className="bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-2.5 py-0.5 rounded-full">{d.gear_type}</span>}
+                {d.car_type  && <span className="bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-2.5 py-0.5 rounded-full">{d.car_type}</span>}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            )}
+            {/* Only show accordion if there are still unlocked fields */}
+            {hasUnlocked && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowOptional(v => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <span>Improve accuracy <span className="text-gray-400 font-normal">(optional)</span></span>
+                  <ChevronRight size={15} className={`transition-transform ${showOptional ? 'rotate-90' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {showOptional && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-4 space-y-4 border-t border-gray-100">
+                        {!d.fuel_type && (
+                          <div className="pt-3">
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Fuel</p>
+                            <PillGroupPicker options={FUEL_TYPES} value={data.fuel_type} onChange={v => onUpdate('fuel_type', v)} />
+                          </div>
+                        )}
+                        {(!d.car_type || !d.gear_type) && (
+                          <div className="grid grid-cols-2 gap-4">
+                            {!d.car_type && (
+                              <div>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Body</p>
+                                <PillGroupPicker options={CAR_TYPES} value={data.car_type} onChange={v => onUpdate('car_type', v)} />
+                              </div>
+                            )}
+                            {!d.gear_type && (
+                              <div>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Transmission</p>
+                                <PillGroupPicker options={GEAR_TYPES} value={data.gear_type} onChange={v => onUpdate('gear_type', v)} />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            )}
+          </div>
+        );
+      })()}
 
       {error && (
         <div className="flex items-center gap-2 text-red-600 bg-red-50 border border-red-200 rounded-xl p-3 text-sm">

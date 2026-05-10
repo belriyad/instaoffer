@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Brain, TrendingUp, Clock, DollarSign, BarChart2,
-  ChevronRight, Sparkles, AlertCircle, Car, RefreshCw,
+  ChevronRight, Sparkles, AlertCircle, Car, RefreshCw, Lock,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -15,7 +15,7 @@ import {
   getDealerMarginCalc, getMarketComps,
   MLEstimate, MLForecast, MLTimeToSellEstimate, MarginCalcResult, OfferComps,
 } from '@/lib/api';
-import { formatQAR, formatKM } from '@/lib/utils';
+import { formatQAR, formatKM, MODEL_DEFAULTS } from '@/lib/utils';
 import {
   MakeSelect, ModelSelect, TrimSelect,
   YearTiles, KmBucketPicker, kmLabel,
@@ -201,7 +201,7 @@ export default function BIPage() {
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Make *</p>
           <MakeSelect
             value={make}
-            onChange={m => { setMake(m); setClassName(''); setTrim(''); }}
+            onChange={m => { setMake(m); setClassName(''); setTrim(''); setFuelType(''); setGearType(''); setCarType(''); }}
           />
 
           {/* ── Model ── */}
@@ -213,7 +213,14 @@ export default function BIPage() {
               <ModelSelect
                 make={make}
                 value={className}
-                onChange={m => { setClassName(m); setTrim(''); }}
+                onChange={m => {
+                  setClassName(m);
+                  setTrim('');
+                  const d = MODEL_DEFAULTS[m] ?? {};
+                  setFuelType(d.fuel_type ?? '');
+                  setGearType(d.gear_type ?? '');
+                  setCarType(d.car_type ?? '');
+                }}
               />
             </div>
           )}
@@ -252,20 +259,66 @@ export default function BIPage() {
           </div>
 
           {/* ── Fuel / Body / Transmission ── */}
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Fuel</p>
-              <PillGroupPicker options={FUEL_TYPES} value={fuelType} onChange={setFuelType} />
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Transmission</p>
-              <PillGroupPicker options={GEAR_TYPES} value={gearType} onChange={setGearType} />
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Body</p>
-              <PillGroupPicker options={CAR_TYPES} value={carType} onChange={setCarType} />
-            </div>
-          </div>
+          {(() => {
+            const d = className ? (MODEL_DEFAULTS[className] ?? {}) : {};
+            const locked = Object.keys(d);
+            const hasLocked = locked.length > 0;
+            const hasUnlocked = !d.fuel_type || !d.gear_type || !d.car_type;
+            return (
+              <div className="mt-5">
+                {/* Locked auto-detected fields */}
+                {hasLocked && (
+                  <div className="mb-3 flex flex-wrap gap-2 items-center">
+                    <Lock size={12} className="text-gray-400" />
+                    <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mr-1">Auto-detected</span>
+                    {d.fuel_type  && <span className="inline-flex items-center gap-1 bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-3 py-1 rounded-full">{d.fuel_type}</span>}
+                    {d.gear_type  && <span className="inline-flex items-center gap-1 bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-3 py-1 rounded-full">{d.gear_type}</span>}
+                    {d.car_type   && <span className="inline-flex items-center gap-1 bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-3 py-1 rounded-full">{d.car_type}</span>}
+                  </div>
+                )}
+                {/* Only show pickers for fields NOT auto-detected */}
+                {hasUnlocked && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {!d.fuel_type && (
+                      <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Fuel</p>
+                        <PillGroupPicker options={FUEL_TYPES} value={fuelType} onChange={setFuelType} />
+                      </div>
+                    )}
+                    {!d.gear_type && (
+                      <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Transmission</p>
+                        <PillGroupPicker options={GEAR_TYPES} value={gearType} onChange={setGearType} />
+                      </div>
+                    )}
+                    {!d.car_type && (
+                      <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Body</p>
+                        <PillGroupPicker options={CAR_TYPES} value={carType} onChange={setCarType} />
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* No model selected yet — show all pickers */}
+                {!className && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Fuel</p>
+                      <PillGroupPicker options={FUEL_TYPES} value={fuelType} onChange={setFuelType} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Transmission</p>
+                      <PillGroupPicker options={GEAR_TYPES} value={gearType} onChange={setGearType} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Body</p>
+                      <PillGroupPicker options={CAR_TYPES} value={carType} onChange={setCarType} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ── Dealer: Buy Price ── */}
           <div className="mt-5 border-t border-gray-100 pt-5">

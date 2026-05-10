@@ -1033,3 +1033,139 @@ export const FUEL_TYPES = ['Petrol', 'Diesel', 'Hybrid', 'Electric'];
 export const GEAR_TYPES = ['Automatic', 'Manual'];
 export const CAR_TYPES = ['Sedan', 'SUV', 'Pickup', 'Hatchback', 'Coupe', 'Van', 'Convertible', 'Wagon'];
 export const WARRANTY_STATUSES = ['Under Warranty', 'No Warranty', 'Extended Warranty'];
+
+/**
+ * Known model defaults for Qatar market vehicles.
+ * When a model has fixed attributes (e.g. Land Cruiser is always SUV/Petrol/Automatic),
+ * those fields are auto-filled and hidden from the form to reduce unnecessary input.
+ * Only include fields that are truly fixed — leave out fields that vary across trims.
+ */
+export interface ModelDefaults {
+  fuel_type?: string;
+  gear_type?: string;
+  car_type?: string;
+}
+
+export const MODEL_DEFAULTS: Record<string, ModelDefaults> = {
+  // Toyota
+  'Land Cruiser':       { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Land Cruiser Prado': { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Prado':              { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Fortuner':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Sequoia':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Tundra':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Pickup' },
+  'Hilux':              { car_type: 'Pickup' },
+  'Camry':              { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'Corolla':            { fuel_type: 'Petrol', car_type: 'Sedan' },
+  'RAV4':               { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Rush':               { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Yaris':              { fuel_type: 'Petrol', car_type: 'Sedan' },
+  'Avanza':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Van' },
+  // Lexus
+  'LX':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'GX':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'RX':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'ES':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'LS':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'NX':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  // Nissan
+  'Patrol':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Patrol Safari':      { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Altima':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'Maxima':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'Sentra':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'X-Trail':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Pathfinder':         { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Kicks':              { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Navara':             { car_type: 'Pickup' },
+  // Infiniti
+  'QX80':               { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'QX60':               { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'QX50':               { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Q50':                { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'Q70':                { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  // GMC
+  'Yukon':              { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Tahoe':              { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Suburban':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Acadia':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Sierra':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Pickup' },
+  'Canyon':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Pickup' },
+  // Chevrolet
+  'Silverado':          { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Pickup' },
+  'Traverse':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Blazer':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Captiva':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Equinox':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Malibu':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'Camaro':             { fuel_type: 'Petrol', car_type: 'Coupe' },
+  // Ford
+  'F-150':              { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Pickup' },
+  'Explorer':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Expedition':         { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Ranger':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Pickup' },
+  'Edge':               { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Mustang':            { fuel_type: 'Petrol', car_type: 'Coupe' },
+  // Dodge
+  'Durango':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Charger':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'Challenger':         { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Coupe' },
+  'Ram 1500':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Pickup' },
+  // Jeep
+  'Grand Cherokee':     { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Wrangler':           { fuel_type: 'Petrol', car_type: 'SUV' },
+  'Cherokee':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Gladiator':          { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Pickup' },
+  // BMW
+  'X5':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'X6':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'X7':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'X3':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  '5 Series':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  '7 Series':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  '3 Series':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  // Mercedes-Benz
+  'G-Class':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'GLE':                { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'GLS':                { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'GLC':                { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'S-Class':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'E-Class':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'C-Class':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  // Land Rover
+  'Range Rover':        { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Range Rover Sport':  { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Defender':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Discovery':          { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  // Audi
+  'Q7':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Q8':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Q5':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'A6':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'A8':                 { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  // Porsche
+  'Cayenne':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Macan':              { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Panamera':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  // Hyundai
+  'Palisade':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Santa Fe':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Tucson':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Sonata':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'Elantra':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  // Kia
+  'Telluride':          { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Sorento':            { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Sportage':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Carnival':           { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Van' },
+  // Honda
+  'Pilot':              { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'CR-V':               { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'Accord':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'Sedan' },
+  'Civic':              { fuel_type: 'Petrol', car_type: 'Sedan' },
+  // Mitsubishi
+  'Pajero':             { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+  'L200':               { car_type: 'Pickup' },
+  'Eclipse Cross':      { fuel_type: 'Petrol', gear_type: 'Automatic', car_type: 'SUV' },
+};
+
