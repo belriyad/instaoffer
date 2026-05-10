@@ -22,6 +22,7 @@ tags:
   - name: Push
   - name: Collector
   - name: MLValuation
+  - name: MLTimeToSell
   - name: InstantOffers
   - name: Wakalat
     description: Wakalat Qatar dealer inventory — new cars, trims & prices
@@ -1140,6 +1141,165 @@ paths:
                 mape: 12.04
         "400":
           description: Missing required parameter (make, class_name, manufacture_year, or km)
+  /ml/time-to-sell:
+    get:
+      tags: [MLTimeToSell]
+      summary: ML-powered time-to-sell estimate
+      description: |
+        Returns estimated days-to-sell/clear and sale/clear probabilities within
+        7, 14, 30, 60, and 90 days.
+
+        You can call this endpoint in either mode:
+
+        - Existing listing mode: pass `product_id`; the API reads listing features
+          from the database. Any additional query parameters override DB values.
+        - Manual mode: pass at least `make`, `class_name`, `manufacture_year`,
+          `km`, and `price_qar`.
+
+        The model predicts listing clearance/disappearance, not a guaranteed legal
+        transaction close date. Active listings were handled as right-censored
+        training examples.
+      parameters:
+        - in: query
+          name: product_id
+          required: false
+          schema: { type: string }
+          example: qs_12345678
+          description: Existing listing ID. If supplied, listing features are loaded from the database.
+        - in: query
+          name: make
+          required: false
+          schema: { type: string }
+          example: Toyota
+        - in: query
+          name: class_name
+          required: false
+          schema: { type: string }
+          example: Land Cruiser
+        - in: query
+          name: trim
+          required: false
+          schema: { type: string }
+          example: GXR
+        - in: query
+          name: manufacture_year
+          required: false
+          schema: { type: integer, minimum: 1990, maximum: 2030 }
+          example: 2020
+        - in: query
+          name: km
+          required: false
+          schema: { type: number, minimum: 0 }
+          example: 80000
+        - in: query
+          name: price_qar
+          required: false
+          schema: { type: number, minimum: 1000 }
+          example: 180000
+        - in: query
+          name: expected_price_qar
+          required: false
+          schema: { type: number }
+          description: Market expected price, if already computed.
+        - in: query
+          name: discount_qar
+          required: false
+          schema: { type: number }
+        - in: query
+          name: discount_pct
+          required: false
+          schema: { type: number }
+        - in: query
+          name: deal_score
+          required: false
+          schema: { type: number }
+        - in: query
+          name: peer_count
+          required: false
+          schema: { type: integer }
+        - in: query
+          name: mileage_window_km
+          required: false
+          schema: { type: integer }
+        - in: query
+          name: cylinder_count
+          required: false
+          schema: { type: integer, minimum: 2, maximum: 16 }
+        - in: query
+          name: car_type
+          required: false
+          schema: { type: string }
+          example: SUV
+        - in: query
+          name: warranty_status
+          required: false
+          schema: { type: string }
+          example: Under Warranty
+        - in: query
+          name: fuel_type
+          required: false
+          schema: { type: string }
+          example: Petrol
+        - in: query
+          name: gear_type
+          required: false
+          schema: { type: string }
+          example: Automatic
+        - in: query
+          name: city
+          required: false
+          schema: { type: string }
+          example: Doha
+        - in: query
+          name: seller_type
+          required: false
+          schema: { type: string }
+          example: dealer
+        - in: query
+          name: source
+          required: false
+          schema: { type: string, enum: [mzad, qatarliving, qatarsale, carsemsar] }
+          description: Listing source. Inferred from product_id when product_id is supplied.
+        - in: query
+          name: listing_month
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 12 }
+          description: Month number used for seasonality; defaults to current month if omitted.
+      responses:
+        "200":
+          description: Time-to-sell estimate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MLTimeToSellEstimate"
+              examples:
+                manual:
+                  summary: Manual feature request
+                  value:
+                    estimated_days_to_sell: 24
+                    probability_by_horizon:
+                      "7": 0.3211
+                      "14": 0.8607
+                      "30": 0.8607
+                      "60": 0.8607
+                      "90": 0.8607
+                    model_version: "0.1.0"
+                    trained_at: "2026-05-10T06:18:44+00:00"
+                listing:
+                  summary: Existing listing request
+                  value:
+                    product_id: qs_12345678
+                    estimated_days_to_sell: 31
+                    probability_by_horizon:
+                      "7": 0.12
+                      "14": 0.33
+                      "30": 0.61
+                      "60": 0.76
+                      "90": 0.82
+                    model_version: "0.1.0"
+                    trained_at: "2026-05-10T06:18:44+00:00"
+        "400":
+          description: Missing required manual-mode parameters or unknown product_id
   /instant-offers/comps:
     get:
       tags: [InstantOffers]
@@ -2078,6 +2238,33 @@ components:
         mape:
           type: number
           description: Mean absolute percentage error of the segment model (%)
+    MLTimeToSellEstimate:
+      type: object
+      properties:
+        product_id:
+          type: string
+          description: Present when scoring an existing listing by product_id
+        estimated_days_to_sell:
+          type: integer
+          description: Point estimate for days until listing clears/disappears
+        probability_by_horizon:
+          type: object
+          description: Cumulative probability of clearing within each horizon
+          additionalProperties:
+            type: number
+            minimum: 0
+            maximum: 1
+          example:
+            "7": 0.3211
+            "14": 0.8607
+            "30": 0.8607
+            "60": 0.8607
+            "90": 0.8607
+        model_version:
+          type: string
+        trained_at:
+          type: string
+          format: date-time
     OfferRequest:
       type: object
       properties:
@@ -2364,4 +2551,3 @@ components:
               schema: { type: string, format: binary }
         "404":
           description: Image not found
-
