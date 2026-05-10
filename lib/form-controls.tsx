@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import {
   CAR_MAKES, CAR_MODELS, CAR_TRIMS,
   CONDITIONS,
@@ -17,28 +17,6 @@ import {
 import type { MLEstimate } from '@/lib/api';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const MAKE_COLORS: Record<string, string> = {
-  Toyota:        'bg-red-50   border-red-200   text-red-800',
-  Lexus:         'bg-slate-50 border-slate-300 text-slate-800',
-  Nissan:        'bg-red-50   border-red-200   text-red-800',
-  Honda:         'bg-red-50   border-red-200   text-red-800',
-  BMW:           'bg-blue-50  border-blue-300  text-blue-900',
-  'Mercedes-Benz': 'bg-zinc-50  border-zinc-300  text-zinc-900',
-  Audi:          'bg-zinc-50  border-zinc-300  text-zinc-900',
-  'Land Rover':  'bg-green-50 border-green-300 text-green-900',
-  Porsche:       'bg-yellow-50 border-yellow-300 text-yellow-900',
-  Chevrolet:     'bg-amber-50 border-amber-200 text-amber-900',
-  Ford:          'bg-blue-50  border-blue-200  text-blue-900',
-  Dodge:         'bg-orange-50 border-orange-200 text-orange-900',
-  GMC:           'bg-red-50   border-red-200   text-red-900',
-  Jeep:          'bg-green-50 border-green-200 text-green-900',
-  Hyundai:       'bg-sky-50   border-sky-200   text-sky-900',
-  Kia:           'bg-red-50   border-red-100   text-red-900',
-  Infiniti:      'bg-slate-50 border-slate-200 text-slate-800',
-  Mitsubishi:    'bg-red-50   border-red-100   text-red-800',
-};
-const DEFAULT_MAKE_COLOR = 'bg-gray-50 border-gray-200 text-gray-800';
 
 /** Year tiles split: recent 8 shown by default, older revealed on demand */
 const RECENT_YEARS = Array.from({ length: 8 }, (_, i) => 2025 - i);
@@ -59,8 +37,14 @@ const PRICE_MIN  = 10_000;
 const PRICE_MAX  = 600_000;
 const PRICE_STEP = 5_000;
 
+// ─── Shared dropdown style ────────────────────────────────────────────────────
+const SELECT_CLS =
+  'w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-white ' +
+  'focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 ' +
+  'appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ' +
+  'transition-colors hover:border-gray-300';
+
 // ─── MakeSelect ───────────────────────────────────────────────────────────────
-/** Searchable scrollable grid of makes — primary selection UI for Make everywhere */
 export function MakeSelect({
   value,
   onChange,
@@ -68,54 +52,24 @@ export function MakeSelect({
   value: string;
   onChange: (make: string) => void;
 }) {
-  const [query, setQuery] = useState('');
-
-  const filtered = query.trim()
-    ? CAR_MAKES.filter(m => m.toLowerCase().includes(query.toLowerCase()))
-    : CAR_MAKES;
-
   return (
-    <div className="space-y-2">
-      <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-        <input
-          type="text"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Search make…"
-          className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 bg-gray-50"
-        />
-      </div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-52 overflow-y-auto pr-1">
-        {filtered.map(make => {
-          const sel = value === make;
-          const color = MAKE_COLORS[make] ?? DEFAULT_MAKE_COLOR;
-          return (
-            <button
-              key={make}
-              type="button"
-              onClick={() => { onChange(make); setQuery(''); }}
-              className={`relative py-2.5 px-2 rounded-xl border-2 text-xs font-bold transition-all text-center leading-tight ${
-                sel
-                  ? 'border-[#003087] bg-[#003087] text-white shadow-md'
-                  : `${color} hover:border-[#003087] hover:shadow-sm`
-              }`}
-            >
-              {sel && <Check size={10} className="absolute top-1 right-1 opacity-70" />}
-              {make}
-            </button>
-          );
-        })}
-        {filtered.length === 0 && (
-          <p className="col-span-4 py-4 text-center text-xs text-gray-400">No makes found</p>
-        )}
-      </div>
+    <div className="relative">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className={SELECT_CLS}
+      >
+        <option value="">Select make…</option>
+        {CAR_MAKES.map(make => (
+          <option key={make} value={make}>{make}</option>
+        ))}
+      </select>
+      <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
     </div>
   );
 }
 
 // ─── ModelSelect ──────────────────────────────────────────────────────────────
-/** Chip-pill list of models for the selected make. Disabled when no make is set. */
 export function ModelSelect({
   make,
   value,
@@ -127,40 +81,25 @@ export function ModelSelect({
 }) {
   const models = make ? (CAR_MODELS[make] ?? []) : [];
 
-  if (!make) {
-    return (
-      <p className="text-xs text-gray-400 italic py-2">Select a make first</p>
-    );
-  }
-
-  if (models.length === 0) {
-    return (
-      <p className="text-xs text-gray-400 italic py-2">No models on file for {make}</p>
-    );
-  }
-
   return (
-    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
-      {models.map(m => (
-        <button
-          key={m}
-          type="button"
-          onClick={() => onChange(m)}
-          className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-all ${
-            value === m
-              ? 'border-[#003087] bg-[#003087] text-white'
-              : 'border-gray-200 text-gray-600 hover:border-[#003087] hover:text-[#003087]'
-          }`}
-        >
-          {m}
-        </button>
-      ))}
+    <div className="relative">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        disabled={!make || models.length === 0}
+        className={SELECT_CLS}
+      >
+        <option value="">{make ? 'Select model…' : 'Select make first'}</option>
+        {models.map(m => (
+          <option key={m} value={m}>{m}</option>
+        ))}
+      </select>
+      <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
     </div>
   );
 }
 
 // ─── TrimSelect ───────────────────────────────────────────────────────────────
-/** Chip-pill list of trims for the selected model. Returns null if no trims known. */
 export function TrimSelect({
   model,
   value,
@@ -179,21 +118,18 @@ export function TrimSelect({
       <p className="text-sm font-bold text-gray-700 mb-2">
         Trim <span className="text-gray-400 font-normal text-xs">(optional — improves accuracy)</span>
       </p>
-      <div className="flex flex-wrap gap-2">
-        {trims.map(t => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => onChange(value === t ? '' : t)}
-            className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-all ${
-              value === t
-                ? 'border-[#003087] bg-[#003087] text-white'
-                : 'border-gray-200 text-gray-600 hover:border-[#003087] hover:text-[#003087]'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
+      <div className="relative">
+        <select
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className={SELECT_CLS}
+        >
+          <option value="">Any trim</option>
+          {trims.map(t => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+        <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
       </div>
     </div>
   );
