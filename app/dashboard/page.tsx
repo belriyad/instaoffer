@@ -354,19 +354,26 @@ export default function DashboardPage() {
 
         {/* Quick links to acquisition tools */}
         {isApprovedDealer && (
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             {[
               { href: '/dashboard/good-deals', label: 'Good Deal Feed', sub: 'Listings below market' },
               { href: '/dashboard/margin',     label: 'Margin Calculator', sub: 'Estimate acquisition ROI' },
               { href: '/dashboard/analytics',  label: 'Analytics',       sub: 'Performance & activity' },
+              { href: '/dashboard/bi',         label: '✦ AI Business Intelligence', sub: 'Valuation · Forecast · Margin · Comps', highlight: true },
             ].map(item => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:border-[#003087] hover:shadow-md transition-all group"
+                className={`rounded-2xl border p-4 shadow-sm hover:shadow-md transition-all group ${
+                  (item as { highlight?: boolean }).highlight
+                    ? 'bg-[#003087] border-[#003087] hover:bg-[#0057b8]'
+                    : 'bg-white border-gray-100 hover:border-[#003087]'
+                }`}
               >
-                <p className="font-bold text-gray-900 text-sm group-hover:text-[#003087] transition-colors">{item.label}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{item.sub}</p>
+                <p className={`font-bold text-sm transition-colors ${
+                  (item as { highlight?: boolean }).highlight ? 'text-white' : 'text-gray-900 group-hover:text-[#003087]'
+                }`}>{item.label}</p>
+                <p className={`text-xs mt-0.5 ${(item as { highlight?: boolean }).highlight ? 'text-white/70' : 'text-gray-400'}`}>{item.sub}</p>
               </Link>
             ))}
           </div>
