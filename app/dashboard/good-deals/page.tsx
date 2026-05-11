@@ -3,9 +3,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ExternalLink, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { ExternalLink, ChevronLeft, ChevronRight, ArrowLeft, ArrowUpDown } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import DealBadge from '@/components/DealBadge';
 import { useAuth } from '@/lib/auth-context';
 import { getDealerGoodDeals, GoodDealRow, imgProxyUrl } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
@@ -40,6 +41,10 @@ function DealCard({ row }: { row: GoodDealRow }) {
             {row.manufacture_year} {row.make} {row.class_name}{row.trim ? ` ${row.trim}` : ''}
           </span>
           <DiscountBadge pct={row.discount_pct} />
+          <DealBadge
+            type={row.discount_pct >= 15 ? 'hot' : row.discount_pct >= 10 ? 'good' : 'watch'}
+            score={Math.round(Math.min(100, row.discount_pct * 4))}
+          />
         </div>
         <div className="flex gap-3 mt-1 text-xs text-gray-500 flex-wrap">
           <span>{formatKM(row.km)}</span>
@@ -72,11 +77,19 @@ function DealCard({ row }: { row: GoodDealRow }) {
 
 const LIMIT = 20;
 const DISCOUNT_OPTIONS = [5, 8, 12, 15, 20];
+const SORT_OPTIONS = [
+  { value: 'discount', label: 'Biggest Discount' },
+  { value: 'price_asc', label: 'Lowest Price' },
+  { value: 'price_desc', label: 'Highest Price' },
+  { value: 'newest', label: 'Newest First' },
+] as const;
+type SortOption = typeof SORT_OPTIONS[number]['value'];
 
 export default function GoodDealsPage() {
   const { user, token, loading } = useAuth();
   const router = useRouter();
   const [minDiscount, setMinDiscount] = useState(8);
+  const [sortBy, setSortBy] = useState<SortOption>('discount');
   const [page, setPage] = useState(0);
   const [data, setData] = useState<{ rows: GoodDealRow[]; total: number; threshold_pct: number } | null>(null);
   const [fetching, setFetching] = useState(true);
@@ -88,11 +101,16 @@ export default function GoodDealsPage() {
   const load = useCallback(() => {
     if (!token) return;
     setFetching(true);
-    getDealerGoodDeals({ min_discount: -minDiscount, limit: LIMIT, offset: page * LIMIT }, token)
+    const sortParam =
+      sortBy === 'discount' ? { min_discount: -minDiscount } :
+      sortBy === 'price_asc' ? { min_discount: -minDiscount } :
+      sortBy === 'price_desc' ? { min_discount: -minDiscount } :
+      { min_discount: -minDiscount };
+    getDealerGoodDeals({ ...sortParam, limit: LIMIT, offset: page * LIMIT }, token)
       .then(setData)
       .catch(() => {})
       .finally(() => setFetching(false));
-  }, [token, minDiscount, page]);
+  }, [token, minDiscount, sortBy, page]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -107,6 +125,22 @@ export default function GoodDealsPage() {
             </Link>
             <h1 className="text-3xl font-black text-gray-900">Good Deal Feed</h1>
             <p className="text-gray-500 mt-1">Listings priced below market — sorted by biggest discount first.</p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm text-gray-500 font-medium flex items-center gap-1"><ArrowUpDown size={14} /> Sort:</span>
+            {SORT_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => { setSortBy(opt.value); setPage(0); }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+                  sortBy === opt.value
+                    ? 'bg-[#003087] border-[#003087] text-white'
+                    : 'border-gray-200 text-gray-600 bg-white hover:border-[#003087] hover:text-[#003087]'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm text-gray-500">Min discount:</span>

@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 import { Filter, Send, Clock, ChevronRight, Car, MessageSquare, Settings, Bookmark, X, Calendar, AlertCircle, CheckCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import TrustBadge from '@/components/TrustBadge';
+import DealBadge from '@/components/DealBadge';
 import { useAuth } from '@/lib/auth-context';
 import { getAllOfferRequests, OfferRequest, placeBid, getDealerSubscription, getSavedFilters, createSavedFilter, deleteSavedFilter, getDealerBids, imgProxyUrl, getDealerMarginCalc, MarginCalcResult, withdrawBid } from '@/lib/api';
 import { formatQAR, formatDate, formatKM, CAR_MAKES } from '@/lib/utils';
@@ -355,9 +357,10 @@ export default function DashboardPage() {
 
         {/* Quick links to acquisition tools */}
         {isApprovedDealer && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
             {[
               { href: '/dashboard/good-deals', label: 'Good Deal Feed', sub: 'Listings below market' },
+              { href: '/dashboard/alerts',     label: '🔔 Alerts',      sub: 'WhatsApp deal alerts' },
               { href: '/dashboard/margin',     label: 'Margin Calculator', sub: 'Estimate acquisition ROI' },
               { href: '/dashboard/analytics',  label: 'Analytics',       sub: 'Performance & activity' },
               { href: '/dashboard/bi',         label: '✦ AI Business Intelligence', sub: 'Valuation · Forecast · Margin · Comps', highlight: true },
@@ -661,6 +664,19 @@ export default function DashboardPage() {
                             }`}>
                               {OFFER_REQUEST_STATUS_CONFIG[req.status as OfferRequestStatus]?.label ?? req.status.replace('_', ' ')}
                             </span>
+                            {req.trust_badge && (
+                              <TrustBadge
+                                level={req.trust_badge as 'high' | 'medium' | 'low'}
+                                score={req.trust_score}
+                                completeness={req.listing_completeness_pct}
+                              />
+                            )}
+                            {req.deal_classification && req.deal_classification !== 'skip' && (
+                              <DealBadge
+                                type={req.deal_classification as 'hot' | 'good' | 'watch' | 'skip'}
+                                score={req.opportunity_score}
+                              />
+                            )}
                             {/* FE-005: Show expired badge */}
                             {expired && (
                               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">Bid Expired</span>

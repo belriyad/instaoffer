@@ -20,6 +20,7 @@ interface Prefs {
   notify_push: boolean;
   notify_whatsapp: boolean;
   active: boolean;
+  min_score_for_alert: number;
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -31,6 +32,7 @@ const DEFAULT_PREFS: Prefs = {
   notify_push: true,
   notify_whatsapp: false,
   active: true,
+  min_score_for_alert: 60,
 };
 
 export default function PreferencesPage() {
@@ -242,6 +244,30 @@ export default function PreferencesPage() {
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Alert Score Threshold */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-6">
+            <h2 className="font-bold text-gray-900 mb-1">Minimum Alert Score</h2>
+            <p className="text-sm text-gray-500 mb-1">
+              Only alert me on opportunities scoring{' '}
+              <span className="font-bold text-[#003087]">{prefs.min_score_for_alert}+</span> out of 100
+            </p>
+            <p className="text-xs text-gray-400 mb-4">Higher = fewer but higher-quality alerts. Lower = more alerts.</p>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={prefs.min_score_for_alert}
+              onChange={e => setPrefs(p => ({ ...p, min_score_for_alert: Number(e.target.value) }))}
+              className="w-full accent-[#003087]"
+            />
+            <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <span>0 — all alerts</span>
+              <span className="text-amber-600 font-medium">60 — recommended</span>
+              <span>100 — only perfect</span>
             </div>
           </div>
 

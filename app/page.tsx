@@ -57,8 +57,8 @@ export default function Home() {
                 <Link href="/valuation" className="flex items-center justify-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-lg text-lg transition-all transform hover:scale-105 shadow-lg shadow-orange-900/30">
                   Start Free Valuation <ChevronRight size={20} />
                 </Link>
-                <Link href="/how-it-works" className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all">
-                  How It Works
+                <Link href="/urgent-sale" className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all">
+                  ⚡ Sell Fast
                 </Link>
               </motion.div>
               <motion.div variants={fadeUp} className="flex flex-wrap gap-4">

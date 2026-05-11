@@ -301,6 +301,7 @@ export async function createOfferRequest(
     contact_name?: string;
     contact_phone?: string;
     has_inspection?: boolean;
+    // Urgent seller flow — BE-#47
     is_urgent?: boolean;
     urgency_reason?: 'leaving_qatar' | 'need_cash' | 'upgrading' | 'other';
     sell_priority?: 'speed' | 'price' | 'balanced';
@@ -446,8 +447,6 @@ export async function setDealerPreferences(
     body: JSON.stringify(data),
   }, token);
 }
-
-// ─── Notifications ────────────────────────────────────────────────────────────
 
 export async function getNotifications(userKey: string, token: string) {
   return apiFetch(`/notifications?user_key=${userKey}`, {}, token);
