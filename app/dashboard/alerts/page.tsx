@@ -29,7 +29,7 @@ function AlertCard({ alert }: { alert: DealerAlert }) {
 
           <div className="flex gap-3 text-xs text-gray-500 flex-wrap mb-2">
             {alert.km && <span>{formatKM(alert.km)}</span>}
-            {alert.asking_qar && <span>{formatQAR(alert.asking_qar)} asking</span>}
+            {alert.asking_price_qar && <span>{formatQAR(alert.asking_price_qar)} asking</span>}
             {alert.market_est_qar && <span>{formatQAR(alert.market_est_qar)} est.</span>}
             {alert.potential_margin_qar && (
               <span className="text-green-600 font-semibold">
@@ -180,7 +180,7 @@ export default function AlertsPage() {
             ) : (
               <div className="space-y-3">
                 {data.rows.map(alert => (
-                  <AlertCard key={alert.alert_id} alert={alert} />
+                  <AlertCard key={alert.alert_uid} alert={alert} />
                 ))}
               </div>
             )}
