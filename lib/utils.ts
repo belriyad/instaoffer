@@ -1033,6 +1033,8 @@ export const FUEL_TYPES = ['Petrol', 'Diesel', 'Hybrid', 'Electric'];
 export const GEAR_TYPES = ['Automatic', 'Manual'];
 export const CAR_TYPES = ['Sedan', 'SUV', 'Pickup', 'Hatchback', 'Coupe', 'Van', 'Convertible', 'Wagon'];
 export const WARRANTY_STATUSES = ['Under Warranty', 'No Warranty', 'Extended Warranty'];
+export const CYLINDER_OPTIONS = [4, 6, 8] as const;
+export const SELLER_TYPES = ['private', 'dealer'] as const;
 
 /**
  * Known model defaults for Qatar market vehicles.

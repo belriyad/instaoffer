@@ -6,12 +6,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Car, AlertCircle, Lock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import {
-  FUEL_TYPES, GEAR_TYPES, CAR_TYPES, formatKM, MODEL_DEFAULTS,
+  FUEL_TYPES, GEAR_TYPES, CAR_TYPES, formatKM, MODEL_DEFAULTS, WARRANTY_STATUSES,
 } from '@/lib/utils';
 import {
   MakeSelect, ModelSelect, TrimSelect,
   YearTiles, KmBucketPicker, kmLabel,
-  ConditionPicker, CityPicker, PillGroupPicker,
+  ConditionPicker, CityPicker, PillGroupPicker, CylinderPicker,
 } from '@/lib/form-controls';
 import { getMLEstimate, getMLForecast, getMarketComps, getMLTimeToSell, MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -29,6 +29,8 @@ export interface ValuationData {
   condition: string;
   city: string;
   trim: string;
+  cylinder_count: number | null;
+  warranty_status: string;
 }
 
 
@@ -162,10 +164,9 @@ function Screen2({
       {(() => {
         const d = data.class_name ? (MODEL_DEFAULTS[data.class_name] ?? {}) : {};
         const hasLocked = Object.keys(d).length > 0;
-        const hasUnlocked = !d.fuel_type || !d.gear_type || !d.car_type;
         return (
           <div className="border border-gray-200 rounded-xl overflow-hidden">
-            {/* Locked auto-detected row — always visible if any field is known */}
+            {/* Locked auto-detected row */}
             {hasLocked && (
               <div className="flex flex-wrap items-center gap-2 px-4 py-3 bg-[#f5f8ff] border-b border-gray-100">
                 <Lock size={11} className="text-[#003087] opacity-60" />
@@ -175,55 +176,58 @@ function Screen2({
                 {d.car_type  && <span className="bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-2.5 py-0.5 rounded-full">{d.car_type}</span>}
               </div>
             )}
-            {/* Only show accordion if there are still unlocked fields */}
-            {hasUnlocked && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setShowOptional(v => !v)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+            <button
+              type="button"
+              onClick={() => setShowOptional(v => !v)}
+              className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <span>More details <span className="text-gray-400 font-normal">(improves accuracy)</span></span>
+              <ChevronRight size={15} className={`transition-transform ${showOptional ? 'rotate-90' : ''}`} />
+            </button>
+            <AnimatePresence>
+              {showOptional && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
                 >
-                  <span>Improve accuracy <span className="text-gray-400 font-normal">(optional)</span></span>
-                  <ChevronRight size={15} className={`transition-transform ${showOptional ? 'rotate-90' : ''}`} />
-                </button>
-                <AnimatePresence>
-                  {showOptional && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-4 pb-4 space-y-4 border-t border-gray-100">
-                        {!d.fuel_type && (
-                          <div className="pt-3">
-                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Fuel</p>
-                            <PillGroupPicker options={FUEL_TYPES} value={data.fuel_type} onChange={v => onUpdate('fuel_type', v)} />
+                  <div className="px-4 pb-4 space-y-4 border-t border-gray-100">
+                    {!d.fuel_type && (
+                      <div className="pt-3">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Fuel</p>
+                        <PillGroupPicker options={FUEL_TYPES} value={data.fuel_type} onChange={v => onUpdate('fuel_type', v)} />
+                      </div>
+                    )}
+                    {(!d.car_type || !d.gear_type) && (
+                      <div className="grid grid-cols-2 gap-4 pt-3">
+                        {!d.car_type && (
+                          <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Body</p>
+                            <PillGroupPicker options={CAR_TYPES} value={data.car_type} onChange={v => onUpdate('car_type', v)} />
                           </div>
                         )}
-                        {(!d.car_type || !d.gear_type) && (
-                          <div className="grid grid-cols-2 gap-4">
-                            {!d.car_type && (
-                              <div>
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Body</p>
-                                <PillGroupPicker options={CAR_TYPES} value={data.car_type} onChange={v => onUpdate('car_type', v)} />
-                              </div>
-                            )}
-                            {!d.gear_type && (
-                              <div>
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Transmission</p>
-                                <PillGroupPicker options={GEAR_TYPES} value={data.gear_type} onChange={v => onUpdate('gear_type', v)} />
-                              </div>
-                            )}
+                        {!d.gear_type && (
+                          <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Transmission</p>
+                            <PillGroupPicker options={GEAR_TYPES} value={data.gear_type} onChange={v => onUpdate('gear_type', v)} />
                           </div>
                         )}
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </>
-            )}
+                    )}
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Cylinders</p>
+                      <CylinderPicker value={data.cylinder_count} onChange={v => onUpdate('cylinder_count', v)} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Warranty</p>
+                      <PillGroupPicker options={WARRANTY_STATUSES} value={data.warranty_status} onChange={v => onUpdate('warranty_status', v)} />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         );
       })()}
@@ -268,17 +272,19 @@ function ValuationContent() {
 
   const [screen, setScreen] = useState<1 | 2>(1);
   const [data, setData] = useState<ValuationData>({
-    make:       searchParams.get('make') || '',
-    class_name: searchParams.get('class_name') || '',
-    model:      '',
-    year:       searchParams.get('year') ? Number(searchParams.get('year')) : null,
-    km:         searchParams.get('km') ? Number(searchParams.get('km')) : null,
-    car_type:   '',
-    fuel_type:  '',
-    gear_type:  'Automatic',
-    condition:  '',
-    city:       'Doha',
-    trim:       searchParams.get('trim') || '',
+    make:            searchParams.get('make') || '',
+    class_name:      searchParams.get('class_name') || '',
+    model:           '',
+    year:            searchParams.get('year') ? Number(searchParams.get('year')) : null,
+    km:              searchParams.get('km') ? Number(searchParams.get('km')) : null,
+    car_type:        '',
+    fuel_type:       '',
+    gear_type:       'Automatic',
+    condition:       '',
+    city:            'Doha',
+    trim:            searchParams.get('trim') || '',
+    cylinder_count:  null,
+    warranty_status: 'Under Warranty',
   });
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState('');
@@ -308,12 +314,15 @@ function ValuationContent() {
         class_name:       data.class_name,
         manufacture_year: data.year!,
         km:               data.km!,
-        car_type:         data.car_type   || undefined,
-        fuel_type:        data.fuel_type  || undefined,
-        gear_type:        data.gear_type  || undefined,
-        city:             data.city       || undefined,
-        trim:             data.trim       || undefined,
-        condition:        data.condition  || undefined,
+        car_type:         data.car_type       || undefined,
+        fuel_type:        data.fuel_type      || undefined,
+        gear_type:        data.gear_type      || undefined,
+        city:             data.city           || undefined,
+        trim:             data.trim           || undefined,
+        condition:        data.condition      || undefined,
+        cylinder_count:   data.cylinder_count ?? undefined,
+        warranty_status:  data.warranty_status || undefined,
+        seller_type:      'private' as const,
       };
       const [est, fc, comp, tts] = await Promise.all([
         getMLEstimate(params, authToken),

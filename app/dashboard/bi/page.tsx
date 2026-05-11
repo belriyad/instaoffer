@@ -15,11 +15,11 @@ import {
   getDealerMarginCalc, getMarketComps,
   MLEstimate, MLForecast, MLTimeToSellEstimate, MarginCalcResult, OfferComps,
 } from '@/lib/api';
-import { formatQAR, formatKM, MODEL_DEFAULTS } from '@/lib/utils';
+import { formatQAR, formatKM, MODEL_DEFAULTS, WARRANTY_STATUSES, SELLER_TYPES } from '@/lib/utils';
 import {
   MakeSelect, ModelSelect, TrimSelect,
   YearTiles, KmBucketPicker, kmLabel,
-  ConditionPicker, CityPicker, PillGroupPicker, PriceSlider,
+  ConditionPicker, CityPicker, PillGroupPicker, PriceSlider, CylinderPicker,
 } from '@/lib/form-controls';
 import { FUEL_TYPES, GEAR_TYPES, CAR_TYPES } from '@/lib/utils';
 
@@ -109,8 +109,11 @@ export default function BIPage() {
   const [fuelType, setFuelType] = useState('');
   const [gearType, setGearType] = useState('');
   const [carType, setCarType] = useState('');
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState('Doha');
   const [condition, setCondition] = useState('');
+  const [cylinderCount, setCylinderCount] = useState<number | null>(null);
+  const [warrantyStatus, setWarrantyStatus] = useState('Under Warranty');
+  const [sellerType, setSellerType] = useState('private');
 
   // Results state
   const [results, setResults] = useState<BIResults | null>(null);
@@ -130,12 +133,15 @@ export default function BIPage() {
       class_name: className,
       manufacture_year: year!,
       km: km!,
-      trim:      trim      || undefined,
-      fuel_type: fuelType  || undefined,
-      gear_type: gearType  || undefined,
-      car_type:  carType   || undefined,
-      city:      city      || undefined,
-      condition: condition || undefined,
+      trim:            trim           || undefined,
+      fuel_type:       fuelType       || undefined,
+      gear_type:       gearType       || undefined,
+      car_type:        carType        || undefined,
+      city:            city           || undefined,
+      condition:       condition      || undefined,
+      cylinder_count:  cylinderCount  ?? undefined,
+      warranty_status: warrantyStatus || undefined,
+      seller_type:     sellerType     || undefined,
     };
 
     try {
@@ -319,6 +325,39 @@ export default function BIPage() {
               </div>
             );
           })()}
+
+          {/* ── Cylinders ── */}
+          <div className="mt-5">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Cylinders</p>
+            <CylinderPicker value={cylinderCount} onChange={setCylinderCount} />
+          </div>
+
+          {/* ── Warranty ── */}
+          <div className="mt-5">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Warranty</p>
+            <PillGroupPicker options={WARRANTY_STATUSES} value={warrantyStatus} onChange={setWarrantyStatus} />
+          </div>
+
+          {/* ── Seller Type ── */}
+          <div className="mt-5">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Seller Type</p>
+            <div className="flex gap-2">
+              {SELLER_TYPES.map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSellerType(s)}
+                  className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-bold capitalize transition-all ${
+                    sellerType === s
+                      ? 'border-[#003087] bg-[#003087] text-white'
+                      : 'border-gray-200 text-gray-600 hover:border-[#003087] hover:text-[#003087]'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* ── Dealer: Buy Price ── */}
           <div className="mt-5 border-t border-gray-100 pt-5">

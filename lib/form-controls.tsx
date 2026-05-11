@@ -13,6 +13,7 @@ import {
   CONDITIONS,
   FUEL_TYPES, GEAR_TYPES, CAR_TYPES, QATAR_CITIES,
   formatQAR, formatKM,
+  CYLINDER_OPTIONS,
 } from '@/lib/utils';
 import type { MLEstimate } from '@/lib/api';
 
@@ -330,6 +331,35 @@ export function PillGroupPicker({
           }`}
         >
           {opt}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── PriceSlider ──────────────────────────────────────────────────────────────
+// ─── CylinderPicker ───────────────────────────────────────────────────────────
+export function CylinderPicker({
+  value,
+  onChange,
+}: {
+  value: number | null;
+  onChange: (v: number | null) => void;
+}) {
+  return (
+    <div className="flex gap-2">
+      {CYLINDER_OPTIONS.map(c => (
+        <button
+          key={c}
+          type="button"
+          onClick={() => onChange(value === c ? null : c)}
+          className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+            value === c
+              ? 'border-[#003087] bg-[#003087] text-white'
+              : 'border-gray-200 text-gray-600 hover:border-[#003087] hover:text-[#003087]'
+          }`}
+        >
+          {c}-cyl
         </button>
       ))}
     </div>
