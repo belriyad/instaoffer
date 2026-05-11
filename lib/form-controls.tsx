@@ -19,8 +19,8 @@ import type { MLEstimate } from '@/lib/api';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Year tiles split: recent 8 shown by default, older revealed on demand */
-const RECENT_YEARS = Array.from({ length: 8 }, (_, i) => 2025 - i);
-const OLDER_YEARS  = Array.from({ length: 18 }, (_, i) => 2017 - i);
+const RECENT_YEARS = Array.from({ length: 8 }, (_, i) => 2026 - i);
+const OLDER_YEARS  = Array.from({ length: 18 }, (_, i) => 2018 - i);
 
 /** 6 KM buckets — each carries a display label and the midpoint value sent to the API */
 export const KM_BUCKETS = [
