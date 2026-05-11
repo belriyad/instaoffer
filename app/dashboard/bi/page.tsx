@@ -536,39 +536,6 @@ export default function BIPage() {
                 </div>
               )}
 
-              {/* ── Market Comps ── */}
-              {results.comps && results.comps.count > 0 && (
-                <ResultCard>
-                  <SectionHeader icon={<Car size={16} />} title="Market Comparables" />
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                    {[
-                      { label: 'Listings found', val: results.comps.count },
-                      { label: 'Median price', val: results.comps.median ? formatQAR(results.comps.median) : '—' },
-                      { label: 'P25 – P75', val: results.comps.p25 && results.comps.p75 ? `${formatQAR(results.comps.p25)} – ${formatQAR(results.comps.p75)}` : '—' },
-                      { label: 'Avg price', val: results.comps.avg ? formatQAR(results.comps.avg) : '—' },
-                    ].map(s => (
-                      <div key={s.label} className="bg-gray-50 rounded-xl p-3">
-                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">{s.label}</div>
-                        <div className="text-sm font-black text-gray-900">{s.val}</div>
-                      </div>
-                    ))}
-                  </div>
-                  {results.comps.samples.length > 0 && (
-                    <div className="space-y-2">
-                      {results.comps.samples.slice(0, 3).map(s => (
-                        <div key={s.product_id} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-2.5">
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-800 truncate">{s.title}</p>
-                            <p className="text-xs text-gray-400">{s.manufacture_year} · {formatKM(s.km)} · {s.city}</p>
-                          </div>
-                          <div className="text-sm font-black text-[#003087] ml-4 flex-shrink-0">{formatQAR(s.price_qar)}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </ResultCard>
-              )}
-
               {/* Re-run button */}
               <button
                 onClick={runAnalysis}
@@ -588,7 +555,7 @@ export default function BIPage() {
             <Brain size={40} className="text-gray-200 mx-auto mb-3" />
             <p className="text-gray-400 font-medium">Fill in the vehicle details above and hit <strong className="text-gray-600">Run AI Analysis</strong></p>
             <div className="flex flex-wrap justify-center gap-2 mt-4 text-xs text-gray-400">
-              {['Fair Market Value', 'Price Forecast', 'Time to Sell', 'Margin Analysis', 'Market Comps'].map(t => (
+              {['Fair Market Value', 'Price Forecast', 'Time to Sell', 'Margin Analysis'].map(t => (
                 <span key={t} className="bg-gray-50 border border-gray-100 px-3 py-1 rounded-full">{t}</span>
               ))}
             </div>
