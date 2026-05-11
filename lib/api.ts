@@ -221,7 +221,53 @@ export interface OfferRequest {
   contact_phone: string | null;
   status: 'open' | 'pending' | 'under_offer' | 'accepted' | 'rejected' | 'expired' | 'cancelled';
   accepted_bid_id: number | null;
+  is_urgent?: boolean;
+  urgency_reason?: 'leaving_qatar' | 'need_cash' | 'upgrading' | 'other' | null;
+  sell_priority?: 'speed' | 'price' | 'balanced';
+  vin?: string | null;
+  chassis_number?: string | null;
+  trust_score?: number;
+  trust_badge?: 'high' | 'medium' | 'low';
+  listing_completeness_pct?: number;
+  trust_flags?: string[];
+  opportunity_score?: number;
+  deal_classification?: 'hot' | 'good' | 'watch' | 'skip';
+  score_explanation?: string[];
+  market_est_qar?: number | null;
+  potential_margin_qar?: number | null;
+  discount_pct?: number | null;
   expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DealerAlert {
+  id: number;
+  alert_uid: string;
+  dealer_id: string;
+  request_id: number;
+  request_uid: string;
+  make: string;
+  class_name: string;
+  model: string | null;
+  year: number;
+  km: number;
+  city: string;
+  condition: string;
+  asking_price_qar: number | null;
+  is_urgent: boolean;
+  urgency_reason: string | null;
+  sell_priority: string;
+  request_status: string;
+  opportunity_score: number;
+  deal_classification: 'hot' | 'good' | 'watch' | 'skip';
+  market_est_qar: number | null;
+  potential_margin_qar: number | null;
+  score_explanation: string[];
+  whatsapp_status: 'not_sent' | 'sent' | 'failed' | 'no_whatsapp_channel';
+  whatsapp_message_id: string | null;
+  status: string;
+  sent_at: string;
   created_at: string;
   updated_at: string;
 }
@@ -255,6 +301,11 @@ export async function createOfferRequest(
     contact_name?: string;
     contact_phone?: string;
     has_inspection?: boolean;
+    is_urgent?: boolean;
+    urgency_reason?: 'leaving_qatar' | 'need_cash' | 'upgrading' | 'other';
+    sell_priority?: 'speed' | 'price' | 'balanced';
+    vin?: string;
+    chassis_number?: string;
   },
   token: string
 ): Promise<{ request: OfferRequest }> {
@@ -343,6 +394,9 @@ export async function getAllOfferRequests(token: string, params?: {
   city?: string;
   limit?: number;
   offset?: number;
+  sort_by?: 'opportunity_score' | 'discount_pct' | 'urgency' | 'created_at';
+  sort_dir?: 'asc' | 'desc';
+  deal_classification?: 'hot' | 'good' | 'watch' | 'skip';
 }) {
   const qs = params
     ? '?' + new URLSearchParams(
@@ -352,6 +406,21 @@ export async function getAllOfferRequests(token: string, params?: {
       ).toString()
     : '';
   return apiFetch(`/instant-offers/requests${qs}`, {}, token);
+}
+
+export async function getDealerAlerts(token: string, params?: {
+  status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ rows: DealerAlert[]; total: number }> {
+  const qs = params
+    ? '?' + new URLSearchParams(
+        Object.entries(params)
+          .filter(([, v]) => v !== undefined)
+          .map(([k, v]) => [k, String(v)])
+      ).toString()
+    : '';
+  return apiFetch(`/instant-offers/dealer-alerts${qs}`, {}, token);
 }
 
 export async function getDealerPreferences(token: string) {
@@ -367,6 +436,7 @@ export async function setDealerPreferences(
     max_km?: number;
     notify_push?: boolean;
     notify_whatsapp?: boolean;
+    min_score_for_alert?: number;
     active?: boolean;
   },
   token: string

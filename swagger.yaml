@@ -1353,6 +1353,23 @@ paths:
         - in: query
           name: offset
           schema: { type: integer, default: 0 }
+        - in: query
+          name: sort_by
+          schema:
+            type: string
+            default: opportunity_score
+            enum: [opportunity_score, discount_pct, urgency, created_at]
+        - in: query
+          name: sort_dir
+          schema:
+            type: string
+            default: desc
+            enum: [asc, desc]
+        - in: query
+          name: deal_classification
+          schema:
+            type: string
+            enum: [hot, good, watch, skip]
       responses:
         "200":
           description: Offer requests list
@@ -1581,6 +1598,35 @@ paths:
       responses:
         "200":
           description: Withdrawn
+  /instant-offers/dealer-alerts:
+    get:
+      tags: [InstantOffers]
+      summary: List current dealer's acquisition alerts
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+        - in: query
+          name: offset
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Dealer alerts list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rows:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DealerAlert"
+                  total: { type: integer }
   /instant-offers/preferences:
     get:
       tags: [InstantOffers]
@@ -2286,6 +2332,31 @@ components:
         contact_phone: { type: string, nullable: true }
         status: { type: string, enum: [open, under_offer, accepted, pending, rejected, expired, cancelled] }
         accepted_bid_id: { type: integer, nullable: true }
+        is_urgent: { type: boolean }
+        urgency_reason:
+          type: string
+          nullable: true
+          enum: [leaving_qatar, need_cash, upgrading, other]
+        sell_priority:
+          type: string
+          enum: [speed, price, balanced]
+        vin: { type: string, nullable: true }
+        chassis_number: { type: string, nullable: true }
+        trust_score: { type: integer, minimum: 0, maximum: 100 }
+        trust_badge: { type: string, enum: [high, medium, low] }
+        listing_completeness_pct: { type: integer, minimum: 0, maximum: 100 }
+        trust_flags:
+          type: array
+          items: { type: string }
+          description: Admin-only diagnostic flags; empty for non-admin dealer views.
+        opportunity_score: { type: integer, minimum: 0, maximum: 100 }
+        deal_classification: { type: string, enum: [hot, good, watch, skip] }
+        score_explanation:
+          type: array
+          items: { type: string }
+        market_est_qar: { type: integer, nullable: true }
+        potential_margin_qar: { type: integer, nullable: true }
+        discount_pct: { type: number, nullable: true }
         expires_at: { type: string, format: date-time, nullable: true }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
@@ -2306,6 +2377,16 @@ components:
         asking_price_qar: { type: integer }
         contact_name: { type: string }
         contact_phone: { type: string }
+        is_urgent: { type: boolean, default: false }
+        urgency_reason:
+          type: string
+          enum: [leaving_qatar, need_cash, upgrading, other]
+        sell_priority:
+          type: string
+          default: balanced
+          enum: [speed, price, balanced]
+        vin: { type: string }
+        chassis_number: { type: string }
         expires_at: { type: string, format: date-time }
     OfferBid:
       type: object
@@ -2364,7 +2445,47 @@ components:
         max_km: { type: integer }
         notify_push: { type: boolean }
         notify_whatsapp: { type: boolean }
+        min_score_for_alert:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 60
         active: { type: boolean }
+    DealerAlert:
+      type: object
+      properties:
+        id: { type: integer }
+        alert_uid: { type: string }
+        dealer_id: { type: string }
+        request_id: { type: integer }
+        request_uid: { type: string }
+        make: { type: string }
+        class_name: { type: string }
+        model: { type: string, nullable: true }
+        year: { type: integer }
+        km: { type: integer }
+        city: { type: string }
+        condition: { type: string }
+        asking_price_qar: { type: integer, nullable: true }
+        is_urgent: { type: boolean }
+        urgency_reason: { type: string, nullable: true }
+        sell_priority: { type: string }
+        request_status: { type: string }
+        opportunity_score: { type: integer, minimum: 0, maximum: 100 }
+        deal_classification: { type: string, enum: [hot, good, watch, skip] }
+        market_est_qar: { type: integer, nullable: true }
+        potential_margin_qar: { type: integer, nullable: true }
+        score_explanation:
+          type: array
+          items: { type: string }
+        whatsapp_status:
+          type: string
+          enum: [not_sent, sent, failed, no_whatsapp_channel]
+        whatsapp_message_id: { type: string, nullable: true }
+        status: { type: string }
+        sent_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     PhoneAccessRequest:
       type: object
       properties:
