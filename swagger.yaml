@@ -1331,6 +1331,100 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OfferComps"
+  /trade-in/requests:
+    get:
+      tags: [TradeIns]
+      summary: List current user's trade-in requests
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+        - in: query
+          name: offset
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Trade-in requests for the authenticated customer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rows:
+                    type: array
+                    items: { $ref: "#/components/schemas/TradeInRequest" }
+                  total: { type: integer }
+    post:
+      tags: [TradeIns]
+      summary: Create a trade-in request
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TradeInRequestCreate"
+      responses:
+        "201":
+          description: Trade-in request created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request:
+                    $ref: "#/components/schemas/TradeInRequest"
+        "400":
+          description: Missing or invalid required field
+  /dealer/trade-ins:
+    get:
+      tags: [TradeIns]
+      summary: Dealer queue of open trade-in requests
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, default: open }
+        - in: query
+          name: make
+          schema: { type: string }
+        - in: query
+          name: city
+          schema: { type: string }
+        - in: query
+          name: min_year
+          schema: { type: integer }
+        - in: query
+          name: max_year
+          schema: { type: integer }
+        - in: query
+          name: max_km
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+        - in: query
+          name: offset
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Dealer-visible trade-in requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rows:
+                    type: array
+                    items: { $ref: "#/components/schemas/TradeInRequest" }
+                  total: { type: integer }
   /instant-offers/requests:
     get:
       tags: [InstantOffers]
@@ -2388,6 +2482,54 @@ components:
         vin: { type: string }
         chassis_number: { type: string }
         expires_at: { type: string, format: date-time }
+    TradeInRequest:
+      type: object
+      properties:
+        id: { type: integer }
+        trade_in_uid: { type: string }
+        customer_id: { type: string }
+        make: { type: string }
+        class_name: { type: string }
+        model: { type: string, nullable: true }
+        year: { type: integer }
+        km: { type: integer }
+        color: { type: string, nullable: true }
+        condition: { type: string, enum: [excellent, good, fair, poor] }
+        city: { type: string }
+        description: { type: string, nullable: true }
+        photo_urls_json: { type: string, nullable: true }
+        asking_price_qar: { type: integer, nullable: true }
+        outstanding_finance_qar: { type: integer, nullable: true }
+        contact_name: { type: string, nullable: true }
+        contact_phone: { type: string, nullable: true }
+        desired_vehicle: { type: string, nullable: true }
+        target_budget_qar: { type: integer, nullable: true }
+        status: { type: string, enum: [open, under_review, offer_made, accepted, rejected, expired, cancelled] }
+        market_est_qar: { type: integer, nullable: true }
+        equity_est_qar: { type: integer, nullable: true }
+        asking_delta_qar: { type: integer, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    TradeInRequestCreate:
+      type: object
+      required: [make, class_name, year, km, condition, city]
+      properties:
+        make: { type: string }
+        class_name: { type: string }
+        model: { type: string }
+        year: { type: integer }
+        km: { type: integer }
+        color: { type: string }
+        condition: { type: string, enum: [excellent, good, fair, poor] }
+        city: { type: string }
+        description: { type: string }
+        photo_urls_json: { type: string }
+        asking_price_qar: { type: integer }
+        outstanding_finance_qar: { type: integer }
+        contact_name: { type: string }
+        contact_phone: { type: string }
+        desired_vehicle: { type: string }
+        target_budget_qar: { type: integer }
     OfferBid:
       type: object
       properties:
