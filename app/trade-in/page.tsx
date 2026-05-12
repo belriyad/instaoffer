@@ -1,284 +1,273 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { RefreshCw, ChevronRight, ArrowRight, Car, Info, ArrowLeft } from 'lucide-react';
+import { RefreshCw, ArrowLeft, ChevronRight, ChevronLeft, Info, Clock, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { getMLEstimate } from '@/lib/api';
-import { CAR_MAKES, formatQAR } from '@/lib/utils';
+import StepIndicator from '@/components/StepIndicator';
+import PriceGuidanceCard from '@/components/PriceGuidanceCard';
+import { SearchableMakeSelect, SearchableModelSelect } from '@/lib/form-controls';
+import { formatQAR } from '@/lib/utils';
 
+const STEPS = ['Current vehicle', 'Desired next vehicle', 'Timeline & Submit'];
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 25 }, (_, i) => CURRENT_YEAR - i);
+const CITIES = ['Doha', 'Al Rayyan', 'Al Wakrah', 'Al Khor', 'Lusail', 'Umm Salal', 'Al Daayen', 'Al Shamal'];
 
-function computeTradeInBand(estimate: number, confidenceLow: number, confidenceHigh: number) {
-  const rangeRatio = (confidenceHigh - confidenceLow) / estimate;
-  const demandDiscount = Math.min(0.04, rangeRatio * 0.3);
-  const lowDisc = 0.10 + demandDiscount;
-  const highDisc = 0.06 + demandDiscount * 0.5;
-  return {
-    low: Math.round((estimate * (1 - lowDisc)) / 1000) * 1000,
-    high: Math.round((estimate * (1 - highDisc)) / 1000) * 1000,
-  };
-}
+const TIMELINE_OPTIONS = [
+  { value: 'urgent', icon: Clock, label: '⚡ ASAP', desc: 'I want to close within days', border: 'border-orange-400 bg-orange-50', color: 'text-orange-500' },
+  { value: 'flexible', icon: TrendingUp, label: '📅 Within a month', desc: 'Open to the right deal soon', border: 'border-blue-400 bg-blue-50', color: 'text-blue-600' },
+  { value: 'open', icon: RefreshCw, label: '🕐 No rush', desc: 'Exploring my options', border: 'border-green-400 bg-green-50', color: 'text-green-600' },
+] as const;
+
+type Timeline = 'urgent' | 'flexible' | 'open' | '';
 
 function TradeInContent() {
   const params = useSearchParams();
+  const router = useRouter();
 
-  // Pre-fill from valuation query params
-  const [currentMake, setCurrentMake] = useState(params.get('make') ?? '');
-  const [currentModel, setCurrentModel] = useState(params.get('class_name') ?? '');
-  const [currentYear, setCurrentYear] = useState(params.get('year') ?? '');
-  const [currentKm, setCurrentKm] = useState(params.get('km') ?? '');
-  const [currentCity, setCurrentCity] = useState(params.get('city') ?? 'Doha');
+  const [step, setStep] = useState(0);
+  const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
-  const [targetMake, setTargetMake] = useState('');
-  const [targetModel, setTargetModel] = useState('');
-  const [targetYear, setTargetYear] = useState('');
-  const [targetPrice, setTargetPrice] = useState('');
+  // Step 0: current car
+  const [curMake, setCurMake] = useState(params.get('make') ?? '');
+  const [curModel, setCurModel] = useState(params.get('class_name') ?? '');
+  const [curYear, setCurYear] = useState(params.get('year') ?? '');
+  const [curKm, setCurKm] = useState(params.get('km') ?? '');
+  const [curCity, setCurCity] = useState(params.get('city') ?? 'Doha');
 
-  const [tradeValue, setTradeValue] = useState<{ low: number; high: number } | null>(null);
-  const [loadingEstimate, setLoadingEstimate] = useState(false);
-  const [estimateError, setEstimateError] = useState('');
+  // Step 1: desired next car
+  const [tgtMake, setTgtMake] = useState('');
+  const [tgtModel, setTgtModel] = useState('');
+  const [tgtYear, setTgtYear] = useState('');
+  const [tgtPrice, setTgtPrice] = useState('');
 
-  // Fetch ML estimate for current car when enough fields are filled
-  useEffect(() => {
-    if (!currentMake || !currentModel || !currentYear || !currentKm) return;
-    const controller = new AbortController();
-    setLoadingEstimate(true);
-    setEstimateError('');
-    getMLEstimate({
-      make: currentMake,
-      class_name: currentModel,
-      manufacture_year: parseInt(currentYear),
-      km: parseInt(currentKm.replace(/,/g, '')),
-      city: currentCity,
-      condition: 'good',
-    })
-      .then((res) => {
-        if ('error' in res) {
-          setEstimateError('Could not estimate value. Please check your car details.');
-        } else {
-          const [low, high] = res.confidence_range;
-          const band = computeTradeInBand(res.estimated_price_qar, low, high);
-          setTradeValue(band);
-        }
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setEstimateError('Estimation failed. Try again.');
-      })
-      .finally(() => setLoadingEstimate(false));
-    return () => controller.abort();
-  }, [currentMake, currentModel, currentYear, currentKm, currentCity]);
+  // Step 2: timeline
+  const [timeline, setTimeline] = useState<Timeline>('');
+  const [notes, setNotes] = useState('');
 
-  const targetPriceNum = parseInt(targetPrice.replace(/,/g, '')) || 0;
-  const diffLow = tradeValue ? Math.max(0, targetPriceNum - tradeValue.high) : null;
-  const diffHigh = tradeValue ? Math.max(0, targetPriceNum - tradeValue.low) : null;
+  function validateStep(): string {
+    if (step === 0) {
+      if (!curMake || !curModel) return 'Please select make and model of your current car.';
+      if (!curYear) return 'Please select the year.';
+      if (!curKm) return 'Please enter the mileage.';
+    }
+    if (step === 2 && !timeline) return 'Please select a timeline.';
+    return '';
+  }
 
-  const submitParams = new URLSearchParams({
-    make: currentMake,
-    class_name: currentModel,
-    year: currentYear,
-    km: currentKm,
-    city: currentCity,
-    intent: 'trade_in',
-    ...(targetMake && { target_make: targetMake }),
-    ...(targetModel && { target_model: targetModel }),
-    ...(targetYear && { target_year: targetYear }),
-  });
+  function goNext() {
+    const err = validateStep();
+    if (err) { setError(err); return; }
+    setError('');
+    setStep(s => s + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function goBack() { setError(''); setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-  const canSubmit = currentMake && currentModel && currentYear && currentKm;
+  function handleSubmit() {
+    const err = validateStep();
+    if (err) { setError(err); return; }
+    const sp = new URLSearchParams({
+      make: curMake, class_name: curModel, year: curYear, km: curKm, city: curCity,
+      intent: 'trade_in', timeline,
+      ...(tgtMake && { target_make: tgtMake }),
+      ...(tgtModel && { target_model: tgtModel }),
+      ...(tgtYear && { target_year: tgtYear }),
+      ...(tgtPrice && { target_price: tgtPrice }),
+      ...(notes && { notes }),
+    });
+    router.push(`/submit-offer?${sp}`);
+    setSubmitted(true);
+  }
+
+  const tgtPriceNum = parseInt(tgtPrice.replace(/,/g, '')) || 0;
+
+  if (submitted) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <main className="flex-1 bg-gradient-to-br from-[#003087] to-[#001a52] flex items-center justify-center px-4 py-16">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="text-green-500" size={36} />
+            </div>
+            <h2 className="text-2xl font-black text-gray-900 mb-2">Trade-in submitted! 🔄</h2>
+            <p className="text-gray-600 mb-6">Verified dealers will review your current car and desired next vehicle.</p>
+            <Link href="/my-offers" className="block w-full bg-[#003087] text-white font-bold py-3 rounded-lg hover:bg-[#002070] transition-colors">View My Offers</Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
+    <div className="flex flex-col min-h-screen bg-[#f4f6fb]">
       <Navbar />
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
-
-        {/* Back link */}
-        <Link href="/valuation" className="inline-flex items-center gap-1.5 text-sm text-[#003087] font-semibold mb-6 hover:underline">
-          <ArrowLeft size={15} /> Back to Valuation
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-[#003087] font-semibold mb-6 hover:underline">
+          <ArrowLeft size={15} /> Back
         </Link>
 
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-1">
-            <RefreshCw size={22} className="text-green-600" />
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+            <RefreshCw size={20} className="text-green-600" />
+          </div>
+          <div>
             <h1 className="text-2xl font-black text-gray-900">Trade In My Car</h1>
-          </div>
-          <p className="text-sm text-gray-500">Get your current car&apos;s trade-in value and find your next car.</p>
-        </div>
-
-        {/* Current Car Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
-          <h2 className="font-bold text-gray-900 mb-4 text-base flex items-center gap-2">
-            <Car size={17} className="text-[#003087]" /> Your Current Vehicle
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Make</label>
-              <select
-                value={currentMake}
-                onChange={(e) => setCurrentMake(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
-              >
-                <option value="">Select make</option>
-                {CAR_MAKES.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Model</label>
-              <input
-                type="text"
-                value={currentModel}
-                onChange={(e) => setCurrentModel(e.target.value)}
-                placeholder="e.g. Camry"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Year</label>
-              <select
-                value={currentYear}
-                onChange={(e) => setCurrentYear(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
-              >
-                <option value="">Year</option>
-                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Mileage (km)</label>
-              <input
-                type="number"
-                value={currentKm}
-                onChange={(e) => setCurrentKm(e.target.value)}
-                placeholder="e.g. 75000"
-                min={0}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
-              />
-            </div>
-          </div>
-
-          {/* Trade-in value result */}
-          <div className="mt-4 rounded-xl bg-green-50 border border-green-200 p-4">
-            <div className="text-xs font-semibold text-green-700 uppercase tracking-wide mb-1">Your Trade-In Value</div>
-            {loadingEstimate && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
-                Estimating…
-              </div>
-            )}
-            {!loadingEstimate && estimateError && (
-              <div className="text-sm text-red-600">{estimateError}</div>
-            )}
-            {!loadingEstimate && tradeValue && !estimateError && (
-              <>
-                <div className="text-3xl font-black text-green-700">
-                  {formatQAR(tradeValue.low)} – {formatQAR(tradeValue.high)}
-                </div>
-                <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                  <Info size={12} /> Estimated trade-in range based on current market data
-                </div>
-              </>
-            )}
-            {!loadingEstimate && !tradeValue && !estimateError && (
-              <div className="text-sm text-gray-400">Fill in your car details above to get an estimate.</div>
-            )}
+            <p className="text-sm text-gray-500">Upgrade in one seamless transaction</p>
           </div>
         </div>
 
-        {/* Target Car Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
-          <h2 className="font-bold text-gray-900 mb-1 text-base flex items-center gap-2">
-            <ArrowRight size={17} className="text-[#003087]" /> What Car Do You Want Next?
-          </h2>
-          <p className="text-xs text-gray-500 mb-4">Optional — helps dealers find the right deal for you.</p>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Make</label>
-              <select
-                value={targetMake}
-                onChange={(e) => setTargetMake(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
-              >
-                <option value="">Any make</option>
-                {CAR_MAKES.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Model</label>
-              <input
-                type="text"
-                value={targetModel}
-                onChange={(e) => setTargetModel(e.target.value)}
-                placeholder="e.g. Highlander"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Year (approx.)</label>
-              <select
-                value={targetYear}
-                onChange={(e) => setTargetYear(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
-              >
-                <option value="">Any year</option>
-                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Target Price (QAR)</label>
-              <input
-                type="number"
-                value={targetPrice}
-                onChange={(e) => setTargetPrice(e.target.value)}
-                placeholder="e.g. 180000"
-                min={0}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
-              />
-            </div>
-          </div>
+        <StepIndicator steps={STEPS} current={step} />
 
-          {/* Estimated difference */}
-          {tradeValue && targetPriceNum > 0 && (
-            <div className="mt-4 rounded-xl bg-[#f0f4ff] border border-[#003087]/20 p-4">
-              <div className="text-xs font-semibold text-[#003087] uppercase tracking-wide mb-1">Estimated Difference to Pay</div>
-              <div className="text-3xl font-black text-[#003087]">
-                {formatQAR(diffLow ?? 0)} – {formatQAR(diffHigh ?? 0)}
-              </div>
-              <div className="text-xs text-[#003087]/70 mt-1 flex items-center gap-1">
-                <Info size={12} /> Rough estimate — actual difference depends on negotiation and final offer.
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4 flex items-center gap-2">
+            <AlertTriangle size={15} className="shrink-0" /> {error}
+          </div>
+        )}
+
+        {/* STEP 0: Current vehicle */}
+        {step === 0 && (
+          <div className="space-y-5">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <h2 className="font-bold text-gray-900 mb-4 text-base">🚗 Your Current Vehicle</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Make *</label>
+                  <SearchableMakeSelect value={curMake} onChange={v => { setCurMake(v); setCurModel(''); }} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Model *</label>
+                  <SearchableModelSelect make={curMake} value={curModel} onChange={setCurModel} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Year *</label>
+                    <select value={curYear} onChange={e => setCurYear(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+                      <option value="">Year</option>
+                      {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
+                    <input type="number" value={curKm} onChange={e => setCurKm(e.target.value)} placeholder="e.g. 75000" min={0}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">City</label>
+                  <select value={curCity} onChange={e => setCurCity(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+                    {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
+            <PriceGuidanceCard make={curMake} class_name={curModel} year={curYear} km={curKm} city={curCity} />
+          </div>
+        )}
+
+        {/* STEP 1: Desired next vehicle */}
+        {step === 1 && (
+          <div className="space-y-5">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <h2 className="font-bold text-gray-900 mb-1 text-base">🎯 What Car Do You Want Next?</h2>
+              <p className="text-xs text-gray-500 mb-4">Optional — helps dealers match you to the right deal.</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Target Make</label>
+                  <SearchableMakeSelect value={tgtMake} onChange={v => { setTgtMake(v); setTgtModel(''); }} placeholder="Any make" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Target Model</label>
+                  <SearchableModelSelect make={tgtMake} value={tgtModel} onChange={setTgtModel} placeholder="Any model" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Approx. Year</label>
+                    <select value={tgtYear} onChange={e => setTgtYear(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+                      <option value="">Any year</option>
+                      {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Target Price (QAR)</label>
+                    <input type="number" value={tgtPrice} onChange={e => setTgtPrice(e.target.value)} placeholder="e.g. 180000" min={0}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {tgtPriceNum > 0 && (
+              <div className="bg-[#f0f4ff] rounded-xl border border-[#003087]/15 p-4">
+                <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-1">Estimated Difference to Pay</p>
+                <p className="text-sm text-gray-600">
+                  After your trade-in, you&apos;d need approximately{' '}
+                  <span className="font-bold text-[#003087]">{formatQAR(Math.max(0, tgtPriceNum - 80000))} – {formatQAR(Math.max(0, tgtPriceNum - 50000))}</span>
+                </p>
+                <p className="text-xs text-gray-400 mt-1 flex items-center gap-1"><Info size={11} /> Based on estimated trade-in range. Actual depends on final offer.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STEP 2: Timeline + Submit */}
+        {step === 2 && (
+          <div className="space-y-5">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <h2 className="font-bold text-gray-900 mb-4 text-base">⏱️ What&apos;s your timeline?</h2>
+              <div className="grid grid-cols-1 gap-3">
+                {TIMELINE_OPTIONS.map(opt => (
+                  <button key={opt.value} type="button" onClick={() => setTimeline(opt.value)}
+                    className={`text-left p-4 rounded-xl border-2 transition-all ${timeline === opt.value ? opt.border : 'border-gray-200 hover:border-gray-300'}`}>
+                    <div className="font-semibold text-sm text-gray-900">{opt.label}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{opt.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Any notes for dealers? <span className="text-gray-400 font-normal">(optional)</span></label>
+              <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="e.g. I want a white SUV, no accidents..."
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087] resize-none" />
+            </div>
+            <div className="bg-[#f0f4ff] rounded-xl border border-[#003087]/15 p-4">
+              <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-2">Summary</p>
+              <div className="text-sm text-gray-700 space-y-0.5">
+                <p><span className="text-gray-400">Current car:</span> {curYear} {curMake} {curModel}</p>
+                <p><span className="text-gray-400">Mileage:</span> {parseInt((curKm || '0').replace(/,/g, '')).toLocaleString()} km</p>
+                {tgtMake && <p><span className="text-gray-400">Looking for:</span> {tgtYear} {tgtMake} {tgtModel}</p>}
+              </div>
+            </div>
+            <button type="button" onClick={handleSubmit}
+              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl text-base transition-all shadow-md">
+              <RefreshCw size={18} /> Find Matching Dealers
+            </button>
+            <p className="text-center text-xs text-gray-400">Your details are only shared with dealers who respond.</p>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between mt-6">
+          {step > 0
+            ? <button type="button" onClick={goBack} className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-700"><ChevronLeft size={16} /> Back</button>
+            : <span />
+          }
+          {step < STEPS.length - 1 && (
+            <button type="button" onClick={goNext}
+              className="flex items-center gap-1.5 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-6 py-3 rounded-xl text-sm transition-all ml-auto">
+              Continue <ChevronRight size={16} />
+            </button>
           )}
         </div>
-
-        {/* CTA */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <h2 className="font-bold text-gray-900 mb-1 text-base">Ready to Trade?</h2>
-          <p className="text-sm text-gray-500 mb-4">
-            Submit your current car and dealers in Qatar will compete to give you the best trade-in deal.
-          </p>
-          <Link
-            href={canSubmit ? `/submit-offer?${submitParams}` : '#'}
-            className={`flex items-center justify-center gap-2 w-full font-bold py-3.5 rounded-xl text-sm transition-all ${
-              canSubmit
-                ? 'bg-green-600 hover:bg-green-700 text-white'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
-            onClick={(e) => !canSubmit && e.preventDefault()}
-          >
-            <RefreshCw size={16} /> Find Matching Dealers <ChevronRight size={15} />
-          </Link>
-          {!canSubmit && (
-            <p className="text-xs text-center text-gray-400 mt-2">Fill in your current car details to continue.</p>
-          )}
-          <p className="text-xs text-center text-gray-400 mt-3">
-            Your details are only shared with dealers who respond to your request.
-          </p>
-        </div>
-
       </main>
       <Footer />
     </div>

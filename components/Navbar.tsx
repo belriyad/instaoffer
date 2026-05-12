@@ -2,16 +2,17 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Car, Info, Building2, FileText, Zap } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Car, Info, Building2, FileText, Zap, RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 
 // ── nav link groups ─────────────────────────────────────────────────────────
 
 const SELL_LINKS = [
-  { href: '/valuation',    label: 'Get Instant Offer', icon: <Zap size={15} />,      desc: 'Free valuation in 60 seconds' },
-  { href: '/how-it-works', label: 'How It Works',       icon: <Info size={15} />,     desc: 'Step-by-step seller guide' },
-  { href: '/my-offers',    label: 'My Offers',          icon: <FileText size={15} />, desc: 'Track your active offers' },
+  { href: '/valuation',    label: 'Know my car value',  icon: <Zap size={15} />,      desc: 'AI-powered valuation in seconds' },
+  { href: '/urgent-sale',  label: 'Sell my car fast',   icon: <Zap size={15} />,      desc: 'Get dealer offers within hours' },
+  { href: '/trade-in',     label: 'Trade in my car',    icon: <RefreshCw size={15} />, desc: 'Upgrade in one transaction' },
+  { href: '/buy-request',  label: 'Find my next car',   icon: <Search size={15} />,   desc: 'Dealers bring the car to you' },
 ];
 
 const BUY_LINKS = [

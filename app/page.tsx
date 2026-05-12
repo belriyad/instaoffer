@@ -102,7 +102,7 @@ export default function Home() {
             initial="hidden"
             animate="visible"
             variants={stagger}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto"
           >
             {INTENT_CARDS.map((card) => (
               <motion.div key={card.href} variants={fadeUp}>

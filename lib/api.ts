@@ -606,6 +606,7 @@ export interface BuyRequestParams {
   make: string;
   class_name: string;
   trim?: string;
+  body_type?: string;
   year_min?: number;
   year_max?: number;
   km_max?: number;

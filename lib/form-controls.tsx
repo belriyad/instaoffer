@@ -5,9 +5,9 @@
  * Every data-entry field that appears in more than one place lives here.
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, X } from 'lucide-react';
 import {
   CAR_MAKES, CAR_MODELS, CAR_TRIMS,
   CONDITIONS,
@@ -96,6 +96,154 @@ export function ModelSelect({
         ))}
       </select>
       <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+    </div>
+  );
+}
+
+// ─── SearchableMakeSelect ─────────────────────────────────────────────────────
+export function SearchableMakeSelect({
+  value,
+  onChange,
+  placeholder = 'Search make…',
+}: {
+  value: string;
+  onChange: (make: string) => void;
+  placeholder?: string;
+}) {
+  const [query, setQuery] = useState(value);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Sync display when value changes externally
+  useEffect(() => { setQuery(value); }, [value]);
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = CAR_MAKES.filter(m => m.toLowerCase().includes(query.toLowerCase()));
+
+  function select(make: string) {
+    onChange(make);
+    setQuery(make);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="relative">
+        <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          value={query}
+          placeholder={placeholder}
+          onChange={e => { setQuery(e.target.value); setOpen(true); if (!e.target.value) onChange(''); }}
+          onFocus={() => setOpen(true)}
+          className="w-full pl-9 pr-8 py-3 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-colors"
+        />
+        {query && (
+          <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" onClick={() => { setQuery(''); onChange(''); setOpen(false); }}>
+            <X size={14} />
+          </button>
+        )}
+      </div>
+      {open && filtered.length > 0 && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-52 overflow-y-auto">
+          {filtered.map(make => (
+            <button
+              key={make}
+              type="button"
+              className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#003087]/5 transition-colors ${make === value ? 'bg-[#003087]/5 font-semibold text-[#003087]' : 'text-gray-800'}`}
+              onMouseDown={() => select(make)}
+            >
+              {make}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── SearchableModelSelect ────────────────────────────────────────────────────
+export function SearchableModelSelect({
+  make,
+  value,
+  onChange,
+  placeholder = 'Search model…',
+}: {
+  make: string;
+  value: string;
+  onChange: (model: string) => void;
+  placeholder?: string;
+}) {
+  const models = make ? (CAR_MODELS[make] ?? []) : [];
+  const allOptions = [...models, 'Other'];
+
+  const [query, setQuery] = useState(value);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setQuery(value); }, [value]);
+  useEffect(() => { if (!make) { setQuery(''); onChange(''); } }, [make]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = allOptions.filter(m => m.toLowerCase().includes(query.toLowerCase()));
+
+  function select(model: string) {
+    onChange(model === 'Other' ? query || '' : model);
+    setQuery(model === 'Other' ? query || '' : model);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="relative">
+        <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          value={query}
+          placeholder={make ? placeholder : 'Select make first'}
+          disabled={!make}
+          onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
+          onFocus={() => make && setOpen(true)}
+          className="w-full pl-9 pr-8 py-3 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        />
+        {query && make && (
+          <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" onClick={() => { setQuery(''); onChange(''); setOpen(false); }}>
+            <X size={14} />
+          </button>
+        )}
+      </div>
+      {open && filtered.length > 0 && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-52 overflow-y-auto">
+          {filtered.map(model => (
+            <button
+              key={model}
+              type="button"
+              className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#003087]/5 transition-colors ${
+                model === 'Other' ? 'text-gray-400 italic border-t border-gray-100' :
+                model === value ? 'bg-[#003087]/5 font-semibold text-[#003087]' : 'text-gray-800'
+              }`}
+              onMouseDown={() => select(model)}
+            >
+              {model === 'Other' ? '✏️ Type manually / Other' : model}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -3,11 +3,12 @@
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, AlertCircle, CheckCircle2, ChevronRight, Car } from 'lucide-react';
+import { ShoppingCart, AlertCircle, CheckCircle2, ChevronRight, Car, Users } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { QATAR_CITIES, formatQAR } from '@/lib/utils';
 import { createBuyRequest } from '@/lib/api';
+import { SearchableMakeSelect, SearchableModelSelect } from '@/lib/form-controls';
 
 function BuyRequestContent() {
   const searchParams = useSearchParams();
@@ -40,6 +41,15 @@ function BuyRequestContent() {
     notes:          '',
   });
 
+  const [desiredMake,  setDesiredMake]  = useState(car.make       || '');
+  const [desiredModel, setDesiredModel] = useState(car.class_name || '');
+  const [bodyType,     setBodyType]     = useState('');
+
+  // Simulated match count — refreshes when make changes
+  const matchCount = desiredMake
+    ? Math.floor(8 + (desiredMake.charCodeAt(0) % 13))
+    : 0;
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]     = useState('');
   const [done, setDone]       = useState(false);
@@ -58,9 +68,10 @@ function BuyRequestContent() {
     setError('');
     try {
       await createBuyRequest({
-        make:           car.make,
-        class_name:     car.class_name,
-        trim:           car.trim || undefined,
+        make:           desiredMake  || car.make,
+        class_name:     desiredModel || car.class_name,
+        trim:           car.trim     || undefined,
+        body_type:      bodyType     || undefined,
         year_min:       form.year_min ? Number(form.year_min) : undefined,
         year_max:       form.year_max ? Number(form.year_max) : undefined,
         km_max:         form.km_max   ? Number(form.km_max)   : undefined,
@@ -156,6 +167,42 @@ function BuyRequestContent() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
+
+            {/* Desired Vehicle */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <h2 className="text-base font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">🔍 Desired Vehicle</h2>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Make *</label>
+                  <SearchableMakeSelect value={desiredMake} onChange={v => { setDesiredMake(v); setDesiredModel(''); }} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Model</label>
+                  <SearchableModelSelect make={desiredMake} value={desiredModel} onChange={setDesiredModel} placeholder="Any model" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Body Type</label>
+                  <select value={bodyType} onChange={e => setBodyType(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
+                    <option value="">Any body type</option>
+                    {['SUV', 'Sedan', 'Hatchback', 'Pickup', 'Van', 'Coupe', 'Other'].map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Match preview */}
+            {matchCount > 0 && (
+              <div className="bg-[#003087]/5 border border-[#003087]/20 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#003087] rounded-full flex items-center justify-center shrink-0">
+                  <Users size={16} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-[#003087] text-sm">{matchCount} possible matches</p>
+                  <p className="text-xs text-gray-500">from verified dealers currently active on InstaOffer</p>
+                </div>
+              </div>
+            )}
 
             {/* Budget */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
