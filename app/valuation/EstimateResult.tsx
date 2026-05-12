@@ -2,10 +2,9 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, TrendingUp, Shield, ArrowRight, BarChart2, ShoppingCart, Clock, Zap, RefreshCw, Bookmark } from 'lucide-react';
+import { ChevronRight, TrendingUp, Shield, ArrowRight, Clock, Zap, RefreshCw } from 'lucide-react';
 import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
-import { PriceBandDisplay } from '@/lib/form-controls';
 import { ValuationData } from './page';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -18,35 +17,195 @@ interface Props {
   data: ValuationData;
 }
 
+/** Compute the 3 intent-based price bands from the ML estimate */
+function computePriceBands(estimate: MLEstimate) {
+  const mid = estimate.estimated_price_qar;
+  const low = estimate.confidence_range[0];
+  const high = estimate.confidence_range[1];
+
+  // Demand factor: tighter confidence = higher demand model = smaller discount
+  const rangeRatio = (high - low) / mid; // wider range → more uncertainty → bigger discount
+  const demandDiscount = Math.min(0.12, Math.max(0.04, rangeRatio * 0.5));
+
+  // Private party: full market range
+  const privatePartyLow  = Math.round(low  / 1000) * 1000;
+  const privatePartyHigh = Math.round(high / 1000) * 1000;
+
+  // Trade-in: 6–12% below private party
+  const tradeInDiscount = 0.06 + demandDiscount * 0.5;
+  const tradeInLow  = Math.round((low  * (1 - tradeInDiscount - 0.03)) / 1000) * 1000;
+  const tradeInHigh = Math.round((high * (1 - tradeInDiscount))        / 1000) * 1000;
+
+  // Instant offer: 12–22% below private party
+  const instantDiscount = 0.12 + demandDiscount;
+  const instantLow  = Math.round((low  * (1 - instantDiscount - 0.03)) / 1000) * 1000;
+  const instantHigh = Math.round((high * (1 - instantDiscount))        / 1000) * 1000;
+
+  return { privatePartyLow, privatePartyHigh, tradeInLow, tradeInHigh, instantLow, instantHigh };
+}
+
 export default function EstimateResult({ estimate, forecast, comps, timeToSell, data }: Props) {
+  const bands = computePriceBands(estimate);
+
+  const carLabel = [data.year, data.make, data.class_name, data.trim].filter(Boolean).join(' ')
+    + (data.km ? ` · ${formatKM(data.km)}` : '')
+    + (data.city ? ` · ${data.city}` : '');
+
+  const submitParams = new URLSearchParams({
+    make: data.make, class_name: data.class_name,
+    year: String(data.year ?? ''), km: String(data.km ?? ''),
+    condition: data.condition, city: data.city,
+    ...(data.model ? { model: data.model } : {}),
+    ...(data.trim  ? { trim:  data.trim  } : {}),
+  }).toString();
+
+  const urgentParams = new URLSearchParams({
+    make: data.make, class_name: data.class_name,
+    year: String(data.year ?? ''), km: String(data.km ?? ''), city: data.city,
+  }).toString();
+
+  const tradeParams = new URLSearchParams({
+    make: data.make, class_name: data.class_name,
+    year: String(data.year ?? ''), km: String(data.km ?? ''), city: data.city,
+  }).toString();
+
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
       <Navbar />
 
-      <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
-        {/* Estimate card */}
+      <div className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
+
+        {/* Car label */}
+        <div className="text-center mb-2">
+          <p className="text-sm text-gray-500 font-medium">{carLabel}</p>
+          {comps && (
+            <p className="text-xs text-green-700 font-semibold mt-1">
+              Based on {comps.count} similar cars in Qatar
+            </p>
+          )}
+        </div>
+
+        {/* Intent price bands */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-6"
+          className="mb-2"
         >
-          {/* Car summary */}
-          <div className="text-sm text-gray-500 mb-4 font-medium">
-            {[data.year, data.make, data.class_name, data.trim].filter(Boolean).join(' ')}
-            {data.km ? ` · ${formatKM(data.km)}` : ''}
-            {data.city ? ` · ${data.city}` : ''}
+          <h2 className="text-center text-lg font-black text-gray-900 mb-1">What is your car worth to you?</h2>
+          <p className="text-center text-xs text-gray-400 mb-5">Price depends on how fast you want to sell and how much effort you want to put in.</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+            {/* Band 1 — Maximize Price */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="bg-white rounded-2xl border-2 border-gray-100 shadow-sm p-5 flex flex-col"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">💰</span>
+                <div>
+                  <div className="font-black text-gray-900 text-sm">Maximize Price</div>
+                  <div className="text-xs text-gray-400">Private party sale</div>
+                </div>
+              </div>
+              <div className="mb-3">
+                <div className="text-2xl font-black text-gray-900">
+                  {formatQAR(bands.privatePartyLow)}–{formatQAR(bands.privatePartyHigh)}
+                </div>
+                <div className="text-xs text-gray-400 mt-0.5">Estimated market range</div>
+              </div>
+              <div className="space-y-1.5 text-xs text-gray-500 mb-4 flex-1">
+                <div className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Highest expected payout</div>
+                <div className="flex items-center gap-1.5"><span className="text-amber-500">~</span> Weeks to months to sell</div>
+                <div className="flex items-center gap-1.5"><span className="text-amber-500">~</span> More negotiation effort</div>
+                <div className="flex items-center gap-1.5 text-gray-400 text-[11px] mt-1 italic">Best for: patient sellers with flexibility</div>
+              </div>
+              <Link
+                href={`/submit-offer?${submitParams}`}
+                className="mt-auto flex items-center justify-center gap-1.5 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-2.5 rounded-xl text-sm transition-all"
+              >
+                Get Dealer Bids <ChevronRight size={15} />
+              </Link>
+            </motion.div>
+
+            {/* Band 2 — Trade In */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12 }}
+              className="bg-white rounded-2xl border-2 border-green-200 shadow-sm p-5 flex flex-col"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">🔄</span>
+                <div>
+                  <div className="font-black text-gray-900 text-sm">Easy Upgrade</div>
+                  <div className="text-xs text-gray-400">Trade-in value</div>
+                </div>
+              </div>
+              <div className="mb-3">
+                <div className="text-2xl font-black text-gray-900">
+                  {formatQAR(bands.tradeInLow)}–{formatQAR(bands.tradeInHigh)}
+                </div>
+                <div className="text-xs text-gray-400 mt-0.5">Typical trade-in range</div>
+              </div>
+              <div className="space-y-1.5 text-xs text-gray-500 mb-4 flex-1">
+                <div className="flex items-center gap-1.5"><span className="text-green-500">✓</span> One smooth transaction</div>
+                <div className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Sell &amp; upgrade together</div>
+                <div className="flex items-center gap-1.5"><span className="text-amber-500">~</span> Slightly lower payout</div>
+                <div className="flex items-center gap-1.5 text-gray-400 text-[11px] mt-1 italic">Best for: upgrading to another car</div>
+              </div>
+              <Link
+                href={`/trade-in?${tradeParams}`}
+                className="mt-auto flex items-center justify-center gap-1.5 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all"
+              >
+                <RefreshCw size={14} /> Start Trade-In
+              </Link>
+            </motion.div>
+
+            {/* Band 3 — Instant Offer */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-2xl border-2 border-orange-300 shadow-md p-5 flex flex-col relative overflow-hidden"
+            >
+              <div className="absolute top-3 right-3">
+                <span className="bg-[#ff6600] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Fastest</span>
+              </div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">⚡</span>
+                <div>
+                  <div className="font-black text-gray-900 text-sm">Fastest Sale</div>
+                  <div className="text-xs text-gray-400">Instant offer range</div>
+                </div>
+              </div>
+              <div className="mb-3">
+                <div className="text-2xl font-black text-[#ff6600]">
+                  {formatQAR(bands.instantLow)}–{formatQAR(bands.instantHigh)}
+                </div>
+                <div className="text-xs text-gray-400 mt-0.5">Expected urgent-sale range</div>
+              </div>
+              <div className="space-y-1.5 text-xs text-gray-500 mb-4 flex-1">
+                <div className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Sell within days</div>
+                <div className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Minimal effort required</div>
+                <div className="flex items-center gap-1.5"><span className="text-amber-500">~</span> Lower payout for speed</div>
+                <div className="flex items-center gap-1.5 text-gray-400 text-[11px] mt-1 italic">Best for: urgent sellers, expats leaving Qatar</div>
+              </div>
+              <Link
+                href={`/urgent-sale?${urgentParams}`}
+                className="mt-auto flex items-center justify-center gap-1.5 w-full bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold py-2.5 rounded-xl text-sm transition-all"
+              >
+                <Zap size={14} /> Sell Fast Now
+              </Link>
+            </motion.div>
+
           </div>
 
-          <PriceBandDisplay estimate={estimate} />
-
-          {comps && (
-            <div className="flex justify-center mt-3">
-              <div className="flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-semibold">
-                <TrendingUp size={12} />
-                Based on {comps.count} similar cars
-              </div>
-            </div>
-          )}
+          <p className="text-center text-xs text-gray-400 mt-4">
+            These are AI estimates — not guaranteed prices. Actual dealer offers depend on inspection and market conditions.
+          </p>
         </motion.div>
 
         {/* Time-to-sell */}
@@ -155,88 +314,24 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
           </div>
         </motion.div>
 
-        {/* CTAs — intent-driven action routing */}
+        {/* CTAs — moved into price band cards above; just offer re-valuation here */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="space-y-3"
+          className="text-center mt-2 mb-6"
         >
-          <p className="text-center text-sm font-semibold text-gray-500 uppercase tracking-widest mb-4">What do you want to do?</p>
-
-          {/* Primary — urgent sale */}
-          <Link
-            href={`/urgent-sale?${new URLSearchParams({
-              make:       data.make,
-              class_name: data.class_name,
-              year:       String(data.year ?? ''),
-              km:         String(data.km ?? ''),
-              city:       data.city,
-            }).toString()}`}
-            className="flex items-center gap-3 w-full bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold py-4 px-5 rounded-xl text-base transition-all shadow-md"
-          >
-            <Zap size={20} className="shrink-0" />
-            <div className="flex-1 text-left">
-              <div>Sell fast — get offers within hours</div>
-              <div className="text-xs font-normal text-orange-100 mt-0.5">Best for urgent sellers, expats leaving Qatar</div>
-            </div>
-            <ChevronRight size={18} className="shrink-0" />
-          </Link>
-
-          {/* Secondary — standard offers */}
-          <Link
-            href={`/submit-offer?${new URLSearchParams({
-              make:       data.make,
-              class_name: data.class_name,
-              year:       String(data.year ?? ''),
-              km:         String(data.km ?? ''),
-              condition:  data.condition,
-              city:       data.city,
-              ...(data.model ? { model: data.model } : {}),
-              ...(data.trim  ? { trim:  data.trim  } : {}),
-            }).toString()}`}
-            className="flex items-center gap-3 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-4 px-5 rounded-xl text-base transition-all shadow-md"
-          >
-            <TrendingUp size={20} className="shrink-0" />
-            <div className="flex-1 text-left">
-              <div>Get best dealer offers</div>
-              <div className="text-xs font-normal text-blue-200 mt-0.5">Dealers compete — you pick the highest bid</div>
-            </div>
-            <ChevronRight size={18} className="shrink-0" />
-          </Link>
-
-          {/* Trade-in */}
-          <Link
-            href={`/trade-in?${new URLSearchParams({
-              make:       data.make,
-              class_name: data.class_name,
-              year:       String(data.year ?? ''),
-              km:         String(data.km ?? ''),
-              city:       data.city,
-            }).toString()}`}
-            className="flex items-center gap-3 w-full bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 font-semibold py-4 px-5 rounded-xl text-base transition-all"
-          >
-            <RefreshCw size={20} className="shrink-0 text-green-600" />
-            <div className="flex-1 text-left">
-              <div>Trade in toward my next car</div>
-              <div className="text-xs font-normal text-gray-400 mt-0.5">Sell &amp; upgrade in one smooth transaction</div>
-            </div>
-            <ChevronRight size={18} className="shrink-0 text-gray-400" />
-          </Link>
-
-          {/* Value another */}
           <Link
             href="/valuation"
-            className="flex items-center justify-center gap-2 w-full bg-white hover:bg-gray-50 text-[#003087] border border-gray-200 font-semibold py-3 rounded-xl text-sm transition-all"
+            className="inline-flex items-center gap-2 text-[#003087] hover:underline text-sm font-semibold"
           >
-            <ArrowRight size={16} />
-            Value another car
+            <ArrowRight size={15} /> Value another car
           </Link>
         </motion.div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
-          This estimate is generated by an AI model trained on Qatar market data. It is not a guaranteed purchase price.
-          Actual dealer offers may vary based on physical inspection.
+        <p className="text-center text-xs text-gray-400 mt-2 mb-6">
+          All estimates are generated by an AI model trained on Qatar market data. Not a guaranteed purchase price.
+          Actual dealer offers depend on physical inspection and market conditions.
         </p>
       </div>
 
