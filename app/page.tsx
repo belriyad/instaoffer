@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Shield, Clock, TrendingUp, ChevronRight, Star, CheckCircle2, Phone, Lock, DollarSign } from 'lucide-react';
+import { Shield, Clock, TrendingUp, ChevronRight, Star, CheckCircle2, Phone, Lock, DollarSign, Zap, RefreshCw, Search } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -14,6 +14,42 @@ const fadeUp = {
 const stagger = {
   visible: { transition: { staggerChildren: 0.12 } },
 };
+
+const INTENT_CARDS = [
+  {
+    icon: '💡',
+    label: 'Know my car value',
+    desc: 'Get an instant AI-powered estimate based on real Qatar market data.',
+    href: '/valuation',
+    accent: 'border-blue-200 hover:border-[#003087]',
+    textAccent: 'text-[#003087]',
+  },
+  {
+    icon: '⚡',
+    label: 'Sell my car fast',
+    desc: 'Urgent sale? Get offers from dealers within hours, not weeks.',
+    href: '/urgent-sale',
+    accent: 'border-orange-300 hover:border-[#ff6600] bg-gradient-to-br from-orange-50 to-white',
+    textAccent: 'text-[#ff6600]',
+    highlight: true,
+  },
+  {
+    icon: '🔄',
+    label: 'Trade in my car',
+    desc: 'Sell your current car and upgrade in one seamless transaction.',
+    href: '/trade-in',
+    accent: 'border-green-200 hover:border-green-500',
+    textAccent: 'text-green-700',
+  },
+  {
+    icon: '🔍',
+    label: 'Find my next car',
+    desc: 'Tell us what you want and dealers will bring it to you.',
+    href: '/buy-request',
+    accent: 'border-purple-200 hover:border-purple-500',
+    textAccent: 'text-purple-700',
+  },
+];
 
 const STEPS = [
   { num: '1', title: 'Enter Car Details', desc: 'Make, model, year, mileage — takes 2 minutes.', icon: '🚗' },
@@ -30,6 +66,13 @@ const TRUST = [
   { icon: DollarSign, title: 'Real Market Prices', desc: 'Estimates powered by live Qatar car market data and ML model.' },
 ];
 
+const DEALER_POINTS = [
+  { icon: Zap, title: 'Urgent sellers first', desc: 'Receive real-time alerts when motivated sellers list cars that match your acquisition criteria.' },
+  { icon: TrendingUp, title: 'Margin visibility before you bid', desc: 'Every listing shows market estimate, potential margin, and opportunity score — so you only act on high-ROI deals.' },
+  { icon: Search, title: 'Beat competitors to the deal', desc: 'High-score listings are flagged instantly. First dealers to bid on urgent sellers win the deal.' },
+  { icon: RefreshCw, title: 'Only high-signal inventory', desc: 'AI filters out noise. You see motivated sellers, trust-scored listings, and deals classified by opportunity.' },
+];
+
 const MAKES = ['Toyota', 'Nissan', 'Lexus', 'BMW', 'Mercedes', 'Honda', 'Hyundai', 'Kia', 'Ford', 'Chevrolet', 'Land Rover', 'Mitsubishi'];
 
 export default function Home() {
@@ -40,37 +83,55 @@ export default function Home() {
       {/* ── HERO ── */}
       <section className="bg-gradient-to-br from-[#003087] via-[#00308f] to-[#001a52] text-white">
         <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-2xl">
-            <motion.div initial="hidden" animate="visible" variants={stagger}>
-              <motion.div variants={fadeUp}>
-                <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-                  🇶🇦 Designed for Qatar&apos;s car market
-                </span>
-              </motion.div>
-              <motion.h1 variants={fadeUp} className="text-4xl md:text-6xl font-black leading-tight mb-5">
-                Sell your car<br /><span className="text-[#ff6600]">fast in Qatar</span>
-              </motion.h1>
-              <motion.p variants={fadeUp} className="text-lg md:text-xl text-blue-100 leading-relaxed mb-8 max-w-xl">
-                Get an instant estimate and real dealer offers in minutes. No pressure. No obligation. Your number stays private.
-              </motion.p>
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 mb-10">
-                <Link href="/valuation" className="flex items-center justify-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-lg text-lg transition-all transform hover:scale-105 shadow-lg shadow-orange-900/30">
-                  Start Free Valuation <ChevronRight size={20} />
-                </Link>
-                <Link href="/urgent-sale" className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all">
-                  ⚡ Sell Fast
-                </Link>
-              </motion.div>
-              <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
-                {['No sign-up to get estimate', 'Phone number stays private', 'Non-binding offers', 'Free to use'].map((t) => (
-                  <div key={t} className="flex items-center gap-1.5 text-sm text-blue-200">
-                    <CheckCircle2 size={14} className="text-green-400 flex-shrink-0" />
-                    {t}
-                  </div>
-                ))}
-              </motion.div>
+          <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center mb-12">
+            <motion.div variants={fadeUp}>
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+                🇶🇦 Designed for Qatar&apos;s car market
+              </span>
             </motion.div>
-          </div>
+            <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl font-black leading-tight mb-4">
+              What do you want to do today?
+            </motion.h1>
+            <motion.p variants={fadeUp} className="text-lg text-blue-200 max-w-xl mx-auto">
+              Choose your goal — we&apos;ll route you into the right experience.
+            </motion.p>
+          </motion.div>
+
+          {/* Intent cards */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={stagger}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto"
+          >
+            {INTENT_CARDS.map((card) => (
+              <motion.div key={card.href} variants={fadeUp}>
+                <Link
+                  href={card.href}
+                  className={`flex flex-col h-full bg-white rounded-2xl border-2 p-6 shadow-sm hover:shadow-lg transition-all group ${card.accent} ${card.highlight ? 'ring-2 ring-[#ff6600]/40' : ''}`}
+                >
+                  <span className="text-4xl mb-3">{card.icon}</span>
+                  <h2 className={`font-black text-lg mb-2 group-hover:${card.textAccent} transition-colors ${card.highlight ? card.textAccent : 'text-gray-900'}`}>
+                    {card.label}
+                    {card.highlight && <span className="ml-2 text-xs font-bold bg-[#ff6600] text-white px-2 py-0.5 rounded-full align-middle">Popular</span>}
+                  </h2>
+                  <p className="text-sm text-gray-500 flex-1 leading-relaxed">{card.desc}</p>
+                  <div className={`mt-4 flex items-center gap-1 text-sm font-semibold ${card.textAccent}`}>
+                    Get started <ChevronRight size={16} />
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap justify-center gap-4 mt-10">
+            {['No sign-up to get estimate', 'Phone number stays private', 'Non-binding offers', 'Free to use'].map((t) => (
+              <div key={t} className="flex items-center gap-1.5 text-sm text-blue-200">
+                <CheckCircle2 size={14} className="text-green-400 flex-shrink-0" />
+                {t}
+              </div>
+            ))}
+          </motion.div>
         </div>
         <div className="w-full overflow-hidden leading-none">
           <svg viewBox="0 0 1440 48" className="block w-full" preserveAspectRatio="none">
@@ -173,16 +234,27 @@ export default function Home() {
 
       {/* ── FOR DEALERS ── */}
       <section className="py-16 bg-[#003087] text-white">
-        <div className="max-w-7xl mx-auto px-4 text-center">
+        <div className="max-w-7xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
-            <motion.div variants={fadeUp}><Star size={32} className="text-[#ff6600] mx-auto mb-4" /></motion.div>
-            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-black mb-4">Are You a Car Dealer?</motion.h2>
-            <motion.p variants={fadeUp} className="text-blue-200 text-lg mb-8 max-w-xl mx-auto">
-              Access unlimited leads, send offers to motivated sellers, and grow your business. Only <strong className="text-white">1,000 QAR / month</strong>.
-            </motion.p>
-            <motion.div variants={fadeUp}>
+            <motion.div variants={fadeUp} className="text-center mb-10">
+              <Star size={32} className="text-[#ff6600] mx-auto mb-4" />
+              <h2 className="text-3xl md:text-4xl font-black mb-3">Acquire profitable inventory faster than competitors</h2>
+              <p className="text-blue-200 text-lg max-w-2xl mx-auto">
+                InstaOffer is a dealer acquisition intelligence system — not a lead-gen platform. Only <strong className="text-white">1,000 QAR / month</strong>.
+              </p>
+            </motion.div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+              {DEALER_POINTS.map((pt) => (
+                <motion.div key={pt.title} variants={fadeUp} className="bg-white/10 border border-white/10 rounded-2xl p-5 hover:bg-white/15 transition-colors">
+                  <pt.icon size={24} className="text-[#ff6600] mb-3" />
+                  <h3 className="font-bold text-white mb-1.5 text-sm">{pt.title}</h3>
+                  <p className="text-blue-200 text-xs leading-relaxed">{pt.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+            <motion.div variants={fadeUp} className="text-center">
               <Link href="/for-dealers" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-lg text-lg transition-all">
-                Learn More for Dealers <ChevronRight size={20} />
+                Start Acquiring Smarter <ChevronRight size={20} />
               </Link>
             </motion.div>
           </motion.div>

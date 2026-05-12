@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, TrendingUp, Shield, ArrowRight, BarChart2, ShoppingCart, Clock } from 'lucide-react';
+import { ChevronRight, TrendingUp, Shield, ArrowRight, BarChart2, ShoppingCart, Clock, Zap, RefreshCw, Bookmark } from 'lucide-react';
 import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
 import { PriceBandDisplay } from '@/lib/form-controls';
@@ -155,13 +155,35 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
           </div>
         </motion.div>
 
-        {/* CTAs */}
+        {/* CTAs — intent-driven action routing */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
           className="space-y-3"
         >
+          <p className="text-center text-sm font-semibold text-gray-500 uppercase tracking-widest mb-4">What do you want to do?</p>
+
+          {/* Primary — urgent sale */}
+          <Link
+            href={`/urgent-sale?${new URLSearchParams({
+              make:       data.make,
+              class_name: data.class_name,
+              year:       String(data.year ?? ''),
+              km:         String(data.km ?? ''),
+              city:       data.city,
+            }).toString()}`}
+            className="flex items-center gap-3 w-full bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold py-4 px-5 rounded-xl text-base transition-all shadow-md"
+          >
+            <Zap size={20} className="shrink-0" />
+            <div className="flex-1 text-left">
+              <div>Sell fast — get offers within hours</div>
+              <div className="text-xs font-normal text-orange-100 mt-0.5">Best for urgent sellers, expats leaving Qatar</div>
+            </div>
+            <ChevronRight size={18} className="shrink-0" />
+          </Link>
+
+          {/* Secondary — standard offers */}
           <Link
             href={`/submit-offer?${new URLSearchParams({
               make:       data.make,
@@ -173,35 +195,42 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
               ...(data.model ? { model: data.model } : {}),
               ...(data.trim  ? { trim:  data.trim  } : {}),
             }).toString()}`}
-            className="flex items-center justify-center gap-2 w-full bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold py-4 rounded-xl text-lg transition-all shadow-md"
+            className="flex items-center gap-3 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-4 px-5 rounded-xl text-base transition-all shadow-md"
           >
-            Get Real Dealer Offers
-            <ChevronRight size={20} />
+            <TrendingUp size={20} className="shrink-0" />
+            <div className="flex-1 text-left">
+              <div>Get best dealer offers</div>
+              <div className="text-xs font-normal text-blue-200 mt-0.5">Dealers compete — you pick the highest bid</div>
+            </div>
+            <ChevronRight size={18} className="shrink-0" />
           </Link>
+
+          {/* Trade-in */}
           <Link
-            href={`/buy-request?${new URLSearchParams({
+            href={`/trade-in?${new URLSearchParams({
               make:       data.make,
               class_name: data.class_name,
               year:       String(data.year ?? ''),
               km:         String(data.km ?? ''),
-              condition:  data.condition,
               city:       data.city,
-              estimate:   String(Math.round(estimate.estimated_price_qar)),
-              low:        String(Math.round(estimate.confidence_range[0])),
-              high:       String(Math.round(estimate.confidence_range[1])),
-              ...(data.trim  ? { trim: data.trim } : {}),
             }).toString()}`}
-            className="flex items-center justify-center gap-2 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-4 rounded-xl text-lg transition-all shadow-md"
+            className="flex items-center gap-3 w-full bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 font-semibold py-4 px-5 rounded-xl text-base transition-all"
           >
-            <ShoppingCart size={20} />
-            I Want to Buy This Car
+            <RefreshCw size={20} className="shrink-0 text-green-600" />
+            <div className="flex-1 text-left">
+              <div>Trade in toward my next car</div>
+              <div className="text-xs font-normal text-gray-400 mt-0.5">Sell &amp; upgrade in one smooth transaction</div>
+            </div>
+            <ChevronRight size={18} className="shrink-0 text-gray-400" />
           </Link>
+
+          {/* Value another */}
           <Link
             href="/valuation"
-            className="flex items-center justify-center gap-2 w-full bg-white hover:bg-gray-50 text-[#003087] border border-gray-200 font-semibold py-4 rounded-xl text-base transition-all"
+            className="flex items-center justify-center gap-2 w-full bg-white hover:bg-gray-50 text-[#003087] border border-gray-200 font-semibold py-3 rounded-xl text-sm transition-all"
           >
-            Value Another Car
-            <ArrowRight size={18} />
+            <ArrowRight size={16} />
+            Value another car
           </Link>
         </motion.div>
 

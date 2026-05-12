@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, ChevronRight, CheckCircle2, ArrowLeft, Clock, TrendingUp, DollarSign } from 'lucide-react';
+import { Zap, ChevronRight, CheckCircle2, ArrowLeft, Clock, TrendingUp, DollarSign, Camera, FileText, AlertTriangle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
@@ -342,6 +342,48 @@ export default function UrgentSalePage() {
                     </button>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Evidence Checklist */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <h2 className="font-bold text-gray-900 mb-1 text-base flex items-center gap-2">
+                <Camera size={18} className="text-[#003087]" /> Evidence Package
+              </h2>
+              <p className="text-xs text-gray-500 mb-4">
+                Dealers act faster when they can see everything upfront. Check off what you can provide — you&apos;ll upload them in the next step.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { key: 'exterior', icon: '📸', label: 'Exterior photos (all 4 sides)', priority: 'Required' },
+                  { key: 'interior', icon: '🪑', label: 'Interior photos (front + rear)', priority: 'Required' },
+                  { key: 'odometer', icon: '🔢', label: 'Odometer close-up', priority: 'Required' },
+                  { key: 'registration', icon: '📄', label: 'Registration card (back/VIN side)', priority: 'Strongly recommended' },
+                  { key: 'inspection', icon: '🔧', label: 'Inspection report (if available)', priority: 'Optional' },
+                  { key: 'accidents', icon: '⚠️', label: 'Accident history note', priority: 'Optional' },
+                ].map((item) => (
+                  <label key={item.key} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-[#003087]/30 hover:bg-[#f5f7ff] cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 accent-[#003087] w-4 h-4 shrink-0"
+                      onChange={() => {}} // informational only — collected on next step
+                    />
+                    <div>
+                      <div className="text-sm font-medium text-gray-800">{item.icon} {item.label}</div>
+                      <div className={`text-xs mt-0.5 font-medium ${
+                        item.priority === 'Required' ? 'text-red-500' :
+                        item.priority === 'Strongly recommended' ? 'text-orange-500' :
+                        'text-gray-400'
+                      }`}>{item.priority}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <div className="mt-4 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <AlertTriangle size={16} className="text-amber-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800">
+                  Listings with exterior + interior + odometer photos receive <strong>3× more bids</strong> and close significantly faster.
+                </p>
               </div>
             </div>
 
