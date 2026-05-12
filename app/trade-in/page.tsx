@@ -277,9 +277,11 @@ function TradeInContent() {
                     <p className="text-sm text-gray-600">
                       After your trade-in, you&apos;d need approximately{' '}
                       <span className="font-bold text-[#003087]">
-                        {formatQAR(Math.max(0, tgtPriceNum - tradeEstimate[1]))}
-                        {' '}–{' '}
-                        {formatQAR(Math.max(0, tgtPriceNum - tradeEstimate[0]))}
+                        {(() => {
+                          const mid = (tradeEstimate[0] + tradeEstimate[1]) / 2;
+                          const diff = Math.max(0, tgtPriceNum - mid);
+                          return `${formatQAR(Math.round(diff * 0.95))} – ${formatQAR(Math.round(diff * 1.05))}`;
+                        })()}
                       </span>
                     </p>
                     <p className="text-xs text-gray-400 mt-2">
