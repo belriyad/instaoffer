@@ -19,29 +19,28 @@ interface Props {
 
 /** Compute the 3 intent-based price bands from the ML estimate */
 function computePriceBands(estimate: MLEstimate) {
-  const mid = estimate.estimated_price_qar;
+  const [low, high] = estimate.confidence_range;
+  const spread = (high - low) / 2;          // half-width from the model
+  const mid    = (low + high) / 2;          // model midpoint
 
-  // Cap display spread at ±5% of midpoint regardless of API confidence range
-  const spread = 0.05;
-
-  const r = (center: number) => ({
-    low:  Math.round(center * (1 - spread) / 1000) * 1000,
-    high: Math.round(center * (1 + spread) / 1000) * 1000,
+  const band = (center: number) => ({
+    low:  Math.round((center - spread) / 1000) * 1000,
+    high: Math.round((center + spread) / 1000) * 1000,
   });
 
-  // Private party: full market midpoint
-  const pp = r(mid);
+  // Private party  — model centre, full confidence band
+  const pp = band(mid);
 
-  // Trade-in: 8% below market midpoint
-  const ti = r(mid * 0.92);
+  // Trade-in       — 8% below market (dealer needs margin)
+  const ti = band(mid * 0.92);
 
-  // Instant offer: 17% below market midpoint
-  const io = r(mid * 0.83);
+  // Instant offer  — 17% below market (speed premium for dealer)
+  const io = band(mid * 0.83);
 
   return {
-    privatePartyLow:  pp.low,  privatePartyHigh: pp.high,
-    tradeInLow:       ti.low,  tradeInHigh:      ti.high,
-    instantLow:       io.low,  instantHigh:      io.high,
+    privatePartyLow: pp.low,  privatePartyHigh: pp.high,
+    tradeInLow:      ti.low,  tradeInHigh:      ti.high,
+    instantLow:      io.low,  instantHigh:      io.high,
   };
 }
 
