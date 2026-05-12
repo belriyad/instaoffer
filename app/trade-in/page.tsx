@@ -32,6 +32,13 @@ function TradeInContent() {
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
+  // Target car context (when coming from /cars/[slug])
+  const targetCarId = params.get('target_car_id') ?? '';
+  const targetCarName = params.get('target_name') ?? '';
+  const targetPriceRaw = params.get('target_price') ?? '';
+  const targetPriceNum = parseInt(targetPriceRaw) || 0;
+  const targetDealer = params.get('target_dealer') ?? '';
+
   // Step 0: current car
   const [curMake, setCurMake] = useState(params.get('make') ?? '');
   const [curModel, setCurModel] = useState(params.get('class_name') ?? '');
@@ -83,6 +90,10 @@ function TradeInContent() {
     const sp = new URLSearchParams({
       make: curMake, class_name: curModel, year: curYear, km: curKm != null ? String(curKm) : '', city: curCity,
       intent: 'trade_in', timeline,
+      ...(targetCarId && { target_car_id: targetCarId }),
+      ...(targetCarName && { target_car_name: targetCarName }),
+      ...(targetPriceRaw && { target_price: targetPriceRaw }),
+      ...(targetDealer && { target_dealer: targetDealer }),
       ...(tgtMake && { target_make: tgtMake }),
       ...(tgtModel && { target_model: tgtModel }),
       ...(tgtYear && { target_year: tgtYear }),
@@ -105,7 +116,11 @@ function TradeInContent() {
               <CheckCircle2 className="text-green-500" size={36} />
             </div>
             <h2 className="text-2xl font-black text-gray-900 mb-2">Trade-in submitted! 🔄</h2>
-            <p className="text-gray-600 mb-6">Verified dealers will review your current car and desired next vehicle.</p>
+            <p className="text-gray-600 mb-6">
+              {targetDealer
+                ? `Your trade-in request was sent directly to ${targetDealer}.`
+                : 'Verified dealers will review your current car and desired next vehicle.'}
+            </p>
             <Link href="/my-offers" className="block w-full bg-[#003087] text-white font-bold py-3 rounded-lg hover:bg-[#002070] transition-colors">View My Offers</Link>
           </div>
         </main>
@@ -121,6 +136,20 @@ function TradeInContent() {
         <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-[#003087] font-semibold mb-6 hover:underline">
           <ArrowLeft size={15} /> Back
         </Link>
+
+        {/* Target car banner — shown when coming from a car listing */}
+        {targetCarName && (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-5">
+            <p className="text-xs font-bold text-green-700 uppercase tracking-wide mb-1">Trading toward</p>
+            <p className="text-lg font-black text-gray-900">{targetCarName}</p>
+            {targetDealer && <p className="text-sm text-gray-500 mt-0.5">Dealer: {targetDealer}</p>}
+            {targetPriceNum > 0 && (
+              <p className="text-sm font-bold text-green-700 mt-1">
+                {new Intl.NumberFormat('en-QA', { style: 'currency', currency: 'QAR', maximumFractionDigits: 0 }).format(targetPriceNum)}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-2 mb-6">
           <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">

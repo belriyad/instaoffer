@@ -885,6 +885,78 @@ export async function getMLTimeToSell(
   return apiFetch<MLTimeToSellEstimate>(`/ml/time-to-sell${qs}`, {}, token);
 }
 
+// ─── Trade-in requests ────────────────────────────────────────────────────────
+
+export interface TradeInRequest {
+  uid: string;
+  status: string;
+  created_at: string;
+  // current car
+  make: string;
+  class_name: string;
+  year: number;
+  km: number;
+  city: string;
+  condition?: string;
+  // target car (dealer listing)
+  target_car_id?: string;
+  target_car_name?: string;
+  target_price_qar?: number;
+  target_dealer?: string;
+  target_dealer_id?: string;
+  // user contact
+  contact_name?: string;
+  contact_phone?: string;
+  // estimates
+  estimate_low_qar?: number;
+  estimate_high_qar?: number;
+  difference_low_qar?: number;
+  difference_high_qar?: number;
+  notes?: string;
+}
+
+export interface TradeInRequestPayload {
+  make: string;
+  class_name: string;
+  year: number;
+  km: number;
+  city?: string;
+  condition?: string;
+  target_car_id?: string;
+  target_car_name?: string;
+  target_price_qar?: number;
+  target_dealer_id?: string;
+  contact_name?: string;
+  contact_phone?: string;
+  notes?: string;
+}
+
+export async function createTradeInRequest(
+  payload: TradeInRequestPayload,
+  token: string
+): Promise<{ uid: string }> {
+  return apiFetch<{ uid: string }>('/trade-in/requests', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, token);
+}
+
+export async function getDealerTradeIns(
+  params: { limit?: number; offset?: number; status?: string },
+  token: string
+): Promise<{ rows: TradeInRequest[]; total: number }> {
+  const qs = '?' + new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, String(v)])
+  ).toString();
+  return apiFetch<{ rows: TradeInRequest[]; total: number }>(`/dealer/trade-ins${qs}`, {}, token);
+}
+
+export async function getTradeInDetail(uid: string, token: string): Promise<TradeInRequest> {
+  return apiFetch<TradeInRequest>(`/trade-in/requests/${uid}`, {}, token);
+}
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
 export async function adminGetAllRequests(token: string, params?: {

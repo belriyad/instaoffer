@@ -20,8 +20,9 @@ const BUY_LINKS = [
 ];
 
 const DEALER_LINKS = [
-  { href: '/for-dealers',  label: 'For Dealers',        icon: <Building2 size={15} />, desc: 'Grow your acquisition pipeline' },
-  { href: '/dashboard',    label: 'Dealer Dashboard',   icon: <LayoutDashboard size={15} />, desc: 'Leads, bids & analytics' },
+  { href: '/for-dealers',          label: 'For Dealers',        icon: <Building2 size={15} />,    desc: 'Grow your acquisition pipeline' },
+  { href: '/dashboard',            label: 'Dealer Dashboard',   icon: <LayoutDashboard size={15} />, desc: 'Leads, bids & analytics' },
+  { href: '/dashboard/trade-ins',  label: 'Trade-in Queue',     icon: <RefreshCw size={15} />,    desc: 'Buyers trading in toward your cars' },
 ];
 
 // ── helpers ──────────────────────────────────────────────────────────────────

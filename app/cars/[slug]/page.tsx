@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Fuel, Zap, ChevronLeft as Prev, ChevronRight as Next, CreditCard, Calculator } from 'lucide-react';
+import { ChevronLeft, Fuel, Zap, ChevronLeft as Prev, ChevronRight as Next, CreditCard, Calculator, RefreshCw, MessageSquare } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getWakalatCar, WakalatCarDetail, wakalatImageUrl } from '@/lib/api';
@@ -176,7 +176,30 @@ export default function CarDetailPage() {
               {trimPrice && <p className="text-xs text-gray-500 mt-0.5">Starting price · VAT may apply</p>}
             </div>
 
-            {/* Finance calculator */}
+            {/* Primary CTAs */}
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <a
+                href={`https://wa.me/?text=Hi%2C+I%27m+interested+in+the+${encodeURIComponent(`${car.year} ${car.make} ${car.model}`)}+listed+on+InstaOffer`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center gap-1.5 bg-[#003087] hover:bg-[#002070] text-white font-bold px-4 py-3.5 rounded-2xl text-sm transition-colors text-center"
+              >
+                <MessageSquare size={18} />
+                <span>Contact Dealer</span>
+                <span className="text-xs font-normal opacity-75">Ask about this vehicle</span>
+              </a>
+              <Link
+                href={`/trade-in?target_car_id=${car.car_id}&target_name=${encodeURIComponent(`${car.year} ${car.make} ${car.model}`)}&target_price=${trimPrice ?? ''}&target_dealer=${encodeURIComponent(car.dealer ?? '')}`}
+                className="flex flex-col items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-3.5 rounded-2xl text-sm transition-colors text-center"
+              >
+                <RefreshCw size={18} />
+                <span>Trade In My Car</span>
+                <span className="text-xs font-normal opacity-75">Use my car toward this</span>
+              </Link>
+            </div>
+            <p className="text-xs text-gray-400 mt-2 text-center">
+              Trade-in: get an estimated value for your car and send one combined request to this dealer.
+            </p>
             {trimPrice && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 bg-white rounded-2xl border border-gray-100 p-4">
                 <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2 mb-3">
