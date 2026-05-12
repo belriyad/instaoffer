@@ -224,6 +224,7 @@ export interface OfferRequest {
   is_urgent?: boolean;
   urgency_reason?: 'leaving_qatar' | 'need_cash' | 'upgrading' | 'other' | null;
   sell_priority?: 'speed' | 'price' | 'balanced';
+  lead_type?: 'seller_offer' | 'urgent_sale' | 'trade_in' | 'buyer_request' | 'dealer_inquiry';
   vin?: string | null;
   chassis_number?: string | null;
   trust_score?: number;
@@ -305,6 +306,7 @@ export async function createOfferRequest(
     is_urgent?: boolean;
     urgency_reason?: 'leaving_qatar' | 'need_cash' | 'upgrading' | 'other';
     sell_priority?: 'speed' | 'price' | 'balanced';
+    lead_type?: 'seller_offer' | 'urgent_sale' | 'trade_in' | 'buyer_request' | 'dealer_inquiry';
     vin?: string;
     chassis_number?: string;
   },
@@ -398,6 +400,8 @@ export async function getAllOfferRequests(token: string, params?: {
   sort_by?: 'opportunity_score' | 'discount_pct' | 'urgency' | 'created_at';
   sort_dir?: 'asc' | 'desc';
   deal_classification?: 'hot' | 'good' | 'watch' | 'skip';
+  is_urgent?: boolean;
+  lead_type?: 'seller_offer' | 'urgent_sale' | 'trade_in' | 'buyer_request' | 'dealer_inquiry';
 }) {
   const qs = params
     ? '?' + new URLSearchParams(
@@ -426,100 +430,6 @@ export async function getDealerAlerts(token: string, params?: {
 
 export async function getDealerPreferences(token: string) {
   return apiFetch('/instant-offers/preferences', {}, token);
-}
-
-// ─── Trade-ins ────────────────────────────────────────────────────────────────
-
-export interface TradeInRequest {
-  id: number;
-  trade_in_uid: string;
-  customer_id: string;
-  make: string;
-  class_name: string;
-  model: string | null;
-  year: number;
-  km: number;
-  color: string | null;
-  condition: 'excellent' | 'good' | 'fair' | 'poor';
-  city: string;
-  description: string | null;
-  photo_urls_json: string | null;
-  asking_price_qar: number | null;
-  outstanding_finance_qar: number | null;
-  contact_name: string | null;
-  contact_phone: string | null;
-  desired_vehicle: string | null;
-  target_budget_qar: number | null;
-  status: 'open' | 'under_review' | 'offer_made' | 'accepted' | 'rejected' | 'expired' | 'cancelled';
-  created_at: string;
-  updated_at: string;
-  market_est_qar?: number | null;
-  equity_est_qar?: number | null;
-  asking_delta_qar?: number | null;
-}
-
-export async function createTradeInRequest(
-  data: {
-    make: string;
-    class_name: string;
-    year: number;
-    km: number;
-    condition: 'excellent' | 'good' | 'fair' | 'poor';
-    city: string;
-    model?: string;
-    color?: string;
-    description?: string;
-    photo_urls_json?: string;
-    asking_price_qar?: number;
-    outstanding_finance_qar?: number;
-    contact_name?: string;
-    contact_phone?: string;
-    desired_vehicle?: string;
-    target_budget_qar?: number;
-  },
-  token: string
-): Promise<{ request: TradeInRequest }> {
-  return apiFetch('/trade-in/requests', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }, token);
-}
-
-export async function getMyTradeInRequests(
-  token: string,
-  params?: { status?: string; limit?: number; offset?: number }
-): Promise<{ rows: TradeInRequest[]; total: number }> {
-  const qs = params
-    ? '?' + new URLSearchParams(
-        Object.entries(params)
-          .filter(([, v]) => v !== undefined)
-          .map(([k, v]) => [k, String(v)])
-      ).toString()
-    : '';
-  return apiFetch(`/trade-in/requests${qs}`, {}, token);
-}
-
-export async function getDealerTradeIns(
-  token: string,
-  params?: {
-    status?: string;
-    make?: string;
-    city?: string;
-    min_year?: number;
-    max_year?: number;
-    max_km?: number;
-    limit?: number;
-    offset?: number;
-  }
-): Promise<{ rows: TradeInRequest[]; total: number }> {
-  const qs = params
-    ? '?' + new URLSearchParams(
-        Object.entries(params)
-          .filter(([, v]) => v !== undefined)
-          .map(([k, v]) => [k, String(v)])
-      ).toString()
-    : '';
-  return apiFetch(`/dealer/trade-ins${qs}`, {}, token);
 }
 
 export async function setDealerPreferences(
@@ -715,6 +625,13 @@ export interface BuyRequestParams {
   estimate_qar?: number;
 }
 
+export interface BuyRequest extends BuyRequestParams {
+  id: number;
+  request_uid: string;
+  status: 'new' | 'open' | 'responded' | 'closed';
+  created_at: string;
+}
+
 export async function createBuyRequest(
   data: BuyRequestParams
 ): Promise<{ ok: boolean; request_uid: string }> {
@@ -722,6 +639,63 @@ export async function createBuyRequest(
     method: 'POST',
     body: JSON.stringify(data),
   });
+}
+
+export async function getDealerBuyRequests(
+  token: string,
+  params?: { status?: 'new' | 'responded' | 'closed' | 'open'; make?: string; limit?: number; offset?: number }
+): Promise<{ rows: BuyRequest[]; total: number }> {
+  const qs = params
+    ? '?' + new URLSearchParams(
+        Object.entries(params)
+          .filter(([, v]) => v !== undefined)
+          .map(([k, v]) => [k, String(v)])
+      ).toString()
+    : '';
+  return apiFetch(`/dealer/buy-requests${qs}`, {}, token);
+}
+
+export interface DealerInquiry {
+  uid: string;
+  car_id: string;
+  car_name: string;
+  dealer_id: string;
+  contact_name: string | null;
+  contact_phone: string | null;
+  message: string | null;
+  status: 'new' | 'replied' | 'closed';
+  created_at: string;
+}
+
+export async function createDealerInquiry(
+  data: {
+    car_id: string;
+    car_name: string;
+    dealer_id: string;
+    contact_name?: string;
+    contact_phone?: string;
+    message?: string;
+  },
+  token?: string
+): Promise<{ uid: string; ok: boolean }> {
+  return apiFetch('/dealer-inquiry', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+}
+
+export async function getDealerInquiries(
+  token: string,
+  params?: { status?: 'new' | 'replied' | 'closed'; limit?: number; offset?: number }
+): Promise<{ rows: DealerInquiry[]; total: number }> {
+  const qs = params
+    ? '?' + new URLSearchParams(
+        Object.entries(params)
+          .filter(([, v]) => v !== undefined)
+          .map(([k, v]) => [k, String(v)])
+      ).toString()
+    : '';
+  return apiFetch(`/dealer/inquiries${qs}`, {}, token);
 }
 
 // ─── Dealer acquisition intelligence ─────────────────────────────────────────
@@ -982,16 +956,28 @@ export async function getMLTimeToSell(
 // ─── Trade-in requests ────────────────────────────────────────────────────────
 
 export interface TradeInRequest {
-  uid: string;
+  id?: number;
+  uid?: string;
+  trade_in_uid?: string;
+  customer_id?: string;
   status: string;
   created_at: string;
+  updated_at?: string;
   // current car
   make: string;
   class_name: string;
+  model?: string | null;
   year: number;
   km: number;
   city: string;
   condition?: string;
+  color?: string | null;
+  description?: string | null;
+  photo_urls_json?: string | null;
+  asking_price_qar?: number | null;
+  outstanding_finance_qar?: number | null;
+  desired_vehicle?: string | null;
+  target_budget_qar?: number | null;
   // target car (dealer listing)
   target_car_id?: string;
   target_car_name?: string;
@@ -1004,6 +990,9 @@ export interface TradeInRequest {
   // estimates
   estimate_low_qar?: number;
   estimate_high_qar?: number;
+  market_est_qar?: number | null;
+  equity_est_qar?: number | null;
+  asking_delta_qar?: number | null;
   difference_low_qar?: number;
   difference_high_qar?: number;
   notes?: string;
@@ -1015,6 +1004,14 @@ export interface TradeInRequestPayload {
   year: number;
   km: number;
   city?: string;
+  model?: string;
+  color?: string;
+  description?: string;
+  photo_urls_json?: string;
+  asking_price_qar?: number;
+  outstanding_finance_qar?: number;
+  desired_vehicle?: string;
+  target_budget_qar?: number;
   condition?: string;
   target_car_id?: string;
   target_car_name?: string;
@@ -1028,15 +1025,29 @@ export interface TradeInRequestPayload {
 export async function createTradeInRequest(
   payload: TradeInRequestPayload,
   token: string
-): Promise<{ uid: string }> {
-  return apiFetch<{ uid: string }>('/trade-in/requests', {
+): Promise<{ request: TradeInRequest }> {
+  return apiFetch<{ request: TradeInRequest }>('/trade-in/requests', {
     method: 'POST',
     body: JSON.stringify(payload),
   }, token);
 }
 
+export async function getMyTradeInRequests(
+  token: string,
+  params?: { status?: string; limit?: number; offset?: number }
+): Promise<{ rows: TradeInRequest[]; total: number }> {
+  const qs = params
+    ? '?' + new URLSearchParams(
+        Object.entries(params)
+          .filter(([, v]) => v !== undefined)
+          .map(([k, v]) => [k, String(v)])
+      ).toString()
+    : '';
+  return apiFetch<{ rows: TradeInRequest[]; total: number }>(`/trade-in/requests${qs}`, {}, token);
+}
+
 export async function getDealerTradeIns(
-  params: { limit?: number; offset?: number; status?: string },
+  params: { limit?: number; offset?: number; status?: string; make?: string; city?: string; min_year?: number; max_year?: number; max_km?: number },
   token: string
 ): Promise<{ rows: TradeInRequest[]; total: number }> {
   const qs = '?' + new URLSearchParams(

@@ -1425,6 +1425,87 @@ paths:
                     type: array
                     items: { $ref: "#/components/schemas/TradeInRequest" }
                   total: { type: integer }
+  /dealer/buy-requests:
+    get:
+      tags: [BuyRequests]
+      summary: Dealer queue of buyer requests
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [new, open, responded, closed], default: new }
+        - in: query
+          name: make
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+        - in: query
+          name: offset
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Dealer-visible buyer requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rows:
+                    type: array
+                    items: { $ref: "#/components/schemas/BuyRequest" }
+                  total: { type: integer }
+  /dealer-inquiry:
+    post:
+      tags: [DealerInquiries]
+      summary: Log a Contact Dealer inquiry before opening WhatsApp
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DealerInquiryCreate"
+      responses:
+        "201":
+          description: Inquiry logged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uid: { type: string }
+                  ok: { type: boolean }
+  /dealer/inquiries:
+    get:
+      tags: [DealerInquiries]
+      summary: Dealer queue of direct inquiries
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [new, replied, closed] }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+        - in: query
+          name: offset
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Dealer inquiries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rows:
+                    type: array
+                    items: { $ref: "#/components/schemas/DealerInquiry" }
+                  total: { type: integer }
   /instant-offers/requests:
     get:
       tags: [InstantOffers]
@@ -1464,6 +1545,14 @@ paths:
           schema:
             type: string
             enum: [hot, good, watch, skip]
+        - in: query
+          name: is_urgent
+          schema: { type: boolean }
+        - in: query
+          name: lead_type
+          schema:
+            type: string
+            enum: [seller_offer, urgent_sale, trade_in, buyer_request, dealer_inquiry]
       responses:
         "200":
           description: Offer requests list
@@ -2434,6 +2523,9 @@ components:
         sell_priority:
           type: string
           enum: [speed, price, balanced]
+        lead_type:
+          type: string
+          enum: [seller_offer, urgent_sale, trade_in, buyer_request, dealer_inquiry]
         vin: { type: string, nullable: true }
         chassis_number: { type: string, nullable: true }
         trust_score: { type: integer, minimum: 0, maximum: 100 }
@@ -2479,6 +2571,10 @@ components:
           type: string
           default: balanced
           enum: [speed, price, balanced]
+        lead_type:
+          type: string
+          default: seller_offer
+          enum: [seller_offer, urgent_sale, trade_in, buyer_request, dealer_inquiry]
         vin: { type: string }
         chassis_number: { type: string }
         expires_at: { type: string, format: date-time }
@@ -2530,6 +2626,50 @@ components:
         contact_phone: { type: string }
         desired_vehicle: { type: string }
         target_budget_qar: { type: integer }
+    BuyRequest:
+      type: object
+      properties:
+        id: { type: integer }
+        request_uid: { type: string }
+        make: { type: string }
+        class_name: { type: string }
+        trim: { type: string, nullable: true }
+        year_min: { type: integer, nullable: true }
+        year_max: { type: integer, nullable: true }
+        km_max: { type: integer, nullable: true }
+        budget_min_qar: { type: integer, nullable: true }
+        budget_max_qar: { type: integer, nullable: true }
+        city: { type: string, nullable: true }
+        condition: { type: string, nullable: true }
+        contact_name: { type: string }
+        contact_phone: { type: string }
+        contact_email: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        estimate_qar: { type: integer, nullable: true }
+        status: { type: string, enum: [new, open, responded, closed] }
+        created_at: { type: string, format: date-time }
+    DealerInquiry:
+      type: object
+      properties:
+        uid: { type: string }
+        car_id: { type: string }
+        car_name: { type: string }
+        dealer_id: { type: string }
+        contact_name: { type: string, nullable: true }
+        contact_phone: { type: string, nullable: true }
+        message: { type: string, nullable: true }
+        status: { type: string, enum: [new, replied, closed] }
+        created_at: { type: string, format: date-time }
+    DealerInquiryCreate:
+      type: object
+      required: [car_id, car_name, dealer_id]
+      properties:
+        car_id: { type: string }
+        car_name: { type: string }
+        dealer_id: { type: string }
+        contact_name: { type: string }
+        contact_phone: { type: string }
+        message: { type: string }
     OfferBid:
       type: object
       properties:
