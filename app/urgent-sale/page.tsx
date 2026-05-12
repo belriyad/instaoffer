@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   Zap, CheckCircle2, ArrowLeft, Clock, TrendingUp, DollarSign,
@@ -13,7 +13,7 @@ import StepIndicator from '@/components/StepIndicator';
 import PriceGuidanceCard from '@/components/PriceGuidanceCard';
 import { useAuth } from '@/lib/auth-context';
 import { createOfferRequest } from '@/lib/api';
-import { SearchableMakeSelect, SearchableModelSelect } from '@/lib/form-controls';
+import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
 
 const CITIES = ['Doha', 'Al Rayyan', 'Al Wakrah', 'Al Khor', 'Lusail', 'Umm Salal', 'Al Daayen', 'Al Shamal'];
 
@@ -39,21 +39,33 @@ type UrgencyReason = 'leaving_qatar' | 'need_cash' | 'upgrading' | 'other';
 type SellPriority  = 'speed' | 'price' | 'balanced';
 
 interface FormState {
-  make: string; class_name: string; year: string; km: string;
+  make: string; class_name: string; year: string; km: number | null;
   condition: string; city: string;
   contact_name: string; contact_phone: string;
   urgency_reason: UrgencyReason | '';
   sell_priority:  SellPriority  | '';
 }
 
-export default function UrgentSalePage() {
+function UrgentSaleContent() {
   const router  = useRouter();
+  const params  = useSearchParams();
   const { token, ensureGuestToken } = useAuth();
+
+  // Pre-fill from valuation query params
+  const initKmStr = params.get('km') ?? '';
+  const initKmNum = initKmStr ? parseInt(initKmStr) : null;
+  // Snap incoming km to nearest bucket so KmBucketPicker shows a selection
+  const snapKm = (raw: number | null): number | null => {
+    if (!raw) return null;
+    const sorted = [...KM_BUCKETS].sort((a, b) => Math.abs(a.value - raw) - Math.abs(b.value - raw));
+    return sorted[0]?.value ?? null;
+  };
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>({
-    make: '', class_name: '', year: '', km: '',
-    condition: 'good', city: 'Doha',
+    make: params.get('make') ?? '', class_name: params.get('class_name') ?? '',
+    year: params.get('year') ?? '', km: snapKm(initKmNum),
+    condition: 'good', city: params.get('city') ?? 'Doha',
     contact_name: '', contact_phone: '',
     urgency_reason: '', sell_priority: 'balanced',
   });
@@ -109,7 +121,7 @@ export default function UrgentSalePage() {
       await createOfferRequest({
         make: form.make, class_name: form.class_name,
         year: parseInt(form.year),
-        km:   parseInt(form.km.replace(/,/g, '')),
+        km:   form.km ?? 0,
         condition: form.condition, city: form.city,
         contact_name:  form.contact_name  || undefined,
         contact_phone: form.contact_phone || undefined,
@@ -207,11 +219,10 @@ export default function UrgentSalePage() {
                       {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
-                    <input type="number" value={form.km} onChange={e => set('km', e.target.value)} placeholder="e.g. 75000" min={0}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
-                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
+                  <KmBucketPicker value={form.km} onChange={v => setForm(prev => ({ ...prev, km: v }))} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -234,7 +245,7 @@ export default function UrgentSalePage() {
                 </div>
               </div>
             </div>
-            <PriceGuidanceCard make={form.make} class_name={form.class_name} year={form.year} km={form.km} city={form.city} />
+            <PriceGuidanceCard make={form.make} class_name={form.class_name} year={form.year} km={form.km != null ? String(form.km) : ''} city={form.city} />
           </div>
         )}
 
@@ -367,7 +378,7 @@ export default function UrgentSalePage() {
               <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-2">Submission Summary</p>
               <div className="text-sm text-gray-700 space-y-0.5">
                 <p><span className="text-gray-400">Car:</span> {form.year} {form.make} {form.class_name}</p>
-                <p><span className="text-gray-400">Mileage:</span> {parseInt((form.km || '0').replace(/,/g, '')).toLocaleString()} km</p>
+                <p><span className="text-gray-400">Mileage:</span> {form.km != null ? kmLabel(form.km) : '—'}</p>
                 <p><span className="text-gray-400">Reason:</span> {URGENCY_OPTIONS.find(o => o.value === form.urgency_reason)?.label}</p>
                 <p><span className="text-gray-400">Photos:</span> {uploadedFiles.length} attached</p>
               </div>
@@ -398,5 +409,21 @@ export default function UrgentSalePage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function UrgentSalePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-[#ff6600] border-t-transparent rounded-full animate-spin" />
+        </div>
+        <Footer />
+      </div>
+    }>
+      <UrgentSaleContent />
+    </Suspense>
   );
 }

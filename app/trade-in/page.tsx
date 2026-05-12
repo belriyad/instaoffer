@@ -8,7 +8,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StepIndicator from '@/components/StepIndicator';
 import PriceGuidanceCard from '@/components/PriceGuidanceCard';
-import { SearchableMakeSelect, SearchableModelSelect } from '@/lib/form-controls';
+import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
 import { formatQAR } from '@/lib/utils';
 
 const STEPS = ['Current vehicle', 'Desired next vehicle', 'Timeline & Submit'];
@@ -36,8 +36,17 @@ function TradeInContent() {
   const [curMake, setCurMake] = useState(params.get('make') ?? '');
   const [curModel, setCurModel] = useState(params.get('class_name') ?? '');
   const [curYear, setCurYear] = useState(params.get('year') ?? '');
-  const [curKm, setCurKm] = useState(params.get('km') ?? '');
   const [curCity, setCurCity] = useState(params.get('city') ?? 'Doha');
+
+  // Snap incoming km string to nearest bucket
+  const snapKm = (raw: string | null): number | null => {
+    if (!raw) return null;
+    const num = parseInt(raw);
+    if (isNaN(num)) return null;
+    const sorted = [...KM_BUCKETS].sort((a, b) => Math.abs(a.value - num) - Math.abs(b.value - num));
+    return sorted[0]?.value ?? null;
+  };
+  const [curKm, setCurKm] = useState<number | null>(snapKm(params.get('km')));
 
   // Step 1: desired next car
   const [tgtMake, setTgtMake] = useState('');
@@ -72,7 +81,7 @@ function TradeInContent() {
     const err = validateStep();
     if (err) { setError(err); return; }
     const sp = new URLSearchParams({
-      make: curMake, class_name: curModel, year: curYear, km: curKm, city: curCity,
+      make: curMake, class_name: curModel, year: curYear, km: curKm != null ? String(curKm) : '', city: curCity,
       intent: 'trade_in', timeline,
       ...(tgtMake && { target_make: tgtMake }),
       ...(tgtModel && { target_model: tgtModel }),
@@ -154,11 +163,10 @@ function TradeInContent() {
                       {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
-                    <input type="number" value={curKm} onChange={e => setCurKm(e.target.value)} placeholder="e.g. 75000" min={0}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
-                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
+                  <KmBucketPicker value={curKm} onChange={setCurKm} />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">City</label>
@@ -169,7 +177,7 @@ function TradeInContent() {
                 </div>
               </div>
             </div>
-            <PriceGuidanceCard make={curMake} class_name={curModel} year={curYear} km={curKm} city={curCity} />
+            <PriceGuidanceCard make={curMake} class_name={curModel} year={curYear} km={curKm != null ? String(curKm) : ''} city={curCity} />
           </div>
         )}
 
@@ -243,7 +251,7 @@ function TradeInContent() {
               <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-2">Summary</p>
               <div className="text-sm text-gray-700 space-y-0.5">
                 <p><span className="text-gray-400">Current car:</span> {curYear} {curMake} {curModel}</p>
-                <p><span className="text-gray-400">Mileage:</span> {parseInt((curKm || '0').replace(/,/g, '')).toLocaleString()} km</p>
+                <p><span className="text-gray-400">Mileage:</span> {curKm != null ? kmLabel(curKm) : '—'}</p>
                 {tgtMake && <p><span className="text-gray-400">Looking for:</span> {tgtYear} {tgtMake} {tgtModel}</p>}
               </div>
             </div>

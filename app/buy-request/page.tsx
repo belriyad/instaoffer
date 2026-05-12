@@ -210,26 +210,30 @@ function BuyRequestContent() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Min Budget (QAR)</label>
-                  <input
-                    type="number"
+                  <select
                     value={form.budget_min_qar}
                     onChange={e => set('budget_min_qar', e.target.value)}
-                    placeholder="e.g. 150,000"
-                    min="0"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
-                  />
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                  >
+                    <option value="">No minimum</option>
+                    {[30000,50000,75000,100000,125000,150000,175000,200000,250000,300000,400000,500000].map(v =>
+                      <option key={v} value={v}>{(v/1000).toFixed(0)}k QAR</option>
+                    )}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Max Budget (QAR) *</label>
-                  <input
-                    type="number"
+                  <select
                     value={form.budget_max_qar}
                     onChange={e => set('budget_max_qar', e.target.value)}
-                    placeholder="e.g. 200,000"
-                    min="0"
                     required
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
-                  />
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                  >
+                    <option value="">Select max</option>
+                    {[50000,75000,100000,125000,150000,175000,200000,250000,300000,400000,500000,700000,1000000].map(v =>
+                      <option key={v} value={v}>{v >= 1000000 ? '1M+' : `${(v/1000).toFixed(0)}k`} QAR</option>
+                    )}
+                  </select>
                 </div>
               </div>
             </div>
@@ -240,36 +244,45 @@ function BuyRequestContent() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Year From</label>
-                  <input
-                    type="number"
+                  <select
                     value={form.year_min}
                     onChange={e => set('year_min', e.target.value)}
-                    placeholder="e.g. 2019"
-                    min="2000" max="2026"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
-                  />
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                  >
+                    <option value="">Any year</option>
+                    {Array.from({length: 25}, (_, i) => new Date().getFullYear() - i).map(y =>
+                      <option key={y} value={y}>{y}</option>
+                    )}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Year To</label>
-                  <input
-                    type="number"
+                  <select
                     value={form.year_max}
                     onChange={e => set('year_max', e.target.value)}
-                    placeholder="e.g. 2024"
-                    min="2000" max="2026"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
-                  />
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                  >
+                    <option value="">Any year</option>
+                    {Array.from({length: 25}, (_, i) => new Date().getFullYear() - i).map(y =>
+                      <option key={y} value={y}>{y}</option>
+                    )}
+                  </select>
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Max Mileage (km)</label>
-                  <input
-                    type="number"
+                  <select
                     value={form.km_max}
                     onChange={e => set('km_max', e.target.value)}
-                    placeholder="e.g. 100,000"
-                    min="0"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
-                  />
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                  >
+                    <option value="">Any mileage</option>
+                    <option value="20000">Under 20,000 km</option>
+                    <option value="50000">Under 50,000 km</option>
+                    <option value="80000">Under 80,000 km</option>
+                    <option value="120000">Under 120,000 km</option>
+                    <option value="160000">Under 160,000 km</option>
+                    <option value="220000">Under 220,000 km</option>
+                  </select>
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Preferred City</label>
