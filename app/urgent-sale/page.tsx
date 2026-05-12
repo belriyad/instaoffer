@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, ChevronRight, CheckCircle2, ArrowLeft, Clock, TrendingUp, DollarSign, Camera, FileText, AlertTriangle } from 'lucide-react';
+import { Zap, ChevronRight, CheckCircle2, ArrowLeft, Clock, TrendingUp, DollarSign, Camera, AlertTriangle, Upload, X, ImageIcon } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
@@ -85,6 +85,21 @@ export default function UrgentSalePage() {
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [dealerCount] = useState(Math.floor(Math.random() * 8) + 10); // 10-17
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFiles = useCallback((files: FileList | null) => {
+    if (!files) return;
+    const imgs = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    setUploadedFiles((prev) => {
+      const existing = new Set(prev.map((f) => f.name + f.size));
+      const fresh = imgs.filter((f) => !existing.has(f.name + f.size));
+      return [...prev, ...fresh].slice(0, 20); // max 20 photos
+    });
+  }, []);
+
+  const removeFile = (idx: number) => setUploadedFiles((prev) => prev.filter((_, i) => i !== idx));
 
   function set(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -345,42 +360,124 @@ export default function UrgentSalePage() {
               </div>
             </div>
 
-            {/* Evidence Checklist */}
+            {/* Evidence Upload */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <h2 className="font-bold text-gray-900 mb-1 text-base flex items-center gap-2">
                 <Camera size={18} className="text-[#003087]" /> Evidence Package
               </h2>
               <p className="text-xs text-gray-500 mb-4">
-                Dealers act faster when they can see everything upfront. Check off what you can provide — you&apos;ll upload them in the next step.
+                Listings with photos receive <strong>3× more bids</strong>. Upload exterior, interior, odometer, and registration photos.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[
-                  { key: 'exterior', icon: '📸', label: 'Exterior photos (all 4 sides)', priority: 'Required' },
-                  { key: 'interior', icon: '🪑', label: 'Interior photos (front + rear)', priority: 'Required' },
-                  { key: 'odometer', icon: '🔢', label: 'Odometer close-up', priority: 'Required' },
-                  { key: 'registration', icon: '📄', label: 'Registration card (back/VIN side)', priority: 'Strongly recommended' },
-                  { key: 'inspection', icon: '🔧', label: 'Inspection report (if available)', priority: 'Optional' },
-                  { key: 'accidents', icon: '⚠️', label: 'Accident history note', priority: 'Optional' },
-                ].map((item) => (
-                  <label key={item.key} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-[#003087]/30 hover:bg-[#f5f7ff] cursor-pointer transition-colors">
-                    <input
-                      type="checkbox"
-                      className="mt-0.5 accent-[#003087] w-4 h-4 shrink-0"
-                      onChange={() => {}} // informational only — collected on next step
-                    />
-                    <div>
-                      <div className="text-sm font-medium text-gray-800">{item.icon} {item.label}</div>
-                      <div className={`text-xs mt-0.5 font-medium ${
-                        item.priority === 'Required' ? 'text-red-500' :
-                        item.priority === 'Strongly recommended' ? 'text-orange-500' :
-                        'text-gray-400'
-                      }`}>{item.priority}</div>
-                    </div>
-                  </label>
-                ))}
+
+              {/* Drag-Drop Zone */}
+              <div
+                className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer ${
+                  dragActive ? 'border-[#003087] bg-[#eef3ff]' : 'border-gray-300 bg-gray-50 hover:border-[#003087]/60 hover:bg-[#f5f7ff]'
+                }`}
+                onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
+                onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                onDragLeave={() => setDragActive(false)}
+                onDrop={(e) => { e.preventDefault(); setDragActive(false); handleFiles(e.dataTransfer.files); }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                  <Upload size={28} className={`mb-2 transition-colors ${dragActive ? 'text-[#003087]' : 'text-gray-400'}`} />
+                  <p className="font-semibold text-sm text-gray-700">
+                    {dragActive ? 'Drop files here' : 'Drag photos here or tap to upload'}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">JPG, PNG, HEIC · Up to 20 photos</p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
               </div>
+
+              {/* Mobile camera shortcut */}
+              <button
+                type="button"
+                className="mt-3 flex items-center justify-center gap-2 w-full border border-[#003087] text-[#003087] font-semibold py-2.5 rounded-xl text-sm hover:bg-[#f0f4ff] transition-colors"
+                onClick={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.removeAttribute('capture');
+                    fileInputRef.current.click();
+                    setTimeout(() => fileInputRef.current?.setAttribute('capture', 'environment'), 500);
+                  }
+                }}
+              >
+                <Camera size={16} /> Take Photo with Camera
+              </button>
+
+              {/* Uploaded previews */}
+              {uploadedFiles.length > 0 && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+                      <ImageIcon size={15} className="text-[#003087]" />
+                      {uploadedFiles.length} photo{uploadedFiles.length !== 1 ? 's' : ''} ready
+                    </span>
+                    <button
+                      type="button"
+                      className="text-xs text-red-400 hover:text-red-600"
+                      onClick={() => setUploadedFiles([])}
+                    >
+                      Remove all
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                    {uploadedFiles.map((file, idx) => (
+                      <div key={idx} className="relative group rounded-lg overflow-hidden aspect-square bg-gray-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={file.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
+                        >
+                          <X size={11} className="text-white" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* What to include checklist */}
+              <div className="mt-4 border-t border-gray-100 pt-4">
+                <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">What to include</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {[
+                    { icon: '📸', label: 'Exterior (all 4 sides)', priority: 'Required' },
+                    { icon: '🪑', label: 'Interior (front + rear)', priority: 'Required' },
+                    { icon: '🔢', label: 'Odometer close-up', priority: 'Required' },
+                    { icon: '📄', label: 'Registration card (VIN side)', priority: 'Recommended' },
+                    { icon: '🔧', label: 'Inspection report', priority: 'Optional' },
+                    { icon: '⚠️', label: 'Accident history note', priority: 'Optional' },
+                  ].map((item) => (
+                    <div key={item.label} className="flex items-center gap-2 text-xs text-gray-600">
+                      <span>{item.icon}</span>
+                      <span className="flex-1">{item.label}</span>
+                      <span className={`font-medium text-[10px] ${
+                        item.priority === 'Required' ? 'text-red-500' :
+                        item.priority === 'Recommended' ? 'text-orange-500' :
+                        'text-gray-400'
+                      }`}>{item.priority}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="mt-4 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <AlertTriangle size={16} className="text-amber-600 mt-0.5 shrink-0" />
+                <AlertTriangle size={15} className="text-amber-600 mt-0.5 shrink-0" />
                 <p className="text-xs text-amber-800">
                   Listings with exterior + interior + odometer photos receive <strong>3× more bids</strong> and close significantly faster.
                 </p>

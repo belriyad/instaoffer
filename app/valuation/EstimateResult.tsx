@@ -94,108 +94,100 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
           <h2 className="text-center text-lg font-black text-gray-900 mb-1">What is your car worth to you?</h2>
           <p className="text-center text-xs text-gray-400 mb-5">Price depends on how fast you want to sell and how much effort you want to put in.</p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-4">
 
-            {/* Band 1 — Maximize Price */}
+            {/* Band 1 — Maximize Value */}
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="bg-white rounded-2xl border-2 border-gray-100 shadow-sm p-5 flex flex-col"
+              className="bg-white rounded-2xl border-2 border-gray-100 shadow-sm p-5"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">💰</span>
+              <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
-                  <div className="font-black text-gray-900 text-sm">Maximize Price</div>
-                  <div className="text-xs text-gray-400">Private party sale</div>
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Maximize Value</div>
+                  <div className="font-black text-gray-900 text-base">Private Sale</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-2xl font-black text-gray-900">
+                    {formatQAR(bands.privatePartyLow)}–{formatQAR(bands.privatePartyHigh)}
+                  </div>
+                  <div className="text-xs text-gray-400">Highest expected payout</div>
                 </div>
               </div>
-              <div className="mb-3">
-                <div className="text-2xl font-black text-gray-900">
-                  {formatQAR(bands.privatePartyLow)}–{formatQAR(bands.privatePartyHigh)}
-                </div>
-                <div className="text-xs text-gray-400 mt-0.5">Estimated market range</div>
-              </div>
-              <div className="space-y-1.5 text-xs text-gray-500 mb-4 flex-1">
-                <div className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Highest expected payout</div>
-                <div className="flex items-center gap-1.5"><span className="text-amber-500">~</span> Weeks to months to sell</div>
-                <div className="flex items-center gap-1.5"><span className="text-amber-500">~</span> More negotiation effort</div>
-                <div className="flex items-center gap-1.5 text-gray-400 text-[11px] mt-1 italic">Best for: patient sellers with flexibility</div>
+              <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-4">
+                <span className="flex items-center gap-1"><span className="text-amber-500">~</span> Weeks to months to sell</span>
+                <span className="flex items-center gap-1"><span className="text-amber-500">~</span> More effort and negotiation</span>
+                <span className="flex items-center gap-1"><span className="text-green-500">✓</span> Best final price</span>
               </div>
               <Link
                 href={`/submit-offer?${submitParams}`}
-                className="mt-auto flex items-center justify-center gap-1.5 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-2.5 rounded-xl text-sm transition-all"
+                className="flex items-center justify-center gap-1.5 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-3 rounded-xl text-sm transition-all"
               >
-                Get Dealer Bids <ChevronRight size={15} />
+                List for Offers <ChevronRight size={15} />
               </Link>
             </motion.div>
 
-            {/* Band 2 — Trade In */}
+            {/* Band 2 — Easy Upgrade */}
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.12 }}
-              className="bg-white rounded-2xl border-2 border-green-200 shadow-sm p-5 flex flex-col"
+              className="bg-white rounded-2xl border-2 border-green-200 shadow-sm p-5"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">🔄</span>
+              <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
-                  <div className="font-black text-gray-900 text-sm">Easy Upgrade</div>
-                  <div className="text-xs text-gray-400">Trade-in value</div>
+                  <div className="text-xs font-bold text-green-500 uppercase tracking-widest mb-0.5">Easy Upgrade</div>
+                  <div className="font-black text-gray-900 text-base">Trade-In Value</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-2xl font-black text-gray-900">
+                    {formatQAR(bands.tradeInLow)}–{formatQAR(bands.tradeInHigh)}
+                  </div>
+                  <div className="text-xs text-gray-400">Typical trade-in range</div>
                 </div>
               </div>
-              <div className="mb-3">
-                <div className="text-2xl font-black text-gray-900">
-                  {formatQAR(bands.tradeInLow)}–{formatQAR(bands.tradeInHigh)}
-                </div>
-                <div className="text-xs text-gray-400 mt-0.5">Typical trade-in range</div>
-              </div>
-              <div className="space-y-1.5 text-xs text-gray-500 mb-4 flex-1">
-                <div className="flex items-center gap-1.5"><span className="text-green-500">✓</span> One smooth transaction</div>
-                <div className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Sell &amp; upgrade together</div>
-                <div className="flex items-center gap-1.5"><span className="text-amber-500">~</span> Slightly lower payout</div>
-                <div className="flex items-center gap-1.5 text-gray-400 text-[11px] mt-1 italic">Best for: upgrading to another car</div>
+              <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-4">
+                <span className="flex items-center gap-1"><span className="text-green-500">✓</span> One smooth transaction</span>
+                <span className="flex items-center gap-1"><span className="text-green-500">✓</span> Sell &amp; upgrade together</span>
+                <span className="flex items-center gap-1"><span className="text-amber-500">~</span> Slightly lower payout</span>
               </div>
               <Link
                 href={`/trade-in?${tradeParams}`}
-                className="mt-auto flex items-center justify-center gap-1.5 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all"
+                className="flex items-center justify-center gap-1.5 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-sm transition-all"
               >
                 <RefreshCw size={14} /> Start Trade-In
               </Link>
             </motion.div>
 
-            {/* Band 3 — Instant Offer */}
+            {/* Band 3 — Fastest Sale */}
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl border-2 border-orange-300 shadow-md p-5 flex flex-col relative overflow-hidden"
+              className="bg-white rounded-2xl border-2 border-orange-300 shadow-md p-5 relative overflow-hidden"
             >
-              <div className="absolute top-3 right-3">
-                <span className="bg-[#ff6600] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Fastest</span>
-              </div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">⚡</span>
+              <span className="absolute top-4 right-4 bg-[#ff6600] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Fastest</span>
+              <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
-                  <div className="font-black text-gray-900 text-sm">Fastest Sale</div>
-                  <div className="text-xs text-gray-400">Instant offer range</div>
+                  <div className="text-xs font-bold text-[#ff6600] uppercase tracking-widest mb-0.5">Fastest Sale</div>
+                  <div className="font-black text-gray-900 text-base">Instant Offer</div>
+                </div>
+                <div className="text-right shrink-0 pr-12">
+                  <div className="text-2xl font-black text-[#ff6600]">
+                    {formatQAR(bands.instantLow)}–{formatQAR(bands.instantHigh)}
+                  </div>
+                  <div className="text-xs text-gray-400">Expected urgent-sale range</div>
                 </div>
               </div>
-              <div className="mb-3">
-                <div className="text-2xl font-black text-[#ff6600]">
-                  {formatQAR(bands.instantLow)}–{formatQAR(bands.instantHigh)}
-                </div>
-                <div className="text-xs text-gray-400 mt-0.5">Expected urgent-sale range</div>
-              </div>
-              <div className="space-y-1.5 text-xs text-gray-500 mb-4 flex-1">
-                <div className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Sell within days</div>
-                <div className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Minimal effort required</div>
-                <div className="flex items-center gap-1.5"><span className="text-amber-500">~</span> Lower payout for speed</div>
-                <div className="flex items-center gap-1.5 text-gray-400 text-[11px] mt-1 italic">Best for: urgent sellers, expats leaving Qatar</div>
+              <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-4">
+                <span className="flex items-center gap-1"><span className="text-green-500">✓</span> Fastest and most convenient</span>
+                <span className="flex items-center gap-1"><span className="text-green-500">✓</span> Sell within days</span>
+                <span className="flex items-center gap-1"><span className="text-amber-500">~</span> Lower payout for speed</span>
               </div>
               <Link
                 href={`/urgent-sale?${urgentParams}`}
-                className="mt-auto flex items-center justify-center gap-1.5 w-full bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold py-2.5 rounded-xl text-sm transition-all"
+                className="flex items-center justify-center gap-1.5 w-full bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold py-3 rounded-xl text-sm transition-all"
               >
                 <Zap size={14} /> Sell Fast Now
               </Link>
