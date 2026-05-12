@@ -6,10 +6,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Car, AlertCircle, Lock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import {
-  FUEL_TYPES, GEAR_TYPES, CAR_TYPES, formatKM, MODEL_DEFAULTS, WARRANTY_STATUSES,
+  FUEL_TYPES, GEAR_TYPES, CAR_TYPES, formatKM, formatQAR, MODEL_DEFAULTS, WARRANTY_STATUSES,
 } from '@/lib/utils';
 import {
   MakeSelect, ModelSelect, TrimSelect,
+  SearchableMakeSelect, SearchableModelSelect,
   YearTiles, KmBucketPicker, kmLabel,
   ConditionPicker, CityPicker, PillGroupPicker, CylinderPicker,
 } from '@/lib/form-controls';
@@ -51,7 +52,7 @@ function Screen1({
       <div>
         <h2 className="text-2xl font-black text-gray-900 mb-1">What&rsquo;s your car?</h2>
         <p className="text-gray-400 text-sm mb-4">Start by selecting the make</p>
-        <MakeSelect
+        <SearchableMakeSelect
           value={data.make}
           onChange={make => { onUpdate('make', make); onUpdate('class_name', ''); onUpdate('trim', ''); onUpdate('fuel_type', ''); onUpdate('gear_type', ''); onUpdate('car_type', ''); }}
         />
@@ -63,7 +64,7 @@ function Screen1({
             <p className="text-sm font-bold text-gray-700 mb-2">
               Model <span className="text-[#003087]">·</span> {data.make}
             </p>
-            <ModelSelect
+            <SearchableModelSelect
               make={data.make}
               value={data.class_name}
               onChange={m => {
@@ -272,12 +273,37 @@ function ValuationContent() {
   const searchParams = useSearchParams();
   const { ensureGuestToken } = useAuth();
 
+  // Check if there's a saved session we can offer to reuse
+  const [savedSession] = useState<{ data: ValuationData; estimate: MLEstimate | null } | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      if (parsed?.data?.make && parsed?.data?.class_name) return { data: parsed.data, estimate: parsed.estimate ?? null };
+    } catch { /* ignore */ }
+    return null;
+  });
+
+  // If we have a saved session AND no query params forcing a specific car, offer to reuse
+  const hasQueryCar = !!(searchParams.get('make') && searchParams.get('class_name'));
+  const [showReuse, setShowReuse] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (!saved) return false;
+      const parsed = JSON.parse(saved);
+      if (!parsed?.data?.make || !parsed?.data?.class_name) return false;
+      return !hasQueryCar;
+    } catch { return false; }
+  });
+
   // Restore from sessionStorage on first render
   const [screen, setScreen] = useState<1 | 2>(() => {
     if (typeof window === 'undefined') return 1;
     try {
       const saved = sessionStorage.getItem(SESSION_KEY);
-      if (saved) return (JSON.parse(saved).screen as 1 | 2) ?? 1;
+      if (saved && !hasQueryCar) return (JSON.parse(saved).screen as 1 | 2) ?? 1;
     } catch { /* ignore */ }
     return 1;
   });
@@ -378,6 +404,61 @@ function ValuationContent() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // ── Reuse Vehicle Profile screen (#68) ──────────────────────────────────────
+  if (showReuse && savedSession) {
+    const s = savedSession;
+    const label = [s.data.year, s.data.make, s.data.class_name, s.data.trim].filter(Boolean).join(' ');
+    const kmText = s.data.km && s.data.km > 0 ? ` · ${formatKM(s.data.km)}` : '';
+    return (
+      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 max-w-sm w-full text-center">
+            <div className="w-14 h-14 bg-[#e8f0fd] rounded-full flex items-center justify-center mx-auto mb-4">
+              <Car className="text-[#003087]" size={28} />
+            </div>
+            <h2 className="text-xl font-black text-gray-900 mb-1">Welcome back!</h2>
+            <p className="text-gray-500 text-sm mb-6">
+              We saved your previous car details. Continue where you left off?
+            </p>
+            <div className="bg-[#f5f8ff] border border-[#d0e0ff] rounded-xl p-4 mb-6 text-left">
+              <p className="font-bold text-gray-900 text-sm">{label}{kmText}</p>
+              {s.data.condition && <p className="text-xs text-gray-500 mt-0.5">{s.data.condition} condition · {s.data.city || 'Qatar'}</p>}
+              {s.estimate && (
+                <p className="text-xs text-[#003087] font-semibold mt-2">
+                  Last estimate: {formatQAR(s.estimate.estimated_price_qar)}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => setShowReuse(false)}
+              className="w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-3 rounded-xl mb-3 transition-colors"
+            >
+              Continue with this car
+            </button>
+            <button
+              onClick={() => {
+                sessionStorage.removeItem(SESSION_KEY);
+                setData({
+                  make: '', class_name: '', model: '', year: null, km: null,
+                  car_type: '', fuel_type: '', gear_type: 'Automatic',
+                  condition: '', city: 'Doha', trim: '',
+                  cylinder_count: null, warranty_status: 'Under Warranty',
+                });
+                setEstimate(null); setForecast(null); setComps(null); setTimeToSell(null);
+                setScreen(1);
+                setShowReuse(false);
+              }}
+              className="w-full text-sm text-gray-400 hover:text-gray-600 py-2 transition-colors"
+            >
+              Value a different car →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {

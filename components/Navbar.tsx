@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Car, Info, Building2, FileText, Zap, RefreshCw, Search } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Car, Info, Building2, FileText, Zap, RefreshCw, Search, ShoppingCart, MessageSquare, Bell, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -20,9 +20,14 @@ const BUY_LINKS = [
 ];
 
 const DEALER_LINKS = [
-  { href: '/for-dealers',          label: 'For Dealers',        icon: <Building2 size={15} />,    desc: 'Grow your acquisition pipeline' },
-  { href: '/dashboard',            label: 'Dealer Dashboard',   icon: <LayoutDashboard size={15} />, desc: 'Leads, bids & analytics' },
-  { href: '/dashboard/trade-ins',  label: 'Trade-in Queue',     icon: <RefreshCw size={15} />,    desc: 'Buyers trading in toward your cars' },
+  { href: '/for-dealers',                  label: 'For Dealers',         icon: <Building2 size={15} />,       desc: 'Grow your acquisition pipeline' },
+  { href: '/dashboard',                    label: 'Dealer Dashboard',    icon: <LayoutDashboard size={15} />, desc: 'Leads, bids & analytics' },
+  { href: '/dashboard/urgent',             label: 'Urgent Sellers',      icon: <Zap size={15} />,             desc: 'Sellers who need to move fast' },
+  { href: '/dashboard/alerts',             label: 'Alert History',       icon: <Bell size={15} />,            desc: 'WhatsApp alerts sent to you' },
+  { href: '/dashboard/alerts/preferences', label: 'Alert Preferences',   icon: <Settings size={15} />,        desc: 'Configure your acquisition alerts' },
+  { href: '/dashboard/trade-ins',          label: 'Trade-in Queue',      icon: <RefreshCw size={15} />,       desc: 'Buyers trading in toward your cars' },
+  { href: '/dashboard/buyer-requests',     label: 'Buyer Requests',      icon: <ShoppingCart size={15} />,    desc: 'Buyers looking for specific cars' },
+  { href: '/dashboard/inquiries',          label: 'Direct Inquiries',    icon: <MessageSquare size={15} />,   desc: 'Buyers who contacted you directly' },
 ];
 
 // ── helpers ──────────────────────────────────────────────────────────────────

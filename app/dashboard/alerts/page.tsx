@@ -129,7 +129,7 @@ export default function AlertsPage() {
               </p>
             </div>
             <Link
-              href="/dashboard/preferences"
+              href="/dashboard/alerts/preferences"
               className="text-sm font-semibold text-[#003087] hover:underline"
             >
               ⚙️ Manage alert preferences
@@ -171,7 +171,7 @@ export default function AlertsPage() {
                 <p className="text-gray-500 font-medium">No alerts yet.</p>
                 <p className="text-sm text-gray-400 mt-1">
                   Alerts appear here when listings match your{' '}
-                  <Link href="/dashboard/preferences" className="text-[#003087] hover:underline">
+                  <Link href="/dashboard/alerts/preferences" className="text-[#003087] hover:underline">
                     preferences
                   </Link>
                   .

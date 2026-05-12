@@ -6,13 +6,14 @@ import Link from 'next/link';
 import {
   Zap, CheckCircle2, ArrowLeft, Clock, TrendingUp, DollarSign,
   Camera, AlertTriangle, Upload, X, ImageIcon, ChevronLeft, ChevronRight,
+  CheckCircle, Circle, ShieldCheck,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StepIndicator from '@/components/StepIndicator';
 import PriceGuidanceCard from '@/components/PriceGuidanceCard';
 import { useAuth } from '@/lib/auth-context';
-import { createOfferRequest } from '@/lib/api';
+import { createOfferRequest, uploadFile } from '@/lib/api';
 import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
 
 const CITIES = ['Doha', 'Al Rayyan', 'Al Wakrah', 'Al Khor', 'Lusail', 'Umm Salal', 'Al Daayen', 'Al Shamal'];
@@ -31,6 +32,24 @@ const PRIORITY_OPTIONS = [
 ] as const;
 
 const STEPS = ['Car details', 'Urgency', 'Evidence', 'Contact & Submit'];
+
+type EvidenceCategory = 'exterior' | 'interior' | 'odometer' | 'registration' | 'inspection';
+
+const EVIDENCE_CATEGORIES: {
+  key: EvidenceCategory;
+  icon: string;
+  label: string;
+  why: string;
+  priority: 'Required' | 'Recommended' | 'Optional';
+}[] = [
+  { key: 'exterior',     icon: '📸', label: 'Exterior Photos',   why: 'All 4 sides — helps dealers assess body condition immediately',  priority: 'Required' },
+  { key: 'interior',     icon: '🪑', label: 'Interior Photos',   why: 'Front + rear seats — shows wear, cleanliness, and dashboard',   priority: 'Required' },
+  { key: 'odometer',     icon: '🔢', label: 'Odometer Close-up', why: 'Confirms actual mileage — dealers verify this before bidding',   priority: 'Required' },
+  { key: 'registration', icon: '📄', label: 'Registration Card', why: 'Confirms VIN, ownership, and service history',                  priority: 'Recommended' },
+  { key: 'inspection',   icon: '🔧', label: 'Inspection Report', why: 'Significantly increases dealer confidence and bid amounts',      priority: 'Optional' },
+];
+
+const REQUIRED_CATEGORIES: EvidenceCategory[] = ['exterior', 'interior', 'odometer'];
 
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 25 }, (_, i) => CURRENT_YEAR - i);
@@ -74,9 +93,16 @@ function UrgentSaleContent() {
   const [submitted, setSubmitted] = useState(false);
   const [dealerCount] = useState(Math.floor(Math.random() * 8) + 10);
 
+  // Evidence state — per-category files + accident count
+  const [categoryFiles, setCategoryFiles] = useState<Partial<Record<EvidenceCategory, File>>>({});
+  const [accidentCount, setAccidentCount] = useState('0');
+  const [activeCategory, setActiveCategory] = useState<EvidenceCategory | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Legacy generic upload kept for any extra photos
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [dragActive,    setDragActive]    = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const extraFileRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files) return;
@@ -87,6 +113,25 @@ function UrgentSaleContent() {
     });
   }, []);
   const removeFile = (idx: number) => setUploadedFiles(prev => prev.filter((_, i) => i !== idx));
+
+  function openCategoryPicker(cat: EvidenceCategory) {
+    setActiveCategory(cat);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  }
+
+  function handleCategoryFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file && activeCategory) {
+      setCategoryFiles(prev => ({ ...prev, [activeCategory]: file }));
+    }
+    e.target.value = '';
+  }
+
+  const requiredComplete = REQUIRED_CATEGORIES.filter(k => !!categoryFiles[k]).length;
+  const totalComplete    = EVIDENCE_CATEGORIES.filter(c => !!categoryFiles[c.key]).length;
 
   function set(field: keyof FormState, value: string) {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -100,6 +145,10 @@ function UrgentSaleContent() {
     }
     if (step === 1) {
       if (!form.urgency_reason) return 'Please select why you need to sell quickly.';
+    }
+    if (step === 2) {
+      if (requiredComplete < REQUIRED_CATEGORIES.length)
+        return `Please upload at least: Exterior, Interior, and Odometer photos (${requiredComplete}/${REQUIRED_CATEGORIES.length} done).`;
     }
     return '';
   }
@@ -118,6 +167,26 @@ function UrgentSaleContent() {
     setLoading(true);
     try {
       const authToken = token ?? (await ensureGuestToken());
+
+      // Collect all files: categorized first, then any extra generic uploads
+      const allFiles = [
+        ...Object.values(categoryFiles).filter((f): f is File => !!f),
+        ...uploadedFiles,
+      ];
+
+      let photoUrlsJson: string | undefined;
+      if (allFiles.length > 0) {
+        const uploadResults = await Promise.allSettled(
+          allFiles.map(f => uploadFile(f, authToken))
+        );
+        const urls = uploadResults
+          .filter((r): r is PromiseFulfilledResult<{ url: string }> => r.status === 'fulfilled' && !!r.value?.url)
+          .map(r => r.value.url);
+        if (urls.length > 0) photoUrlsJson = JSON.stringify(urls);
+      }
+
+      const accidentNote = accidentCount !== '0' ? `Accidents: ${accidentCount}` : '';
+
       await createOfferRequest({
         make: form.make, class_name: form.class_name,
         year: parseInt(form.year),
@@ -125,7 +194,10 @@ function UrgentSaleContent() {
         condition: form.condition, city: form.city,
         contact_name:  form.contact_name  || undefined,
         contact_phone: form.contact_phone || undefined,
+        photo_urls_json: photoUrlsJson,
+        description: accidentNote || undefined,
         is_urgent:      true,
+        lead_type:      'urgent_sale',
         urgency_reason: form.urgency_reason as UrgencyReason,
         sell_priority:  form.sell_priority  as SellPriority,
       }, authToken);
@@ -285,73 +357,195 @@ function UrgentSaleContent() {
 
         {/* STEP 2: Evidence */}
         {step === 2 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <h2 className="font-bold text-gray-900 mb-1 text-base flex items-center gap-2">
-              <Camera size={18} className="text-[#003087]" /> Evidence Package
-            </h2>
-            <p className="text-xs text-gray-500 mb-4">Listings with photos receive <strong>3× more bids</strong>.</p>
-            <div
-              className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer ${dragActive ? 'border-[#003087] bg-[#eef3ff]' : 'border-gray-300 bg-gray-50 hover:border-[#003087]/60'}`}
-              onDragEnter={e => { e.preventDefault(); setDragActive(true); }}
-              onDragOver={e => { e.preventDefault(); setDragActive(true); }}
-              onDragLeave={() => setDragActive(false)}
-              onDrop={e => { e.preventDefault(); setDragActive(false); handleFiles(e.dataTransfer.files); }}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-                <Upload size={28} className={`mb-2 ${dragActive ? 'text-[#003087]' : 'text-gray-400'}`} />
-                <p className="font-semibold text-sm text-gray-700">{dragActive ? 'Drop files here' : 'Drag photos here or tap to upload'}</p>
-                <p className="text-xs text-gray-400 mt-1">JPG, PNG, HEIC · Up to 20 photos</p>
-              </div>
-              <input ref={fileInputRef} type="file" multiple accept="image/*" capture="environment" className="hidden" onChange={e => handleFiles(e.target.files)} />
-            </div>
-            <button type="button" onClick={() => { if (fileInputRef.current) { fileInputRef.current.removeAttribute('capture'); fileInputRef.current.click(); setTimeout(() => fileInputRef.current?.setAttribute('capture', 'environment'), 500); } }}
-              className="mt-3 flex items-center justify-center gap-2 w-full border border-[#003087] text-[#003087] font-semibold py-2.5 rounded-xl text-sm hover:bg-[#f0f4ff] transition-colors">
-              <Camera size={16} /> Take Photo with Camera
-            </button>
-            {uploadedFiles.length > 0 && (
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-                    <ImageIcon size={15} className="text-[#003087]" /> {uploadedFiles.length} photo{uploadedFiles.length !== 1 ? 's' : ''} ready
+          <div className="space-y-4">
+            {/* Hidden per-category file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleCategoryFile}
+            />
+
+            {/* Header + progress */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <h2 className="font-bold text-gray-900 mb-1 text-base flex items-center gap-2">
+                <Camera size={18} className="text-[#003087]" /> Evidence Package
+              </h2>
+              <p className="text-xs text-gray-500 mb-4">
+                Dealers need photos to evaluate your car and place confident bids.
+              </p>
+
+              {/* Progress bar */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between text-xs mb-1.5">
+                  <span className="font-semibold text-gray-700">
+                    {requiredComplete === REQUIRED_CATEGORIES.length
+                      ? <span className="flex items-center gap-1 text-green-600"><ShieldCheck size={13} /> Required photos complete</span>
+                      : <span className="text-gray-500">{requiredComplete}/{REQUIRED_CATEGORIES.length} required photos</span>
+                    }
                   </span>
-                  <button type="button" className="text-xs text-red-400 hover:text-red-600" onClick={() => setUploadedFiles([])}>Remove all</button>
+                  <span className="text-gray-400">{totalComplete} of {EVIDENCE_CATEGORIES.length} uploaded</span>
                 </div>
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                  {uploadedFiles.map((file, idx) => (
-                    <div key={idx} className="relative group rounded-lg overflow-hidden aspect-square bg-gray-100">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
-                      <button type="button" className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeFile(idx)}>
-                        <X size={11} className="text-white" />
-                      </button>
-                    </div>
-                  ))}
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-500 ${requiredComplete === REQUIRED_CATEGORIES.length ? 'bg-green-500' : 'bg-[#ff6600]'}`}
+                    style={{ width: `${(requiredComplete / REQUIRED_CATEGORIES.length) * 100}%` }}
+                  />
                 </div>
               </div>
-            )}
-            <div className="mt-4 border-t border-gray-100 pt-4">
-              <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">What to include</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {[
-                  { icon: '📸', label: 'Exterior (all 4 sides)', priority: 'Required' },
-                  { icon: '🪑', label: 'Interior (front + rear)', priority: 'Required' },
-                  { icon: '🔢', label: 'Odometer close-up', priority: 'Required' },
-                  { icon: '📄', label: 'Registration card', priority: 'Recommended' },
-                  { icon: '🔧', label: 'Inspection report', priority: 'Optional' },
-                  { icon: '⚠️', label: 'Accident history note', priority: 'Optional' },
-                ].map(item => (
-                  <div key={item.label} className="flex items-center gap-2 text-xs text-gray-600">
-                    <span>{item.icon}</span><span className="flex-1">{item.label}</span>
-                    <span className={`font-medium text-[10px] ${item.priority === 'Required' ? 'text-red-500' : item.priority === 'Recommended' ? 'text-orange-500' : 'text-gray-400'}`}>{item.priority}</span>
-                  </div>
+
+              {/* Category checklist */}
+              <div className="space-y-3">
+                {EVIDENCE_CATEGORIES.map(cat => {
+                  const file = categoryFiles[cat.key];
+                  const isUploaded = !!file;
+                  const isRequired = cat.priority === 'Required';
+                  return (
+                    <div
+                      key={cat.key}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                        isUploaded
+                          ? 'border-green-200 bg-green-50'
+                          : isRequired
+                          ? 'border-orange-100 bg-orange-50/50'
+                          : 'border-gray-100 bg-gray-50'
+                      }`}
+                    >
+                      {/* Status icon */}
+                      <div className="shrink-0">
+                        {isUploaded
+                          ? <CheckCircle size={20} className="text-green-500" />
+                          : <Circle size={20} className={isRequired ? 'text-orange-300' : 'text-gray-300'} />
+                        }
+                      </div>
+
+                      {/* Label + why */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-base leading-none">{cat.icon}</span>
+                          <span className="text-sm font-semibold text-gray-900">{cat.label}</span>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                            cat.priority === 'Required'    ? 'bg-red-100 text-red-600'    :
+                            cat.priority === 'Recommended' ? 'bg-orange-100 text-orange-600' :
+                            'bg-gray-100 text-gray-500'
+                          }`}>{cat.priority}</span>
+                        </div>
+                        <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">{cat.why}</p>
+                        {isUploaded && (
+                          <p className="text-[11px] text-green-600 mt-0.5 font-medium truncate">{file.name}</p>
+                        )}
+                      </div>
+
+                      {/* Upload/change button + preview */}
+                      <div className="shrink-0 flex items-center gap-2">
+                        {isUploaded && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={cat.label}
+                            className="w-10 h-10 rounded-lg object-cover border border-green-200"
+                          />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => openCategoryPicker(cat.key)}
+                          className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+                            isUploaded
+                              ? 'border-green-300 text-green-700 hover:bg-green-100'
+                              : 'border-[#003087] text-[#003087] hover:bg-[#f0f4ff]'
+                          }`}
+                        >
+                          {isUploaded ? 'Change' : 'Upload'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Accident count */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <h3 className="font-bold text-gray-900 text-sm mb-1 flex items-center gap-2">
+                ⚠️ Accident History
+              </h3>
+              <p className="text-xs text-gray-400 mb-3">Dealers verify this — honesty builds trust and speeds up offers.</p>
+              <div className="flex gap-2">
+                {['0', '1', '2', '3+'].map(val => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setAccidentCount(val)}
+                    className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                      accidentCount === val
+                        ? val === '0' ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-orange-400 bg-orange-50 text-orange-700'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    }`}
+                  >
+                    {val}
+                  </button>
                 ))}
               </div>
+              <p className="text-[11px] text-gray-400 mt-2 text-center">
+                {accidentCount === '0' ? '✅ No accidents — highest dealer confidence' :
+                 accidentCount === '1' ? 'Minor incidents reduce bid amounts slightly' :
+                 '⚠️ Multiple accidents — please include inspection report'}
+              </p>
             </div>
-            <div className="mt-4 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <AlertTriangle size={15} className="text-amber-600 mt-0.5 shrink-0" />
-              <p className="text-xs text-amber-800">Listings with exterior + interior + odometer receive <strong>3× more bids</strong>.</p>
+
+            {/* Extra photos drag-drop */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+                <ImageIcon size={15} className="text-gray-400" /> Additional Photos (optional)
+              </h3>
+              <div
+                className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer ${dragActive ? 'border-[#003087] bg-[#eef3ff]' : 'border-gray-200 bg-gray-50 hover:border-[#003087]/60'}`}
+                onDragEnter={e => { e.preventDefault(); setDragActive(true); }}
+                onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+                onDragLeave={() => setDragActive(false)}
+                onDrop={e => { e.preventDefault(); setDragActive(false); handleFiles(e.dataTransfer.files); }}
+                onClick={() => extraFileRef.current?.click()}
+              >
+                <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
+                  <Upload size={22} className={`mb-1.5 ${dragActive ? 'text-[#003087]' : 'text-gray-300'}`} />
+                  <p className="text-xs text-gray-500">{dragActive ? 'Drop files here' : 'Drag more photos or tap to add'}</p>
+                </div>
+                <input ref={extraFileRef} type="file" multiple accept="image/*" capture="environment" className="hidden" onChange={e => handleFiles(e.target.files)} />
+              </div>
+              {uploadedFiles.length > 0 && (
+                <div className="mt-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-gray-600">{uploadedFiles.length} extra photo{uploadedFiles.length !== 1 ? 's' : ''}</span>
+                    <button type="button" className="text-xs text-red-400 hover:text-red-600" onClick={() => setUploadedFiles([])}>Remove all</button>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2">
+                    {uploadedFiles.map((file, idx) => (
+                      <div key={idx} className="relative group rounded-lg overflow-hidden aspect-square bg-gray-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
+                        <button type="button" className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeFile(idx)}>
+                          <X size={11} className="text-white" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Gate warning */}
+            {requiredComplete < REQUIRED_CATEGORIES.length && (
+              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <AlertTriangle size={15} className="text-amber-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800">
+                  Upload <strong>Exterior, Interior, and Odometer</strong> photos to continue.
+                  Listings with full evidence receive <strong>3× more dealer bids</strong>.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -380,7 +574,8 @@ function UrgentSaleContent() {
                 <p><span className="text-gray-400">Car:</span> {form.year} {form.make} {form.class_name}</p>
                 <p><span className="text-gray-400">Mileage:</span> {form.km != null ? kmLabel(form.km) : '—'}</p>
                 <p><span className="text-gray-400">Reason:</span> {URGENCY_OPTIONS.find(o => o.value === form.urgency_reason)?.label}</p>
-                <p><span className="text-gray-400">Photos:</span> {uploadedFiles.length} attached</p>
+                <p><span className="text-gray-400">Photos:</span> {Object.values(categoryFiles).filter(Boolean).length + uploadedFiles.length} attached</p>
+                <p><span className="text-gray-400">Accidents:</span> {accidentCount}</p>
               </div>
             </div>
             <button type="button" onClick={handleSubmit} disabled={loading}

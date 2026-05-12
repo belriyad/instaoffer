@@ -257,6 +257,43 @@ export default function Home() {
                 Start Acquiring Smarter <ChevronRight size={20} />
               </Link>
             </motion.div>
+
+            {/* Dealer alert preview */}
+            <motion.div variants={fadeUp} className="mt-12 max-w-sm mx-auto">
+              <p className="text-center text-xs text-blue-300 uppercase tracking-widest font-bold mb-3">Example dealer alert</p>
+              <div className="bg-white/10 border border-white/20 rounded-2xl p-5 text-left">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="bg-[#ff6600] text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">⚡ Urgent</span>
+                  <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">🔥 Score 87</span>
+                  <span className="text-xs text-blue-300 ml-auto">2 min ago</span>
+                </div>
+                <p className="font-black text-white text-base mb-1">2022 Toyota Land Cruiser</p>
+                <p className="text-blue-200 text-xs mb-3">82,000 km · Excellent · Doha · Leaving Qatar</p>
+                <div className="grid grid-cols-3 gap-2 mb-4 text-center">
+                  <div className="bg-white/10 rounded-xl py-2 px-1">
+                    <p className="text-[10px] text-blue-300 uppercase tracking-wide">Market Est</p>
+                    <p className="text-white font-black text-sm">325k QAR</p>
+                  </div>
+                  <div className="bg-white/10 rounded-xl py-2 px-1">
+                    <p className="text-[10px] text-blue-300 uppercase tracking-wide">Asking</p>
+                    <p className="text-[#ff6600] font-black text-sm">295k QAR</p>
+                  </div>
+                  <div className="bg-green-400/20 border border-green-400/30 rounded-xl py-2 px-1">
+                    <p className="text-[10px] text-green-300 uppercase tracking-wide">Margin</p>
+                    <p className="text-green-300 font-black text-sm">~30k</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-[#ff6600] text-white text-center text-xs font-bold py-2 rounded-xl cursor-default">
+                    Place Bid
+                  </div>
+                  <div className="flex-1 bg-white/10 text-white text-center text-xs font-semibold py-2 rounded-xl cursor-default">
+                    View Details
+                  </div>
+                </div>
+              </div>
+              <p className="text-center text-xs text-blue-400 mt-3">Dealers who act first win the deal</p>
+            </motion.div>
           </motion.div>
         </div>
       </section>

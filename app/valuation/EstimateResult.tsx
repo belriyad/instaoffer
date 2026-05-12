@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ChevronRight, TrendingUp, Shield, ArrowRight, Clock, Zap, RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, ChevronDown, TrendingUp, Shield, ArrowRight, Clock, Zap, RefreshCw, Bookmark } from 'lucide-react';
 import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
 import { ValuationData } from './page';
@@ -46,6 +47,8 @@ function computePriceBands(estimate: MLEstimate) {
 
 export default function EstimateResult({ estimate, forecast, comps, timeToSell, data }: Props) {
   const bands = computePriceBands(estimate);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const carLabel = [data.year, data.make, data.class_name, data.trim].filter(Boolean).join(' ')
     + (data.km ? ` · ${formatKM(data.km)}` : '')
@@ -55,6 +58,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
     make: data.make, class_name: data.class_name,
     year: String(data.year ?? ''), km: String(data.km ?? ''),
     condition: data.condition, city: data.city,
+    lead_type: 'seller_offer',
     ...(data.model ? { model: data.model } : {}),
     ...(data.trim  ? { trim:  data.trim  } : {}),
   }).toString();
@@ -69,21 +73,64 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
     year: String(data.year ?? ''), km: String(data.km ?? ''), city: data.city,
   }).toString();
 
+  // ── Urgency-aware recommendation ────────────────────────────────────────────
+  // Derive a recommendation from time-to-sell if available
+  const avgDays = timeToSell?.estimated_days_to_sell ?? null;
+  const slowMarket = avgDays !== null && avgDays > 45;
+  const fastMarket = avgDays !== null && avgDays <= 20;
+  const recommendation: { emoji: string; text: string; color: string } | null =
+    slowMarket  ? { emoji: '⚡', text: `This model takes ~${avgDays} days to sell privately in Qatar — consider the urgent-sale route to close faster.`, color: 'bg-orange-50 border-orange-200 text-orange-800' }
+    : fastMarket ? { emoji: '✅', text: `Great timing — this model moves quickly (avg ~${avgDays} days). Private listing may get you the best price.`, color: 'bg-green-50 border-green-200 text-green-800' }
+    : null;
+
+  function handleSave() {
+    try {
+      // Already persisted to sessionStorage — just surface a saved confirmation
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch { /* ignore */ }
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
       <Navbar />
 
       <div className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
 
-        {/* Car label */}
-        <div className="text-center mb-2">
-          <p className="text-sm text-gray-500 font-medium">{carLabel}</p>
-          {comps && (
-            <p className="text-xs text-green-700 font-semibold mt-1">
-              Based on {comps.count} similar cars in Qatar
-            </p>
-          )}
+        {/* Car label + save */}
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-sm text-gray-500 font-medium">{carLabel}</p>
+            {comps && (
+              <p className="text-xs text-green-700 font-semibold mt-0.5">
+                Based on {comps.count} similar cars in Qatar
+              </p>
+            )}
+          </div>
+          <button
+            onClick={handleSave}
+            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
+              saved
+                ? 'bg-green-100 border-green-300 text-green-700'
+                : 'bg-white border-gray-200 text-gray-500 hover:border-[#003087] hover:text-[#003087]'
+            }`}
+          >
+            <Bookmark size={12} className={saved ? 'fill-green-600' : ''} />
+            {saved ? 'Saved!' : 'Save'}
+          </button>
         </div>
+
+        {/* Urgency-aware recommendation banner */}
+        {recommendation && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`border rounded-xl px-4 py-3 mb-5 text-sm font-medium flex items-start gap-2 ${recommendation.color}`}
+          >
+            <span className="text-base leading-none mt-0.5">{recommendation.emoji}</span>
+            <span>{recommendation.text}</span>
+          </motion.div>
+        )}
 
         {/* Intent price bands */}
         <motion.div
@@ -200,90 +247,112 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
           </p>
         </motion.div>
 
-        {/* Time-to-sell */}
-        {timeToSell && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                <Clock size={18} className="text-[#003087]" />
-                Time to Sell
-              </h3>
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#e8f0fd] text-[#003087]">
-                AI estimate
+        {/* ── Analytics accordion ──────────────────────────────────────────────── */}
+        {(timeToSell || forecast) && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-6">
+            <button
+              onClick={() => setShowAnalytics(v => !v)}
+              className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <TrendingUp size={16} className="text-[#003087]" />
+                Market analytics &amp; price forecast
               </span>
-            </div>
-            <div className="text-center py-3 mb-5">
-              <p className="text-5xl font-black text-gray-900">{timeToSell.estimated_days_to_sell}</p>
-              <p className="text-sm text-gray-500 mt-1">estimated days to sell</p>
-            </div>
-            <div className="space-y-2.5">
-              {([7, 14, 30, 60, 90] as const).map((horizon) => {
-                const prob = timeToSell.probability_by_horizon[String(horizon)] ?? 0;
-                const pct = Math.round(prob * 100);
-                return (
-                  <div key={horizon}>
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>Within {horizon} days</span>
-                      <span className="font-semibold text-gray-700">{pct}%</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${pct}%`,
-                          backgroundColor: pct >= 70 ? '#22c55e' : pct >= 40 ? '#003087' : '#f97316',
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <p className="text-xs text-gray-400 mt-4">
-              Probability of listing clearing (sold or removed) within each horizon, based on Qatar market data.
-            </p>
-          </motion.div>
-        )}
+              <ChevronDown size={16} className={`transition-transform text-gray-400 ${showAnalytics ? 'rotate-180' : ''}`} />
+            </button>
 
-        {/* Price forecast */}
-        {forecast && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                <TrendingUp size={18} className="text-[#003087]" />
-                Price Forecast
-              </h3>
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${forecast.market_trend_annual_pct >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                Market {forecast.market_trend_annual_pct >= 0 ? '↑' : '↓'} {Math.abs(forecast.market_trend_annual_pct)}%/yr
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {forecast.forecast.filter(f => f.horizon !== '12m').map((f) => {
-                const isPos = f.change_pct >= 0;
-                return (
-                  <div key={f.horizon} className="text-center p-3 bg-gray-50 rounded-xl">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">{f.horizon}</div>
-                    <div className="font-bold text-gray-900 text-sm">{formatQAR(Math.round(f.estimated_price_qar))}</div>
-                    <div className={`text-xs font-semibold mt-0.5 ${isPos ? 'text-green-600' : 'text-red-500'}`}>
-                      {isPos ? '+' : ''}{f.change_pct}%
-                    </div>
+            <AnimatePresence>
+              {showAnalytics && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-3 space-y-4">
+
+                    {/* Time-to-sell */}
+                    {timeToSell && (
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                            <Clock size={18} className="text-[#003087]" />
+                            Time to Sell
+                          </h3>
+                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#e8f0fd] text-[#003087]">
+                            AI estimate
+                          </span>
+                        </div>
+                        <div className="text-center py-3 mb-5">
+                          <p className="text-5xl font-black text-gray-900">{timeToSell.estimated_days_to_sell}</p>
+                          <p className="text-sm text-gray-500 mt-1">estimated days to sell</p>
+                        </div>
+                        <div className="space-y-2.5">
+                          {([7, 14, 30, 60, 90] as const).map((horizon) => {
+                            const prob = timeToSell.probability_by_horizon[String(horizon)] ?? 0;
+                            const pct = Math.round(prob * 100);
+                            return (
+                              <div key={horizon}>
+                                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                  <span>Within {horizon} days</span>
+                                  <span className="font-semibold text-gray-700">{pct}%</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full transition-all duration-500"
+                                    style={{
+                                      width: `${pct}%`,
+                                      backgroundColor: pct >= 70 ? '#22c55e' : pct >= 40 ? '#003087' : '#f97316',
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <p className="text-xs text-gray-400 mt-4">
+                          Probability of listing clearing within each horizon, based on Qatar market data.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Price forecast */}
+                    {forecast && (
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                            <TrendingUp size={18} className="text-[#003087]" />
+                            Price Forecast
+                          </h3>
+                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${forecast.market_trend_annual_pct >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                            Market {forecast.market_trend_annual_pct >= 0 ? '↑' : '↓'} {Math.abs(forecast.market_trend_annual_pct)}%/yr
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          {forecast.forecast.filter(f => f.horizon !== '12m').map((f) => {
+                            const isPos = f.change_pct >= 0;
+                            return (
+                              <div key={f.horizon} className="text-center p-3 bg-gray-50 rounded-xl">
+                                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">{f.horizon}</div>
+                                <div className="font-bold text-gray-900 text-sm">{formatQAR(Math.round(f.estimated_price_qar))}</div>
+                                <div className={`text-xs font-semibold mt-0.5 ${isPos ? 'text-green-600' : 'text-red-500'}`}>
+                                  {isPos ? '+' : ''}{f.change_pct}%
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <p className="text-xs text-gray-400 mt-3">
+                          Combines depreciation + Qatar market trend. Assumes {forecast.annual_km_assumption.toLocaleString()} km/year.
+                        </p>
+                      </div>
+                    )}
+
                   </div>
-                );
-              })}
-            </div>
-            <p className="text-xs text-gray-400 mt-3">
-              Combines depreciation + Qatar market trend. Assumes {forecast.annual_km_assumption.toLocaleString()} km/year.
-            </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
 
@@ -291,8 +360,8 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="bg-[#e8f0fd] border border-[#003087]/20 rounded-2xl p-5 mb-6"
+          transition={{ delay: 0.35 }}
+          className="bg-[#e8f0fd] border border-[#003087]/20 rounded-2xl p-5 mt-5 mb-6"
         >
           <div className="flex items-start gap-3">
             <Shield size={20} className="text-[#003087] mt-0.5 flex-shrink-0" />
@@ -306,20 +375,15 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
           </div>
         </motion.div>
 
-        {/* CTAs — moved into price band cards above; just offer re-valuation here */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="text-center mt-2 mb-6"
-        >
+        {/* Value another car */}
+        <div className="text-center mb-6">
           <button
             onClick={() => { try { sessionStorage.removeItem('instaoffer_valuation'); } catch { /* ignore */ } window.location.href = '/valuation'; }}
             className="inline-flex items-center gap-2 text-[#003087] hover:underline text-sm font-semibold"
           >
             <ArrowRight size={15} /> Value another car
           </button>
-        </motion.div>
+        </div>
 
         <p className="text-center text-xs text-gray-400 mt-2 mb-6">
           All estimates are generated by an AI model trained on Qatar market data. Not a guaranteed purchase price.

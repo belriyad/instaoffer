@@ -286,6 +286,31 @@ export interface OfferBid {
   updated_at: string;
 }
 
+// ─── File upload ──────────────────────────────────────────────────────────────
+export async function uploadFile(
+  file: File,
+  token: string
+): Promise<{ url: string }> {
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // strip data:image/jpeg;base64, prefix
+      resolve(result.split(',')[1] ?? result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  return apiFetch('/uploads', {
+    method: 'POST',
+    body: JSON.stringify({
+      filename:       file.name,
+      mime_type:      file.type || 'application/octet-stream',
+      content_base64: base64,
+    }),
+  }, token);
+}
+
 export async function createOfferRequest(
   data: {
     make: string;
@@ -306,6 +331,7 @@ export async function createOfferRequest(
     is_urgent?: boolean;
     urgency_reason?: 'leaving_qatar' | 'need_cash' | 'upgrading' | 'other';
     sell_priority?: 'speed' | 'price' | 'balanced';
+    // Opportunity Engine routing — BE-#75
     lead_type?: 'seller_offer' | 'urgent_sale' | 'trade_in' | 'buyer_request' | 'dealer_inquiry';
     vin?: string;
     chassis_number?: string;
@@ -795,7 +821,7 @@ export async function getDealerMarginCalc(
 }
 
 export async function getDealerLeads(
-  params: { limit?: number; offset?: number },
+  params: { limit?: number; offset?: number; lead_type?: string; status?: string },
   token: string
 ): Promise<{ rows: DealerLead[]; total: number }> {
   const qs = '?' + new URLSearchParams(

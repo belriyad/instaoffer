@@ -30,6 +30,8 @@ function SubmitOfferContent() {
     city:       searchParams.get('city')       || 'Doha',
   };
   const hasPrefill = !!(prefill.make && prefill.class_name && prefill.year && prefill.km);
+  const leadType = (searchParams.get('lead_type') || 'seller_offer') as
+    'seller_offer' | 'urgent_sale' | 'trade_in' | 'buyer_request' | 'dealer_inquiry';
 
   // ── Extra fields only the submit form needs ────────────────────────────────
   const [extras, setExtras] = useState({
@@ -96,6 +98,7 @@ function SubmitOfferContent() {
         asking_price_qar: extras.asking_price_qar ?? undefined,
         contact_phone:    extras.contact_phone || undefined,
         has_inspection:   extras.has_inspection || undefined,
+        lead_type:        leadType,
       }, token);
       router.push(`/my-offers?submitted=${result.request.request_uid}`);
     } catch (err) {

@@ -109,7 +109,7 @@ function TradeInContent() {
     if (err) { setError(err); return; }
     const sp = new URLSearchParams({
       make: curMake, class_name: curModel, year: curYear, km: curKm != null ? String(curKm) : '', city: curCity,
-      intent: 'trade_in', timeline,
+      intent: 'trade_in', timeline, lead_type: 'trade_in',
       ...(targetCarId && { target_car_id: targetCarId }),
       ...(targetCarName && { target_car_name: targetCarName }),
       ...(targetPriceRaw && { target_price: targetPriceRaw }),
