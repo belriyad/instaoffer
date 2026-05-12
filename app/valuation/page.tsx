@@ -266,32 +266,71 @@ function Screen2({
 
 
 // ─── Main component ────────────────────────────────────────────────────────────
+const SESSION_KEY = 'instaoffer_valuation';
+
 function ValuationContent() {
   const searchParams = useSearchParams();
   const { ensureGuestToken } = useAuth();
 
-  const [screen, setScreen] = useState<1 | 2>(1);
-  const [data, setData] = useState<ValuationData>({
-    make:            searchParams.get('make') || '',
-    class_name:      searchParams.get('class_name') || '',
-    model:           '',
-    year:            searchParams.get('year') ? Number(searchParams.get('year')) : null,
-    km:              searchParams.get('km') ? Number(searchParams.get('km')) : null,
-    car_type:        '',
-    fuel_type:       '',
-    gear_type:       'Automatic',
-    condition:       '',
-    city:            'Doha',
-    trim:            searchParams.get('trim') || '',
-    cylinder_count:  null,
-    warranty_status: 'Under Warranty',
+  // Restore from sessionStorage on first render
+  const [screen, setScreen] = useState<1 | 2>(() => {
+    if (typeof window === 'undefined') return 1;
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (saved) return (JSON.parse(saved).screen as 1 | 2) ?? 1;
+    } catch { /* ignore */ }
+    return 1;
   });
+
+  const [data, setData] = useState<ValuationData>(() => {
+    const defaults: ValuationData = {
+      make:            searchParams.get('make') || '',
+      class_name:      searchParams.get('class_name') || '',
+      model:           '',
+      year:            searchParams.get('year') ? Number(searchParams.get('year')) : null,
+      km:              searchParams.get('km') ? Number(searchParams.get('km')) : null,
+      car_type:        '',
+      fuel_type:       '',
+      gear_type:       'Automatic',
+      condition:       '',
+      city:            'Doha',
+      trim:            searchParams.get('trim') || '',
+      cylinder_count:  null,
+      warranty_status: 'Under Warranty',
+    };
+    if (typeof window === 'undefined') return defaults;
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (saved) return { ...defaults, ...(JSON.parse(saved).data ?? {}) };
+    } catch { /* ignore */ }
+    return defaults;
+  });
+
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState('');
-  const [estimate, setEstimate]     = useState<MLEstimate | null>(null);
-  const [forecast, setForecast]     = useState<MLForecast | null>(null);
-  const [comps, setComps]           = useState<OfferComps | null>(null);
-  const [timeToSell, setTimeToSell] = useState<MLTimeToSellEstimate | null>(null);
+  const [estimate, setEstimate]     = useState<MLEstimate | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try { const s = sessionStorage.getItem(SESSION_KEY); return s ? JSON.parse(s).estimate ?? null : null; } catch { return null; }
+  });
+  const [forecast, setForecast]     = useState<MLForecast | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try { const s = sessionStorage.getItem(SESSION_KEY); return s ? JSON.parse(s).forecast ?? null : null; } catch { return null; }
+  });
+  const [comps, setComps]           = useState<OfferComps | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try { const s = sessionStorage.getItem(SESSION_KEY); return s ? JSON.parse(s).comps ?? null : null; } catch { return null; }
+  });
+  const [timeToSell, setTimeToSell] = useState<MLTimeToSellEstimate | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try { const s = sessionStorage.getItem(SESSION_KEY); return s ? JSON.parse(s).timeToSell ?? null : null; } catch { return null; }
+  });
+
+  // Persist state to sessionStorage whenever it changes
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ screen, data, estimate, forecast, comps, timeToSell }));
+    } catch { /* ignore */ }
+  }, [screen, data, estimate, forecast, comps, timeToSell]);
 
   // If make+model pre-filled from query params, skip to screen 2
   useEffect(() => {

@@ -313,12 +313,12 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
           transition={{ delay: 0.35 }}
           className="text-center mt-2 mb-6"
         >
-          <Link
-            href="/valuation"
+          <button
+            onClick={() => { try { sessionStorage.removeItem('instaoffer_valuation'); } catch { /* ignore */ } window.location.href = '/valuation'; }}
             className="inline-flex items-center gap-2 text-[#003087] hover:underline text-sm font-semibold"
           >
             <ArrowRight size={15} /> Value another car
-          </Link>
+          </button>
         </motion.div>
 
         <p className="text-center text-xs text-gray-400 mt-2 mb-6">
