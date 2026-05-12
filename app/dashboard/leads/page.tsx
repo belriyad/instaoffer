@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, ChevronLeft, ChevronRight, Send } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight, Send, ExternalLink } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
 import { getDealerLeads, DealerLead } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
+import Link from 'next/link';
 
 function LeadCard({ lead }: { lead: DealerLead }) {
   const yearRange =
@@ -50,6 +51,10 @@ function LeadCard({ lead }: { lead: DealerLead }) {
           <button className="mt-3 flex items-center gap-1.5 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-3 py-2 rounded-xl text-xs transition-colors">
             <Send size={12} /> Submit Offer
           </button>
+          <Link href={`/dashboard/leads/${lead.request_uid}`}
+            className="mt-2 flex items-center gap-1.5 text-[#003087] hover:underline font-semibold text-xs">
+            <ExternalLink size={12} /> View Full Lead
+          </Link>
         </div>
       </div>
     </div>
@@ -72,7 +77,7 @@ export default function DealerLeadsPage() {
   const load = useCallback(() => {
     if (!token) return;
     setFetching(true);
-    getDealerLeads({ limit: LIMIT, offset: page * LIMIT }, token)
+    getDealerLeads({ limit: LIMIT, offset: page * LIMIT, lead_type: 'seller_offer' }, token)
       .then(setData)
       .catch(() => {})
       .finally(() => setFetching(false));
@@ -85,8 +90,8 @@ export default function DealerLeadsPage() {
       <Navbar />
       <div className="max-w-4xl mx-auto w-full px-4 py-8 flex-1">
         <div className="mb-6">
-          <h1 className="text-3xl font-black text-gray-900">Buyer Leads</h1>
-          <p className="text-gray-500 mt-1">Open WTB requests — buyers actively looking for inventory you may have.</p>
+          <h1 className="text-3xl font-black text-gray-900">Seller Leads</h1>
+          <p className="text-gray-500 mt-1">Sellers who have requested an offer — review and submit a bid.</p>
         </div>
 
         {fetching && (

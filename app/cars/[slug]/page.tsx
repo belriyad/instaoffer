@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Fuel, Zap, ChevronLeft as Prev, ChevronRight as Next, CreditCard, Calculator, RefreshCw, MessageSquare } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { getWakalatCar, WakalatCarDetail, wakalatImageUrl } from '@/lib/api';
+import { getWakalatCar, WakalatCarDetail, wakalatImageUrl, createOfferRequest } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 import { formatQAR } from '@/lib/utils';
 
 function calcMonthlyPayment(price: number, downPayment: number, annualRate: number, termMonths: number): number {
@@ -20,6 +21,7 @@ function calcMonthlyPayment(price: number, downPayment: number, annualRate: numb
 
 export default function CarDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { ensureGuestToken } = useAuth();
   const [car, setCar] = useState<WakalatCarDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [imgIndex, setImgIndex] = useState(0);
@@ -29,6 +31,30 @@ export default function CarDetailPage() {
   const [downPayment, setDownPayment] = useState('');
   const [loanTerm, setLoanTerm] = useState('60');
   const [interestRate, setInterestRate] = useState('4.5');
+
+  // Contact Dealer — fire-and-forget dealer_inquiry, then open WhatsApp
+  const handleContactDealer = useCallback(async () => {
+    if (!car) return;
+    const waUrl = `https://wa.me/?text=Hi%2C+I%27m+interested+in+the+${encodeURIComponent(`${car.year} ${car.make} ${car.model}`)}+listed+on+InstaOffer`;
+    // Open WhatsApp immediately — do not block on API call
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+    // Fire-and-forget: log the inquiry as an opportunity
+    try {
+      const guestToken = await ensureGuestToken();
+      await createOfferRequest({
+        make: car.make,
+        class_name: car.model,
+        year: car.year ?? undefined,
+        km: 0,
+        condition: 'new',
+        city: 'Doha',
+        lead_type: 'dealer_inquiry',
+        description: `Dealer inquiry for ${car.year ?? ''} ${car.make} ${car.model}${car.dealer ? ` at ${car.dealer}` : ''}. Target car ID: ${car.car_id}`,
+      }, guestToken ?? undefined);
+    } catch {
+      // Silently ignore — WhatsApp already opened
+    }
+  }, [car, ensureGuestToken]);
 
   useEffect(() => {
     if (!slug) return;
@@ -178,16 +204,14 @@ export default function CarDetailPage() {
 
             {/* Primary CTAs */}
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <a
-                href={`https://wa.me/?text=Hi%2C+I%27m+interested+in+the+${encodeURIComponent(`${car.year} ${car.make} ${car.model}`)}+listed+on+InstaOffer`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={handleContactDealer}
                 className="flex flex-col items-center gap-1.5 bg-[#003087] hover:bg-[#002070] text-white font-bold px-4 py-3.5 rounded-2xl text-sm transition-colors text-center"
               >
                 <MessageSquare size={18} />
                 <span>Contact Dealer</span>
                 <span className="text-xs font-normal opacity-75">Ask about this vehicle</span>
-              </a>
+              </button>
               <Link
                 href={`/trade-in?target_car_id=${car.car_id}&target_name=${encodeURIComponent(`${car.year} ${car.make} ${car.model}`)}&target_price=${trimPrice ?? ''}&target_dealer=${encodeURIComponent(car.dealer ?? '')}`}
                 className="flex flex-col items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-3.5 rounded-2xl text-sm transition-colors text-center"

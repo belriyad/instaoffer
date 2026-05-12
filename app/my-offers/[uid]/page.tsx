@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -58,6 +58,7 @@ interface AuditEntry {
 export default function OfferDetailPage({ params }: { params: Promise<{ uid: string }> }) {
   const { user, token, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [request, setRequest] = useState<RequestWithBids | null>(null);
   const [fetching, setFetching] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -87,7 +88,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
 
   useEffect(() => {
     if (!loading && !token) {
-      router.push('/login');
+      router.push('/login?redirect=' + encodeURIComponent(pathname));
       return;
     }
     if (token && uid) {

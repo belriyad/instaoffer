@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Send, MessageSquare, AlertCircle, Clock } from 'lucide-react';
@@ -22,6 +22,7 @@ interface Message {
 export default function MessagesPage({ params }: { params: Promise<{ uid: string }> }) {
   const { token, user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const dealerId = searchParams.get('dealer');
   // ?recipient= is set when a dealer opens chat from their dashboard (recipient = seller's customer_id)
@@ -43,7 +44,7 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
 
   useEffect(() => {
     if (!loading && !token) {
-      router.push('/login');
+      router.push('/login?redirect=' + encodeURIComponent(pathname + (searchParams.toString() ? '?' + searchParams.toString() : '')));
     }
   }, [loading, token, router]);
 
