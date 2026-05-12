@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { RefreshCw, ArrowLeft, ChevronRight, ChevronLeft, Info, Clock, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
@@ -10,6 +10,7 @@ import StepIndicator from '@/components/StepIndicator';
 import PriceGuidanceCard from '@/components/PriceGuidanceCard';
 import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
 import { formatQAR } from '@/lib/utils';
+import { getMLEstimate } from '@/lib/api';
 
 const STEPS = ['Current vehicle', 'Desired next vehicle', 'Timeline & Submit'];
 const CURRENT_YEAR = new Date().getFullYear();
@@ -59,7 +60,26 @@ function TradeInContent() {
   const [tgtMake, setTgtMake] = useState('');
   const [tgtModel, setTgtModel] = useState('');
   const [tgtYear, setTgtYear] = useState('');
-  const [tgtPrice, setTgtPrice] = useState('');
+  const [tgtPrice, setTgtPrice] = useState(targetPriceRaw);
+
+  // Live ML estimate for current car (used in step 1 difference calc)
+  const [tradeEstimate, setTradeEstimate] = useState<[number, number] | null>(null);
+  const [estimateLoading, setEstimateLoading] = useState(false);
+
+  useEffect(() => {
+    if (!curMake || !curModel || !curYear || !curKm) return;
+    setEstimateLoading(true);
+    getMLEstimate({
+      make: curMake,
+      class_name: curModel,
+      manufacture_year: parseInt(curYear),
+      km: curKm,
+      city: curCity || undefined,
+    })
+      .then(r => setTradeEstimate(r.confidence_range))
+      .catch(() => setTradeEstimate(null))
+      .finally(() => setEstimateLoading(false));
+  }, [curMake, curModel, curYear, curKm, curCity]);
 
   // Step 2: timeline
   const [timeline, setTimeline] = useState<Timeline>('');
@@ -243,14 +263,38 @@ function TradeInContent() {
               </div>
             </div>
 
+            {/* Estimated difference — uses real ML estimate */}
             {tgtPriceNum > 0 && (
               <div className="bg-[#f0f4ff] rounded-xl border border-[#003087]/15 p-4">
                 <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-1">Estimated Difference to Pay</p>
-                <p className="text-sm text-gray-600">
-                  After your trade-in, you&apos;d need approximately{' '}
-                  <span className="font-bold text-[#003087]">{formatQAR(Math.max(0, tgtPriceNum - 80000))} – {formatQAR(Math.max(0, tgtPriceNum - 50000))}</span>
+                {estimateLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span className="w-4 h-4 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+                    Calculating…
+                  </div>
+                ) : tradeEstimate ? (
+                  <>
+                    <p className="text-sm text-gray-600">
+                      After your trade-in, you&apos;d need approximately{' '}
+                      <span className="font-bold text-[#003087]">
+                        {formatQAR(Math.max(0, tgtPriceNum - tradeEstimate[1]))}
+                        {' '}–{' '}
+                        {formatQAR(Math.max(0, tgtPriceNum - tradeEstimate[0]))}
+                      </span>
+                    </p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Est. trade-in value:{' '}
+                      <span className="font-semibold">{formatQAR(tradeEstimate[0])} – {formatQAR(tradeEstimate[1])}</span>
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    Complete your current car details to see the estimated difference.
+                  </p>
+                )}
+                <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                  <Info size={11} /> Based on ML price estimate. Actual depends on dealer inspection.
                 </p>
-                <p className="text-xs text-gray-400 mt-1 flex items-center gap-1"><Info size={11} /> Based on estimated trade-in range. Actual depends on final offer.</p>
               </div>
             )}
           </div>
