@@ -20,28 +20,29 @@ interface Props {
 /** Compute the 3 intent-based price bands from the ML estimate */
 function computePriceBands(estimate: MLEstimate) {
   const mid = estimate.estimated_price_qar;
-  const low = estimate.confidence_range[0];
-  const high = estimate.confidence_range[1];
 
-  // Demand factor: tighter confidence = higher demand model = smaller discount
-  const rangeRatio = (high - low) / mid; // wider range → more uncertainty → bigger discount
-  const demandDiscount = Math.min(0.12, Math.max(0.04, rangeRatio * 0.5));
+  // Cap display spread at ±5% of midpoint regardless of API confidence range
+  const spread = 0.05;
 
-  // Private party: full market range
-  const privatePartyLow  = Math.round(low  / 1000) * 1000;
-  const privatePartyHigh = Math.round(high / 1000) * 1000;
+  const r = (center: number) => ({
+    low:  Math.round(center * (1 - spread) / 1000) * 1000,
+    high: Math.round(center * (1 + spread) / 1000) * 1000,
+  });
 
-  // Trade-in: 6–12% below private party
-  const tradeInDiscount = 0.06 + demandDiscount * 0.5;
-  const tradeInLow  = Math.round((low  * (1 - tradeInDiscount - 0.03)) / 1000) * 1000;
-  const tradeInHigh = Math.round((high * (1 - tradeInDiscount))        / 1000) * 1000;
+  // Private party: full market midpoint
+  const pp = r(mid);
 
-  // Instant offer: 12–22% below private party
-  const instantDiscount = 0.12 + demandDiscount;
-  const instantLow  = Math.round((low  * (1 - instantDiscount - 0.03)) / 1000) * 1000;
-  const instantHigh = Math.round((high * (1 - instantDiscount))        / 1000) * 1000;
+  // Trade-in: 8% below market midpoint
+  const ti = r(mid * 0.92);
 
-  return { privatePartyLow, privatePartyHigh, tradeInLow, tradeInHigh, instantLow, instantHigh };
+  // Instant offer: 17% below market midpoint
+  const io = r(mid * 0.83);
+
+  return {
+    privatePartyLow:  pp.low,  privatePartyHigh: pp.high,
+    tradeInLow:       ti.low,  tradeInHigh:      ti.high,
+    instantLow:       io.low,  instantHigh:      io.high,
+  };
 }
 
 export default function EstimateResult({ estimate, forecast, comps, timeToSell, data }: Props) {
