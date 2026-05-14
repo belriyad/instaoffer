@@ -14,7 +14,7 @@ import {
   WakalatFilterOptions, WakalatCarSummary, WakalatCarsParams,
   wakalatImageUrl,
 } from '@/lib/api';
-import { formatQAR } from '@/lib/utils';
+import { formatQAR, EXCLUDED_NON_CAR_KEYWORDS, NON_CAR_MAKES, MIN_LISTING_YEAR, BUDGET_BANDS, BudgetBand } from '@/lib/utils';
 
 // ─── Finance calculator ───────────────────────────────────────────────────────
 function calcMonthlyPayment(price: number, downPayment: number, annualRate: number, termMonths: number): number {
@@ -27,6 +27,16 @@ function calcMonthlyPayment(price: number, downPayment: number, annualRate: numb
 
 // ─── Budget mode ──────────────────────────────────────────────────────────────
 type BudgetMode = 'cash' | 'finance';
+
+// ─── Non-car + stale listing filter ──────────────────────────────────────────
+function isValidCarListing(car: WakalatCarSummary): boolean {
+  const haystack = [car.make, car.model, car.body_type ?? '']
+    .join(' ').toLowerCase();
+  if (EXCLUDED_NON_CAR_KEYWORDS.some(kw => haystack.includes(kw))) return false;
+  if (NON_CAR_MAKES.some(m => car.make?.toLowerCase().includes(m))) return false;
+  if (car.year && car.year < MIN_LISTING_YEAR) return false;
+  return true;
+}
 
 const SORT_OPTIONS = [
   { value: 'price_asc', label: 'Price: Low to High' },
@@ -66,6 +76,7 @@ export default function CarsPage() {
 
   // ── Budget mode ──
   const [budgetMode, setBudgetMode] = useState<BudgetMode>('cash');
+  const [budgetBand, setBudgetBand] = useState<BudgetBand>('any');
   const [cashBudget, setCashBudget] = useState('');
   const [downPayment, setDownPayment] = useState('');
   const [loanTerm, setLoanTerm] = useState('60');
@@ -93,6 +104,7 @@ export default function CarsPage() {
         page: pg,
         per_page: perPage,
         sort,
+        year_min: yearMin ? Number(yearMin) : MIN_LISTING_YEAR,
         ...(q ? { q } : {}),
         ...(selMakes.length ? { make: selMakes.join(',') } : {}),
         ...(selModels.length ? { model: selModels.join(',') } : {}),
@@ -101,19 +113,25 @@ export default function CarsPage() {
         ...(selFuelTypes.length ? { fuel_type: selFuelTypes.join(',') } : {}),
         ...(selTransmissions.length ? { transmission: selTransmissions.join(',') } : {}),
         ...(selDrivetrains.length ? { drivetrain: selDrivetrains.join(',') } : {}),
-        ...(yearMin ? { year_min: Number(yearMin) } : {}),
         ...(yearMax ? { year_max: Number(yearMax) } : {}),
       };
 
-      // Budget filter
-      if (budgetMode === 'cash' && cashBudget) {
+      // Budget band chips take priority over manual cash input
+      if (budgetBand !== 'any') {
+        const band = BUDGET_BANDS.find(b => b.value === budgetBand);
+        if (band) {
+          if (band.max !== undefined) params.price_max = band.max;
+          if (band.min > 0) params.price_min = band.min;
+        }
+      } else if (budgetMode === 'cash' && cashBudget) {
         params.price_max = Number(cashBudget);
       } else if (budgetMode === 'finance' && maxPriceFromFinance) {
         params.price_max = maxPriceFromFinance;
       }
 
       const res = await getWakalatCars(params);
-      setCars(res.cars);
+      const filtered = res.cars.filter(isValidCarListing);
+      setCars(filtered);
       setTotal(res.total);
       setPage(res.page);
       setPages(res.pages);
@@ -122,7 +140,7 @@ export default function CarsPage() {
     } finally {
       setLoading(false);
     }
-  }, [q, selMakes, selModels, selDealers, selBodyTypes, selFuelTypes, selTransmissions, selDrivetrains, yearMin, yearMax, sort, budgetMode, cashBudget, maxPriceFromFinance]);
+  }, [q, selMakes, selModels, selDealers, selBodyTypes, selFuelTypes, selTransmissions, selDrivetrains, yearMin, yearMax, sort, budgetMode, budgetBand, cashBudget, maxPriceFromFinance]);
 
   // Fetch filter options once
   useEffect(() => {
@@ -147,13 +165,15 @@ export default function CarsPage() {
     selMakes, selModels, selDealers, selBodyTypes, selFuelTypes, selTransmissions, selDrivetrains,
   ].reduce((n, a) => n + a.length, 0) +
     (yearMin ? 1 : 0) + (yearMax ? 1 : 0) +
-    (budgetMode === 'cash' && cashBudget ? 1 : 0) +
-    (budgetMode === 'finance' && monthlyBudget ? 1 : 0);
+    (budgetBand !== 'any' ? 1 : 0) +
+    (budgetBand === 'any' && budgetMode === 'cash' && cashBudget ? 1 : 0) +
+    (budgetBand === 'any' && budgetMode === 'finance' && monthlyBudget ? 1 : 0);
 
   function clearAll() {
     setSelMakes([]); setSelModels([]); setSelDealers([]);
     setSelBodyTypes([]); setSelFuelTypes([]); setSelTransmissions([]); setSelDrivetrains([]);
     setYearMin(''); setYearMax('');
+    setBudgetBand('any');
     setCashBudget(''); setMonthlyBudget(''); setDownPayment('');
     setQ('');
   }
@@ -197,6 +217,26 @@ export default function CarsPage() {
                 </span>
               )}
             </button>
+          </div>
+
+          {/* Budget band chips */}
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-blue-200 font-semibold shrink-0">Budget:</span>
+            <button
+              onClick={() => { setBudgetBand('any'); setPage(1); }}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${budgetBand === 'any' ? 'bg-white text-[#003087] border-white' : 'border-white/30 text-white/80 hover:border-white hover:text-white'}`}
+            >
+              Any
+            </button>
+            {BUDGET_BANDS.map(band => (
+              <button
+                key={band.value}
+                onClick={() => { setBudgetBand(budgetBand === band.value ? 'any' : band.value); setPage(1); }}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${budgetBand === band.value ? 'bg-[#ff6600] text-white border-[#ff6600]' : 'border-white/30 text-white/80 hover:border-white hover:text-white'}`}
+              >
+                {band.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>

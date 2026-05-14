@@ -1017,6 +1017,37 @@ export const CAR_TRIMS: Record<string, string[]> = {
 
 export const YEARS = Array.from({ length: 26 }, (_, i) => 2025 - i);
 
+/** Minimum model year shown in the main car browse results (older = classic section) */
+export const MIN_LISTING_YEAR = 2005;
+
+/** Keywords in make/class_name/body_type that indicate a non-car listing */
+export const EXCLUDED_NON_CAR_KEYWORDS = [
+  'bike', 'bicycle', 'motorcycle', 'motorbike', 'moped', 'scooter',
+  'jet ski', 'jetski', 'watercraft', 'pwc', 'seadoo', 'sea-doo',
+  'atv', 'quad', 'quadbike', 'buggy', 'side by side', 'sxs', 'utv',
+  'boat', 'yacht', 'speedboat', 'pontoon',
+  'trike', 'three-wheel',
+  'snowmobile', 'dirt bike', 'dirtbike',
+];
+
+/** Makes that are exclusively or primarily non-car brands in this market */
+export const NON_CAR_MAKES = [
+  'sea-doo', 'seadoo', 'yamaha watercraft', 'kawasaki (bikes)',
+  'polaris', 'can-am', 'brp', 'arctic cat',
+  'harley-davidson', 'harley davidson', 'ducati', 'ktm', 'triumph motorcycles',
+  'royal enfield', 'bajaj', 'tvs',
+];
+
+/** Budget bands for the quick-select affordability chips */
+export const BUDGET_BANDS = [
+  { label: 'Under 50k',   value: 'under_50k',   max: 50_000,   min: 0 },
+  { label: '50–100k',     value: '50_100k',      max: 100_000,  min: 50_000 },
+  { label: '100–200k',    value: '100_200k',     max: 200_000,  min: 100_000 },
+  { label: '200–400k',    value: '200_400k',     max: 400_000,  min: 200_000 },
+  { label: '400k+',       value: 'above_400k',   max: undefined, min: 400_000 },
+] as const;
+export type BudgetBand = typeof BUDGET_BANDS[number]['value'] | 'any';
+
 export const CONDITIONS = [
   { value: 'excellent', label: 'Excellent', description: 'Like new, no issues' },
   { value: 'good', label: 'Good', description: 'Minor wear, well maintained' },
