@@ -1088,6 +1088,23 @@ export async function getTradeInDetail(uid: string, token: string): Promise<Trad
   return apiFetch<TradeInRequest>(`/trade-in/requests/${uid}`, {}, token);
 }
 
+export async function submitTradeInProposal(
+  uid: string,
+  data: { offer_qar: number; message?: string },
+  token: string
+): Promise<{ ok: boolean }> {
+  return apiFetch<{ ok: boolean }>(`/dealer/trade-ins/${uid}/proposal`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+}
+
+export async function declineTradeIn(uid: string, token: string): Promise<{ ok: boolean }> {
+  return apiFetch<{ ok: boolean }>(`/dealer/trade-ins/${uid}/decline`, {
+    method: 'POST',
+  }, token);
+}
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
 export async function adminGetAllRequests(token: string, params?: {

@@ -10,7 +10,7 @@ import {
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getTradeInDetail, TradeInRequest } from '@/lib/api';
+import { getTradeInDetail, submitTradeInProposal, declineTradeIn, TradeInRequest } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
@@ -54,6 +54,8 @@ export default function TradeInDetailPage() {
   const [proposalPrice, setProposalPrice] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [proposalSent, setProposalSent] = useState(false);
+  const [proposalError, setProposalError] = useState<string | null>(null);
+  const [declining, setDeclining] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.push('/login/dealer');
@@ -69,12 +71,31 @@ export default function TradeInDetailPage() {
   }, [token, uid]);
 
   async function handleSendProposal() {
+    if (!token || !req) return;
+    const offer = parseFloat(proposalPrice.replace(/[^0-9.]/g, ''));
+    if (!offer || offer <= 0) { setProposalError('Enter a valid offer amount'); return; }
     setSubmitting(true);
-    // Stub: would POST to /dealer/trade-ins/:uid/proposal
-    await new Promise(r => setTimeout(r, 800));
-    setSubmitting(false);
-    setProposalSent(true);
-    setProposalOpen(false);
+    setProposalError(null);
+    try {
+      await submitTradeInProposal(uid, { offer_qar: offer, message: proposalNote || undefined }, token);
+      setProposalSent(true);
+      setProposalOpen(false);
+    } catch (err) {
+      setProposalError(err instanceof Error ? err.message : 'Failed to send proposal');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleDecline() {
+    if (!token || !req) return;
+    setDeclining(true);
+    try {
+      await declineTradeIn(uid, token);
+      router.push('/dashboard/trade-ins');
+    } catch {
+      setDeclining(false);
+    }
   }
 
   if (fetching || loading) {
@@ -112,6 +133,9 @@ export default function TradeInDetailPage() {
   }
 
   const status = STATUS_CONFIG[req.status] ?? { label: req.status, badgeClass: 'bg-gray-100 text-gray-500' };
+  const photos: string[] = (() => {
+    try { return req.photo_urls_json ? JSON.parse(req.photo_urls_json) : []; } catch { return []; }
+  })();
 
   const diffLow = req.difference_low_qar ?? (req.target_price_qar && req.estimate_high_qar
     ? Math.max(0, req.target_price_qar - req.estimate_high_qar) : null);
@@ -201,6 +225,21 @@ export default function TradeInDetailPage() {
           </p>
         </Section>
 
+        {/* Photos */}
+        {photos.length > 0 && (
+          <Section title={`Photos (${photos.length})`}>
+            <div className="grid grid-cols-3 gap-2">
+              {photos.map((url, i) => (
+                <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`Photo ${i + 1}`}
+                    className="w-full aspect-square object-cover rounded-xl border border-gray-100 hover:opacity-90 transition-opacity" />
+                </a>
+              ))}
+            </div>
+          </Section>
+        )}
+
         {/* Contact */}
         {(req.contact_name || req.contact_phone) && (
           <Section title="📞 Contact Details">
@@ -278,10 +317,14 @@ export default function TradeInDetailPage() {
                   <Send size={15} /> Send Proposal
                 </button>
                 <button
-                  disabled={['rejected', 'closed'].includes(req.status)}
+                  onClick={handleDecline}
+                  disabled={['rejected', 'closed'].includes(req.status) || declining}
                   className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold px-5 py-3 rounded-xl text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <X size={15} /> Decline
+                  {declining
+                    ? <span className="w-4 h-4 border-2 border-red-400/40 border-t-red-500 rounded-full animate-spin" />
+                    : <X size={15} />}
+                  Decline
                 </button>
               </div>
             ) : (
@@ -318,12 +361,17 @@ export default function TradeInDetailPage() {
                     {submitting ? 'Sending…' : 'Send Proposal'}
                   </button>
                   <button
-                    onClick={() => setProposalOpen(false)}
+                    onClick={() => { setProposalOpen(false); setProposalError(null); }}
                     className="text-sm text-gray-500 hover:text-gray-700 font-semibold px-4 py-2.5 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors"
                   >
                     Cancel
                   </button>
                 </div>
+                {proposalError && (
+                  <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
+                    <AlertCircle size={12} /> {proposalError}
+                  </p>
+                )}
               </div>
             )}
           </div>

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ChevronLeft, Car, Clock, AlertCircle, MapPin, Gauge,
-  Send, CheckCircle2, Star, Zap, FileText, Phone,
+  Send, CheckCircle2, Star, Zap, FileText, Phone, RefreshCw, ExternalLink,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -28,6 +28,14 @@ const DEAL_CONFIG: Record<string, { label: string; color: string }> = {
   good:  { label: '✅ Good Deal',   color: 'text-green-600' },
   watch: { label: '👀 Watch',       color: 'text-yellow-600' },
   skip:  { label: '⚠️ Skip',        color: 'text-gray-400' },
+};
+
+const LEAD_BANNER: Record<string, { label: string; cls: string }> = {
+  urgent_sale:    { label: '⚡ Urgent Sale',    cls: 'bg-red-600 text-white' },
+  trade_in:       { label: '🔄 Trade-In Lead',  cls: 'bg-green-600 text-white' },
+  buyer_request:  { label: '🛒 Buyer Request',  cls: 'bg-blue-600 text-white' },
+  dealer_inquiry: { label: '📋 Dealer Inquiry', cls: 'bg-purple-600 text-white' },
+  seller_offer:   { label: '🚗 Seller Offer',   cls: 'bg-[#003087] text-white' },
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -135,6 +143,10 @@ export default function DealerLeadDetailPage() {
 
   const statusCfg = STATUS_CONFIG[req.status] ?? { label: req.status, badgeClass: 'bg-gray-100 text-gray-500' };
   const dealCfg = req.deal_classification ? DEAL_CONFIG[req.deal_classification] : null;
+  const leadType = req.lead_type ?? 'seller_offer';
+  const leadBanner = LEAD_BANNER[leadType] ?? LEAD_BANNER.seller_offer;
+  const isTradeIn = leadType === 'trade_in';
+  const isUrgent = req.is_urgent || leadType === 'urgent_sale';
   const photos: string[] = (() => {
     try { return req.photo_urls_json ? JSON.parse(req.photo_urls_json) : []; } catch { return []; }
   })();
@@ -152,12 +164,53 @@ export default function DealerLeadDetailPage() {
       <div className="max-w-3xl mx-auto w-full px-4 py-8 flex-1">
 
         {/* Back + Header */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-4">
           <Link href="/dashboard/leads"
             className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#003087] transition-colors">
             <ChevronLeft size={16} /> Seller Leads
           </Link>
         </div>
+
+        {/* Lead type banner */}
+        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl mb-4 text-sm font-bold ${leadBanner.cls}`}>
+          {leadBanner.label}
+        </div>
+
+        {/* Urgent sale top alert */}
+        {isUrgent && (
+          <div className="bg-red-600 text-white rounded-2xl p-5 mb-4 flex items-start gap-4 shadow-lg">
+            <Zap size={28} className="shrink-0 mt-0.5" />
+            <div>
+              <p className="font-black text-lg leading-tight">Urgent Sale — Act Fast</p>
+              {req.urgency_reason && (
+                <p className="text-sm mt-1 opacity-90">{urgencyLabels[req.urgency_reason] ?? req.urgency_reason}</p>
+              )}
+              {req.sell_priority && (
+                <p className="text-xs opacity-75 mt-0.5 capitalize">Priority: {req.sell_priority}</p>
+              )}
+              <p className="text-xs opacity-75 mt-1">Seller wants to close quickly — respond now for best chance.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Trade-in info panel */}
+        {isTradeIn && (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-5 mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <RefreshCw size={16} className="text-green-600" />
+              <p className="font-bold text-green-800 text-sm">This seller wants to trade in their car</p>
+            </div>
+            {req.description && (
+              <p className="text-sm text-green-700 mb-3 bg-white/60 rounded-xl p-3">{req.description}</p>
+            )}
+            <Link
+              href="/dashboard/trade-ins"
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-colors"
+            >
+              <ExternalLink size={14} /> View Trade-In Queue
+            </Link>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
           <div>
@@ -175,11 +228,6 @@ export default function DealerLeadDetailPage() {
             </span>
             {dealCfg && (
               <span className={`text-sm font-bold ${dealCfg.color}`}>{dealCfg.label}</span>
-            )}
-            {req.is_urgent && (
-              <span className="flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">
-                <Zap size={11} /> Urgent
-              </span>
             )}
           </div>
         </div>
@@ -269,7 +317,7 @@ export default function DealerLeadDetailPage() {
               )}
             </div>
           )}
-          {req.is_urgent && (
+          {req.is_urgent && !isUrgent && (
             <div className="bg-red-50 rounded-xl p-3 border border-red-100 mb-3">
               <p className="text-xs font-bold text-red-700 flex items-center gap-1 mb-1">
                 <Zap size={12} /> Urgent Sale
@@ -282,7 +330,7 @@ export default function DealerLeadDetailPage() {
               )}
             </div>
           )}
-          {req.description && (
+          {!isTradeIn && req.description && (
             <div className="mt-2">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
                 <FileText size={11} /> Seller Notes
@@ -314,10 +362,19 @@ export default function DealerLeadDetailPage() {
             {req.contact_phone && (
               <div className="flex justify-between items-center py-2">
                 <span className="text-sm text-gray-500">Phone</span>
-                <a href={`tel:${req.contact_phone}`}
-                  className="flex items-center gap-1.5 text-sm font-semibold text-[#003087] hover:underline">
-                  <Phone size={13} /> {req.contact_phone}
-                </a>
+                <div className="flex items-center gap-2">
+                  <a href={`tel:${req.contact_phone}`}
+                    className="flex items-center gap-1.5 text-sm font-semibold text-[#003087] hover:underline">
+                    <Phone size={13} /> {req.contact_phone}
+                  </a>
+                  <a
+                    href={`https://wa.me/${req.contact_phone.replace(/\D/g, '')}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="text-xs bg-green-100 hover:bg-green-200 text-green-700 font-bold px-2.5 py-1 rounded-lg transition-colors"
+                  >
+                    WhatsApp
+                  </a>
+                </div>
               </div>
             )}
           </Section>
@@ -347,8 +404,8 @@ export default function DealerLeadDetailPage() {
           </Section>
         )}
 
-        {/* Place Bid CTA */}
-        {req.status === 'open' && !bidSent && (
+        {/* Place Bid CTA — only for seller_offer / urgent_sale */}
+        {!isTradeIn && req.status === 'open' && !bidSent && (
           <div className="sticky bottom-6 z-10">
             {!bidOpen ? (
               <button
@@ -408,6 +465,18 @@ export default function DealerLeadDetailPage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Trade-in CTA */}
+        {isTradeIn && (
+          <div className="sticky bottom-6 z-10">
+            <Link
+              href="/dashboard/trade-ins"
+              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-2xl text-base shadow-lg transition-colors"
+            >
+              <RefreshCw size={18} /> View Trade-In Queue
+            </Link>
           </div>
         )}
 
