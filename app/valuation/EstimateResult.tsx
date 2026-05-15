@@ -173,6 +173,9 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
               >
                 List for Offers <ChevronRight size={15} />
               </Link>
+              <p className="text-center text-xs text-gray-400 mt-2">
+                Free account required — takes 30 seconds · No credit card
+              </p>
             </motion.div>
 
             {/* Band 2 — Easy Upgrade */}

@@ -539,16 +539,90 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
           </div>
         )}
 
-        {/* Accepted bid */}
+        {/* ── Deal Outcome Screen ──────────────────────────────────────────── */}
         {acceptedBid && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-green-50 border-2 border-green-400 rounded-2xl p-6 mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle2 size={22} className="text-green-600" />
-              <h2 className="font-black text-green-800 text-lg">Offer Accepted!</h2>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+            {/* Accepted offer card */}
+            <div className="bg-green-50 border-2 border-green-400 rounded-2xl p-6 mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle2 size={22} className="text-green-600" />
+                <h2 className="font-black text-green-800 text-lg">Offer Accepted! 🎉</h2>
+              </div>
+              <div className="text-3xl font-black text-green-700 mb-1">{formatQAR(acceptedBid.amount_qar)}</div>
+              {acceptedBid.message && (
+                <p className="text-sm text-green-700 italic mb-3">&ldquo;{acceptedBid.message}&rdquo;</p>
+              )}
+              <p className="text-xs text-green-600">
+                Non-binding — subject to physical inspection by the dealer.
+              </p>
             </div>
-            <div className="text-3xl font-black text-green-700 mb-2">{formatQAR(acceptedBid.amount_qar)}</div>
-            {acceptedBid.message && <p className="text-sm text-green-700 mb-3">&ldquo;{acceptedBid.message}&rdquo;</p>}
-            <p className="text-xs text-green-600">This offer is non-binding and subject to physical inspection by the dealer.</p>
+
+            {/* Next steps */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm mb-4">
+              <h3 className="font-bold text-gray-900 mb-4">What happens next?</h3>
+              <div className="space-y-4">
+                {[
+                  {
+                    num: '1', color: 'bg-[#003087]',
+                    title: 'Coordinate inspection',
+                    desc: 'Message the dealer to agree on a time and location. The dealer will inspect your car before finalising.',
+                  },
+                  {
+                    num: '2', color: 'bg-[#003087]',
+                    title: 'Agree on final price',
+                    desc: 'The accepted offer may be adjusted based on inspection findings. Any changes need your approval.',
+                  },
+                  {
+                    num: '3', color: 'bg-green-600',
+                    title: 'Complete the transfer',
+                    desc: 'Sign the transfer documents at a Motoplex or agreed location. Payment is made at handover.',
+                  },
+                ].map(step => (
+                  <div key={step.num} className="flex items-start gap-3">
+                    <div className={`w-7 h-7 ${step.color} text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0`}>
+                      {step.num}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">{step.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Message dealer CTA */}
+              <div className="mt-5 pt-4 border-t border-gray-100">
+                <Link
+                  href={`/messages/${request.request_uid}?dealer=${acceptedBid.dealer_id}`}
+                  className="flex items-center justify-center gap-2 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-3.5 rounded-xl text-sm transition-all"
+                >
+                  <MessageSquare size={16} /> Message Dealer to Arrange Inspection
+                </Link>
+              </div>
+            </div>
+
+            {/* Status timeline */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-4 text-sm">Deal timeline</h3>
+              <div className="space-y-3">
+                {[
+                  { label: 'Offer request submitted', date: request.created_at, done: true },
+                  { label: 'Offer accepted', date: acceptedBid.created_at, done: true },
+                  { label: 'Inspection arranged', date: null, done: false },
+                  { label: 'Deal closed', date: null, done: false },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full flex-shrink-0 ${item.done ? 'bg-green-500' : 'bg-gray-200'}`}>
+                      {item.done && <CheckCircle2 size={16} className="text-white" />}
+                    </div>
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className={`text-sm ${item.done ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>{item.label}</span>
+                      {item.date && <span className="text-xs text-gray-400">{formatDate(item.date)}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
         )}
 

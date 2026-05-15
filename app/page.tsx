@@ -53,8 +53,8 @@ const INTENT_CARDS = [
 
 const STEPS = [
   { num: '1', title: 'Enter Car Details', desc: 'Make, model, year, mileage — takes 2 minutes.', icon: '🚗' },
-  { num: '2', title: 'See Instant Estimate', desc: 'AI-powered valuation based on real Qatar market data.', icon: '💡' },
-  { num: '3', title: 'Request Dealer Offers', desc: 'Verified dealers compete to give you the best price.', icon: '📨' },
+  { num: '2', title: 'Get 3 Valuations', desc: 'Private sale estimate, trade-in value, and instant offer — all in one result.', icon: '💡' },
+  { num: '3', title: 'Request Dealer Offers', desc: 'Create a free account and let verified dealers compete for your car.', icon: '📨' },
   { num: '4', title: 'Compare Offers', desc: 'Side-by-side view. No pressure. No obligation.', icon: '⚖️' },
   { num: '5', title: 'Choose & Close', desc: "Accept the offer that works for you. That's it.", icon: '✅' },
 ];
