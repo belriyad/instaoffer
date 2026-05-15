@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Info, Building2, FileText, Zap, RefreshCw, Search, ShoppingCart, MessageSquare, Bell, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useLocale } from '@/lib/locale-context';
 import { useRouter, usePathname } from 'next/navigation';
 
 // ── nav link groups ─────────────────────────────────────────────────────────
@@ -92,6 +93,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { locale, setLocale, t } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -210,6 +212,13 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                <button
+                  onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')}
+                  className="text-sm font-semibold text-gray-500 hover:text-[#003087] px-2 py-1 rounded-lg border border-gray-200 hover:border-[#003087] transition-colors"
+                  aria-label="Switch language"
+                >
+                  {t.nav.langToggle}
+                </button>
                 <Link href="/login" className="text-sm font-semibold text-gray-600 hover:text-[#003087] px-2 py-2 transition-colors">
                   Sign In
                 </Link>
@@ -323,6 +332,12 @@ export default function Navbar() {
                     className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#ff6600] text-white font-bold text-sm hover:bg-[#e05a00] transition-colors">
                     <Zap size={15} /> Get Instant Offer — Free
                   </Link>
+                  <button
+                    onClick={() => { setLocale(locale === 'en' ? 'ar' : 'en'); closeMobile(); }}
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:border-[#003087] hover:text-[#003087] transition-colors"
+                  >
+                    {t.nav.langToggle}
+                  </button>
                 </div>
               )}
             </div>

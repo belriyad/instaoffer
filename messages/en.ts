@@ -1,0 +1,93 @@
+const en = {
+  // Navbar
+  nav: {
+    sell: 'Sell My Car',
+    dealers: 'For Dealers',
+    howItWorks: 'How It Works',
+    signIn: 'Sign In',
+    getEstimate: 'Get Estimate',
+    dashboard: 'Dashboard',
+    signOut: 'Sign Out',
+    langToggle: 'عربي',
+  },
+
+  // Hero
+  hero: {
+    badge: "🇶🇦 Designed for Qatar's car market",
+    h1: 'Sell Your Car Fast.\nGet Dealer Offers Today.',
+    sub: 'Free valuation in 2 minutes. Verified dealers compete. You choose the best offer.',
+    ctaSell: 'Sell My Car Fast — Free',
+    ctaValuation: 'Just want a valuation →',
+    orChoose: 'Or choose what fits you best:',
+    getStarted: 'Get started',
+    finalCtaH2: 'Ready to sell your car?',
+    finalCtaSub: 'It takes less than 5 minutes. No sign-up required to get your estimate.',
+    finalCtaBtn: 'Get My Free Valuation',
+  },
+
+  // Intent cards
+  intent: {
+    value: { label: 'Know my car value', desc: 'Get an instant AI-powered estimate based on real Qatar market data.' },
+    urgent: { label: 'Sell my car fast', desc: 'Urgent sale? Get offers from dealers within hours, not weeks.', badge: 'Popular' },
+    trade: { label: 'Trade in my car', desc: 'Sell your current car and upgrade in one seamless transaction.' },
+    buy: { label: 'Find my next car', desc: 'Tell us what you want and dealers will bring it to you.' },
+  },
+
+  // Trust pills
+  trust: {
+    noSignup: 'No sign-up to get estimate',
+    phonePrivate: 'Phone number stays private',
+    nonBinding: 'Non-binding offers',
+    free: 'Free to use',
+  },
+
+  // Social proof
+  proof: {
+    carsSold: 'Cars Sold',
+    dealers: 'Verified Dealers',
+    speed: 'To Get Estimate',
+    free: 'Free for Sellers',
+    asOf: 'as of May 2026',
+  },
+
+  // How it works
+  how: {
+    eyebrow: 'Simple Process',
+    h2: 'How InstaOffer Works',
+    sub: 'From your couch to a sold car — in 5 steps.',
+    step: 'Step',
+    steps: [
+      { title: 'Enter Car Details',      desc: 'Make, model, year, mileage — takes 2 minutes.' },
+      { title: 'Get 3 Valuations',       desc: 'Private sale estimate, trade-in value, and instant offer — all in one result.' },
+      { title: 'Request Dealer Offers',  desc: 'Create a free account and let verified dealers compete for your car.' },
+      { title: 'Compare Offers',         desc: 'Side-by-side view. No pressure. No obligation.' },
+      { title: 'Choose & Close',         desc: "Accept the offer that works for you. That's it." },
+    ],
+  },
+
+  // Trust section
+  trustSection: {
+    eyebrow: 'Why Sellers Trust Us',
+    h2: 'Built Around Your Privacy',
+    sub: 'InstaOffer was designed so you stay in control at every step.',
+    items: [
+      { title: 'Your Number Stays Private',  desc: 'Dealers cannot see your phone number unless you personally approve it.' },
+      { title: 'Non-Binding Offers',         desc: 'All offers are non-binding. Final deal subject to inspection. Zero pressure.' },
+      { title: "You're in Control",          desc: 'Decide who contacts you, when, and how. Reject any offer instantly.' },
+      { title: 'Real Market Prices',         desc: 'Estimates powered by live Qatar car market data and ML model.' },
+    ],
+  },
+
+  // Valuation form
+  valuation: {
+    screen1: {
+      h2: "What's your car?",
+      sub: 'Start by selecting the make',
+      model: 'Model',
+      continue: 'Continue',
+    },
+  },
+};
+
+export type Translations = typeof en;
+export default en;

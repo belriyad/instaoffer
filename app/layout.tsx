@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { LocaleProvider } from "@/lib/locale-context";
 import { Analytics } from "@vercel/analytics/next";
 import AnalyticsInstrumentation from "@/components/AnalyticsInstrumentation";
 import WhatsAppFAB from "@/components/WhatsAppFAB";
@@ -20,9 +21,11 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <body className="min-h-full flex flex-col bg-white text-gray-900">
         <AuthProvider>
-          <AnalyticsInstrumentation />
-          {children}
-          <WhatsAppFAB />
+          <LocaleProvider>
+            <AnalyticsInstrumentation />
+            {children}
+            <WhatsAppFAB />
+          </LocaleProvider>
         </AuthProvider>
         <Analytics />
       </body>

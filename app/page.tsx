@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Shield, Clock, TrendingUp, ChevronRight, Star, CheckCircle2, Phone, Lock, DollarSign, Zap, RefreshCw, Search } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useLocale } from '@/lib/locale-context';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -15,55 +16,12 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.12 } },
 };
 
-const INTENT_CARDS = [
-  {
-    icon: '💡',
-    label: 'Know my car value',
-    desc: 'Get an instant AI-powered estimate based on real Qatar market data.',
-    href: '/valuation',
-    accent: 'border-blue-200 hover:border-[#003087]',
-    textAccent: 'text-[#003087]',
-  },
-  {
-    icon: '⚡',
-    label: 'Sell my car fast',
-    desc: 'Urgent sale? Get offers from dealers within hours, not weeks.',
-    href: '/urgent-sale',
-    accent: 'border-orange-300 hover:border-[#ff6600] bg-gradient-to-br from-orange-50 to-white',
-    textAccent: 'text-[#ff6600]',
-    highlight: true,
-  },
-  {
-    icon: '🔄',
-    label: 'Trade in my car',
-    desc: 'Sell your current car and upgrade in one seamless transaction.',
-    href: '/trade-in',
-    accent: 'border-green-200 hover:border-green-500',
-    textAccent: 'text-green-700',
-  },
-  {
-    icon: '🔍',
-    label: 'Find my next car',
-    desc: 'Tell us what you want and dealers will bring it to you.',
-    href: '/buy-request',
-    accent: 'border-purple-200 hover:border-purple-500',
-    textAccent: 'text-purple-700',
-  },
-];
-
 const STEPS = [
   { num: '1', title: 'Enter Car Details', desc: 'Make, model, year, mileage — takes 2 minutes.', icon: '🚗' },
   { num: '2', title: 'Get 3 Valuations', desc: 'Private sale estimate, trade-in value, and instant offer — all in one result.', icon: '💡' },
   { num: '3', title: 'Request Dealer Offers', desc: 'Create a free account and let verified dealers compete for your car.', icon: '📨' },
   { num: '4', title: 'Compare Offers', desc: 'Side-by-side view. No pressure. No obligation.', icon: '⚖️' },
   { num: '5', title: 'Choose & Close', desc: "Accept the offer that works for you. That's it.", icon: '✅' },
-];
-
-const TRUST = [
-  { icon: Lock, title: 'Your Number Stays Private', desc: 'Dealers cannot see your phone number unless you personally approve it.' },
-  { icon: Shield, title: 'Non-Binding Offers', desc: 'All offers are non-binding. Final deal subject to inspection. Zero pressure.' },
-  { icon: Phone, title: "You're in Control", desc: 'Decide who contacts you, when, and how. Reject any offer instantly.' },
-  { icon: DollarSign, title: 'Real Market Prices', desc: 'Estimates powered by live Qatar car market data and ML model.' },
 ];
 
 const DEALER_POINTS = [
@@ -76,8 +34,19 @@ const DEALER_POINTS = [
 const MAKES = ['Toyota', 'Nissan', 'Lexus', 'BMW', 'Mercedes', 'Honda', 'Hyundai', 'Kia', 'Ford', 'Chevrolet', 'Land Rover', 'Mitsubishi'];
 
 export default function Home() {
+  const { t, isRTL } = useLocale();
+
+  const INTENT_CARDS_T = [
+    { icon: '💡', key: 'value',  href: '/valuation',   accent: 'border-blue-200 hover:border-[#003087]',                                textAccent: 'text-[#003087]' },
+    { icon: '⚡', key: 'urgent', href: '/urgent-sale',  accent: 'border-orange-300 hover:border-[#ff6600] bg-gradient-to-br from-orange-50 to-white', textAccent: 'text-[#ff6600]', highlight: true },
+    { icon: '🔄', key: 'trade',  href: '/trade-in',    accent: 'border-green-200 hover:border-green-500',                               textAccent: 'text-green-700' },
+    { icon: '🔍', key: 'buy',    href: '/buy-request', accent: 'border-purple-200 hover:border-purple-500',                             textAccent: 'text-purple-700' },
+  ] as const;
+
+  const TRUST_ICONS = [Lock, Shield, Phone, DollarSign];
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className={`flex flex-col min-h-screen${isRTL ? ' font-[system-ui]' : ''}`}>
       <Navbar />
 
       {/* ── HERO ── */}
@@ -86,65 +55,71 @@ export default function Home() {
           <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center mb-12">
             <motion.div variants={fadeUp}>
               <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-                🇶🇦 Designed for Qatar&apos;s car market
+                {t.hero.badge}
               </span>
             </motion.div>
             <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl font-black leading-tight mb-4">
-              Sell Your Car Fast.<br className="hidden sm:block" /> Get Dealer Offers Today.
+              {t.hero.h1.split('\n').map((line, i) => (
+                <span key={i}>{line}{i === 0 && <br className="hidden sm:block" />}</span>
+              ))}
             </motion.h1>
             <motion.p variants={fadeUp} className="text-lg text-blue-200 max-w-xl mx-auto mb-8">
-              Free valuation in 2 minutes. Verified dealers compete. You choose the best offer.
+              {t.hero.sub}
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
               <Link
                 href="/urgent-sale"
                 className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-black px-8 py-4 rounded-xl text-lg shadow-lg transition-all hover:scale-105"
               >
-                <Zap size={20} /> Sell My Car Fast — Free
+                <Zap size={20} /> {t.hero.ctaSell}
               </Link>
               <Link
                 href="/valuation"
                 className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl text-base transition-all"
               >
-                Just want a valuation →
+                {t.hero.ctaValuation}
               </Link>
             </motion.div>
           </motion.div>
 
           {/* Other options */}
-          <p className="text-center text-blue-300 text-sm mb-4 font-medium">Or choose what fits you best:</p>
-          {/* Intent cards */}
+          <p className="text-center text-blue-300 text-sm mb-4 font-medium">{t.hero.orChoose}</p>
           <motion.div
             initial="hidden"
             animate="visible"
             variants={stagger}
             className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto"
           >
-            {INTENT_CARDS.map((card) => (
-              <motion.div key={card.href} variants={fadeUp}>
-                <Link
-                  href={card.href}
-                  className={`flex flex-col h-full bg-white rounded-2xl border-2 p-6 shadow-sm hover:shadow-lg transition-all group ${card.accent} ${card.highlight ? 'ring-2 ring-[#ff6600]/40' : ''}`}
-                >
-                  <span className="text-4xl mb-3">{card.icon}</span>
-                  <h2 className={`font-black text-lg mb-2 group-hover:${card.textAccent} transition-colors ${card.highlight ? card.textAccent : 'text-gray-900'}`}>
-                    {card.label}
-                    {card.highlight && <span className="ml-2 text-xs font-bold bg-[#ff6600] text-white px-2 py-0.5 rounded-full align-middle">Popular</span>}
-                  </h2>
-                  <p className="text-sm text-gray-500 flex-1 leading-relaxed">{card.desc}</p>
-                  <div className={`mt-4 flex items-center gap-1 text-sm font-semibold ${card.textAccent}`}>
-                    Get started <ChevronRight size={16} />
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+            {INTENT_CARDS_T.map((card) => {
+              const item = t.intent[card.key];
+              return (
+                <motion.div key={card.href} variants={fadeUp}>
+                  <Link
+                    href={card.href}
+                    className={`flex flex-col h-full bg-white rounded-2xl border-2 p-6 shadow-sm hover:shadow-lg transition-all group ${card.accent} ${'highlight' in card && card.highlight ? 'ring-2 ring-[#ff6600]/40' : ''}`}
+                  >
+                    <span className="text-4xl mb-3">{card.icon}</span>
+                    <h2 className={`font-black text-lg mb-2 transition-colors ${'highlight' in card && card.highlight ? card.textAccent : 'text-gray-900'}`}>
+                      {item.label}
+                      {'badge' in item && item.badge && (
+                        <span className="ms-2 text-xs font-bold bg-[#ff6600] text-white px-2 py-0.5 rounded-full align-middle">{item.badge}</span>
+                      )}
+                    </h2>
+                    <p className="text-sm text-gray-500 flex-1 leading-relaxed">{item.desc}</p>
+                    <div className={`mt-4 flex items-center gap-1 text-sm font-semibold ${card.textAccent}`}>
+                      {t.hero.getStarted} <ChevronRight size={16} />
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </motion.div>
 
           <motion.div initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap justify-center gap-4 mt-10">
-            {['No sign-up to get estimate', 'Phone number stays private', 'Non-binding offers', 'Free to use'].map((t) => (
-              <div key={t} className="flex items-center gap-1.5 text-sm text-blue-200">
+            {[t.trust.noSignup, t.trust.phonePrivate, t.trust.nonBinding, t.trust.free].map((label) => (
+              <div key={label} className="flex items-center gap-1.5 text-sm text-blue-200">
                 <CheckCircle2 size={14} className="text-green-400 flex-shrink-0" />
-                {t}
+                {label}
               </div>
             ))}
           </motion.div>
@@ -161,10 +136,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
             {[
-              { value: '500+', label: 'Cars Sold' },
-              { value: '30+', label: 'Verified Dealers' },
-              { value: '< 5 min', label: 'To Get Estimate' },
-              { value: '100%', label: 'Free for Sellers' },
+              { value: '500+', label: t.proof.carsSold },
+              { value: '30+',  label: t.proof.dealers },
+              { value: '< 5 min', label: t.proof.speed },
+              { value: '100%', label: t.proof.free },
             ].map((s) => (
               <div key={s.label} className="text-center">
                 <div className="text-3xl font-black text-[#003087]">{s.value}</div>
@@ -172,7 +147,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <p className="text-center text-xs text-gray-400 mt-4">as of May 2026</p>
+          <p className="text-center text-xs text-gray-400 mt-4">{t.proof.asOf}</p>
         </div>
       </section>
 
@@ -181,22 +156,22 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
             <motion.div variants={fadeUp}>
-              <span className="text-[#003087] font-bold text-sm uppercase tracking-widest">Simple Process</span>
+              <span className="text-[#003087] font-bold text-sm uppercase tracking-widest">{t.how.eyebrow}</span>
             </motion.div>
-            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-black text-gray-900 mt-2">How InstaOffer Works</motion.h2>
-            <motion.p variants={fadeUp} className="text-gray-500 mt-3 text-lg max-w-xl mx-auto">From your couch to a sold car — in 5 steps.</motion.p>
+            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-black text-gray-900 mt-2">{t.how.h2}</motion.h2>
+            <motion.p variants={fadeUp} className="text-gray-500 mt-3 text-lg max-w-xl mx-auto">{t.how.sub}</motion.p>
           </motion.div>
           <div className="relative">
             <div className="hidden md:block absolute top-8 left-[10%] right-[10%] h-0.5 bg-gray-200 z-0" />
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 md:grid-cols-5 gap-6 relative z-10">
-              {STEPS.map((step) => (
+              {STEPS.map((step, i) => (
                 <motion.div key={step.num} variants={fadeUp} className="flex flex-col items-center text-center">
                   <div className="w-16 h-16 bg-[#003087] text-white rounded-full flex items-center justify-center text-2xl mb-4 font-black shadow-md">
                     {step.icon}
                   </div>
-                  <span className="text-xs font-bold text-[#ff6600] uppercase tracking-wide mb-1">Step {step.num}</span>
-                  <h3 className="font-bold text-gray-900 mb-2">{step.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{step.desc}</p>
+                  <span className="text-xs font-bold text-[#ff6600] uppercase tracking-wide mb-1">{t.how.step} {step.num}</span>
+                  <h3 className="font-bold text-gray-900 mb-2">{t.how.steps[i].title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{t.how.steps[i].desc}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -214,19 +189,23 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
             <motion.div variants={fadeUp} className="text-center mb-12">
-              <span className="text-[#003087] font-bold text-sm uppercase tracking-widest">Your Privacy Matters</span>
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mt-2">Built with Trust at the Core</h2>
+              <span className="text-[#003087] font-bold text-sm uppercase tracking-widest">{t.trustSection.eyebrow}</span>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mt-2">{t.trustSection.h2}</h2>
+              <p className="text-gray-500 mt-3 text-lg max-w-xl mx-auto">{t.trustSection.sub}</p>
             </motion.div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {TRUST.map((t) => (
-                <motion.div key={t.title} variants={fadeUp} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-[#e8f0fd] rounded-xl flex items-center justify-center mb-4">
-                    <t.icon size={24} className="text-[#003087]" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 mb-2">{t.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{t.desc}</p>
-                </motion.div>
-              ))}
+              {t.trustSection.items.map((item, i) => {
+                const Icon = TRUST_ICONS[i];
+                return (
+                  <motion.div key={item.title} variants={fadeUp} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 bg-[#e8f0fd] rounded-xl flex items-center justify-center mb-4">
+                      <Icon size={24} className="text-[#003087]" />
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                  </motion.div>
+                );
+              })}
             </div>
           </motion.div>
         </div>
@@ -319,16 +298,16 @@ export default function Home() {
       <section className="py-16 bg-white">
         <div className="max-w-xl mx-auto px-4 text-center">
           <Clock size={40} className="text-[#003087] mx-auto mb-4" />
-          <h2 className="text-3xl font-black text-gray-900 mb-3">Ready to sell your car?</h2>
-          <p className="text-gray-500 mb-8">It takes less than 5 minutes. No sign-up required to get your estimate.</p>
+          <h2 className="text-3xl font-black text-gray-900 mb-3">{t.hero.finalCtaH2}</h2>
+          <p className="text-gray-500 mb-8">{t.hero.finalCtaSub}</p>
           <Link href="/valuation" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-10 py-4 rounded-lg text-lg transition-all shadow-lg shadow-orange-100">
-            Get My Free Valuation <ChevronRight size={20} />
+            {t.hero.finalCtaBtn} <ChevronRight size={20} />
           </Link>
           <div className="mt-4 flex justify-center gap-6">
-            {['No sign-up needed', 'Free forever for sellers'].map((t) => (
-              <div key={t} className="flex items-center gap-1.5 text-sm text-gray-400">
+            {[t.trust.noSignup, t.trust.free].map((label) => (
+              <div key={label} className="flex items-center gap-1.5 text-sm text-gray-400">
                 <TrendingUp size={14} className="text-green-500" />
-                {t}
+                {label}
               </div>
             ))}
           </div>

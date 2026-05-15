@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Car, AlertCircle, Lock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import { useLocale } from '@/lib/locale-context';
 import { FormSkeleton } from '@/components/ui/Skeleton';
 import {
   FUEL_TYPES, GEAR_TYPES, CAR_TYPES, formatKM, formatQAR, MODEL_DEFAULTS, WARRANTY_STATUSES,
@@ -46,13 +47,14 @@ function Screen1({
   onUpdate: <K extends keyof ValuationData>(k: K, v: ValuationData[K]) => void;
   onNext: () => void;
 }) {
+  const { t } = useLocale();
   const canContinue = !!data.make && !!data.class_name;
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-gray-900 mb-1">What&rsquo;s your car?</h2>
-        <p className="text-gray-400 text-sm mb-4">Start by selecting the make</p>
+        <h2 className="text-2xl font-black text-gray-900 mb-1">{t.valuation.screen1.h2}</h2>
+        <p className="text-gray-400 text-sm mb-4">{t.valuation.screen1.sub}</p>
         <SearchableMakeSelect
           value={data.make}
           onChange={make => { onUpdate('make', make); onUpdate('class_name', ''); onUpdate('trim', ''); onUpdate('fuel_type', ''); onUpdate('gear_type', ''); onUpdate('car_type', ''); }}
@@ -102,7 +104,7 @@ function Screen1({
             : 'bg-gray-100 text-gray-400 cursor-not-allowed'
         }`}
       >
-        Continue <ChevronRight size={18} />
+        {t.valuation.screen1.continue} <ChevronRight size={18} />
       </button>
     </div>
   );
