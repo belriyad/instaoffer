@@ -90,13 +90,29 @@ export default function Home() {
               </span>
             </motion.div>
             <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl font-black leading-tight mb-4">
-              What do you want to do today?
+              Sell Your Car Fast.<br className="hidden sm:block" /> Get Dealer Offers Today.
             </motion.h1>
-            <motion.p variants={fadeUp} className="text-lg text-blue-200 max-w-xl mx-auto">
-              Choose your goal — we&apos;ll route you into the right experience.
+            <motion.p variants={fadeUp} className="text-lg text-blue-200 max-w-xl mx-auto mb-8">
+              Free valuation in 2 minutes. Verified dealers compete. You choose the best offer.
             </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
+              <Link
+                href="/urgent-sale"
+                className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-black px-8 py-4 rounded-xl text-lg shadow-lg transition-all hover:scale-105"
+              >
+                <Zap size={20} /> Sell My Car Fast — Free
+              </Link>
+              <Link
+                href="/valuation"
+                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl text-base transition-all"
+              >
+                Just want a valuation →
+              </Link>
+            </motion.div>
           </motion.div>
 
+          {/* Other options */}
+          <p className="text-center text-blue-300 text-sm mb-4 font-medium">Or choose what fits you best:</p>
           {/* Intent cards */}
           <motion.div
             initial="hidden"

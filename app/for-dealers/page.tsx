@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, Check, Filter, MessageSquare, Bell, Star, Users, TrendingUp } from 'lucide-react';
+import { ChevronRight, Check, Filter, MessageSquare, Bell, Star, Users, TrendingUp, X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -21,6 +21,75 @@ const FEATURES = [
   { icon: TrendingUp, title: 'Market Insights', desc: 'See market comparables for each lead to help you make competitive, data-driven offers.' },
 ];
 
+const PLANS = [
+  {
+    name: 'Free Trial',
+    price: '0',
+    period: '30 days',
+    desc: 'Try everything free — no credit card needed.',
+    cta: 'Start Free Trial',
+    href: '/dealer-signup',
+    highlight: false,
+    features: [
+      'Up to 10 leads/month',
+      'Send 5 offers',
+      'Direct messaging',
+      'Basic filters',
+      'Dashboard access',
+    ],
+    missing: ['WhatsApp notifications', 'Urgent seller alerts', 'Market insights', 'Admin-verified badge'],
+  },
+  {
+    name: 'Pro',
+    price: '499',
+    period: 'per month',
+    desc: 'For active dealers who want every edge.',
+    cta: 'Start Free Trial →',
+    href: '/dealer-signup',
+    highlight: true,
+    features: [
+      'Unlimited leads',
+      'Unlimited offers',
+      'Direct messaging',
+      'Advanced filters',
+      'WhatsApp notifications',
+      'Urgent seller alerts',
+      'Market insights & margin view',
+      'Admin-verified badge',
+      'Offer pipeline dashboard',
+    ],
+    missing: [],
+  },
+  {
+    name: 'Enterprise',
+    price: 'Custom',
+    period: 'contact us',
+    desc: 'For dealer groups and large operations.',
+    cta: 'Contact Us',
+    href: 'https://wa.me/97430000000?text=Hi, I\'m interested in InstaOffer Enterprise for dealers',
+    highlight: false,
+    features: [
+      'Everything in Pro',
+      'Multi-user access',
+      'Dedicated account manager',
+      'Custom reporting',
+      'API access',
+      'Priority support',
+    ],
+    missing: [],
+  },
+];
+
+const COMPARISON = [
+  { feature: 'Qualified seller leads', instaOffer: true, mzad: false, olx: false, cold: false },
+  { feature: 'Real-time WhatsApp alerts', instaOffer: true, mzad: false, olx: false, cold: false },
+  { feature: 'Margin visibility per lead', instaOffer: true, mzad: false, olx: false, cold: false },
+  { feature: 'Seller contact (on approval)', instaOffer: true, mzad: true, olx: true, cold: true },
+  { feature: 'Motivated / urgent sellers', instaOffer: true, mzad: false, olx: false, cold: false },
+  { feature: 'No cold calling needed', instaOffer: true, mzad: false, olx: false, cold: false },
+  { feature: 'Fixed monthly cost', instaOffer: true, mzad: false, olx: false, cold: false },
+];
+
 export default function ForDealersPage() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -37,46 +106,116 @@ export default function ForDealersPage() {
               Access Motivated Sellers.<br />Grow Your Business.
             </motion.h1>
             <motion.p variants={fadeUp} className="text-blue-200 text-lg max-w-xl mx-auto mb-8">
-              Connect with people actively trying to sell their cars. Unlimited leads, direct messaging, and smart tools — all for 1,000 QAR/month.
+              Connect with people actively trying to sell their cars. Unlimited leads, direct messaging, and smart tools — start free for 30 days.
             </motion.p>
-            <motion.div variants={fadeUp}>
-              <Link href="/login?role=dealer" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
-                Apply as a Dealer <ChevronRight size={20} />
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/dealer-signup" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
+                Start Free 30-Day Trial <ChevronRight size={20} />
               </Link>
+              <a href="https://wa.me/97430000000?text=Hi, I'm interested in becoming an InstaOffer dealer" target="_blank" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl text-base transition-all">
+                💬 Chat on WhatsApp
+              </a>
             </motion.div>
+            <motion.p variants={fadeUp} className="text-blue-300 text-sm mt-4">No credit card required · Approval within 24 hours</motion.p>
           </motion.div>
         </div>
       </section>
 
       {/* Pricing */}
+      <section className="py-16 bg-white">
+        <div className="max-w-5xl mx-auto px-4">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
+            <motion.h2 variants={fadeUp} className="text-3xl font-black text-gray-900 mb-3">Simple, Transparent Pricing</motion.h2>
+            <motion.p variants={fadeUp} className="text-gray-500 text-lg">Start free — upgrade when you're ready.</motion.p>
+          </motion.div>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {PLANS.map(plan => (
+              <motion.div
+                key={plan.name}
+                variants={fadeUp}
+                className={`rounded-2xl border-2 p-7 flex flex-col relative ${plan.highlight ? 'border-[#003087] shadow-xl' : 'border-gray-200'}`}
+              >
+                {plan.highlight && (
+                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#003087] text-white text-xs font-bold px-4 py-1 rounded-full">
+                    Most Popular
+                  </span>
+                )}
+                <div className="mb-5">
+                  <h3 className="font-black text-lg text-gray-900 mb-1">{plan.name}</h3>
+                  <div className="flex items-end gap-1 mb-1">
+                    {plan.price === 'Custom' ? (
+                      <span className="text-3xl font-black text-[#003087]">Custom</span>
+                    ) : (
+                      <>
+                        <span className="text-3xl font-black text-[#003087]">{plan.price}</span>
+                        <span className="text-gray-500 text-sm pb-1">QAR / {plan.period}</span>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500">{plan.desc}</p>
+                </div>
+                <ul className="space-y-2.5 flex-1 mb-6">
+                  {plan.features.map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                      <Check size={15} className="text-green-500 flex-shrink-0 mt-0.5" /> {f}
+                    </li>
+                  ))}
+                  {plan.missing.map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-gray-400">
+                      <X size={15} className="text-gray-300 flex-shrink-0 mt-0.5" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={plan.href}
+                  target={plan.href.startsWith('http') ? '_blank' : undefined}
+                  className={`flex items-center justify-center gap-2 w-full font-bold py-3.5 rounded-xl text-sm transition-all ${
+                    plan.highlight
+                      ? 'bg-[#003087] hover:bg-[#0057b8] text-white'
+                      : 'border border-gray-200 hover:border-[#003087] text-gray-700 hover:text-[#003087]'
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Comparison table */}
       <section className="py-16 bg-[#f5f7fa]">
-        <div className="max-w-xl mx-auto px-4 text-center">
+        <div className="max-w-4xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
-            <motion.h2 variants={fadeUp} className="text-3xl font-black text-gray-900 mb-4">Simple Pricing</motion.h2>
-            <motion.div variants={fadeUp} className="bg-white rounded-2xl border-2 border-[#003087] p-8 shadow-lg">
-              <div className="text-5xl font-black text-[#003087] mb-1">1,000 QAR</div>
-              <div className="text-gray-500 mb-6">per month · cancel anytime</div>
-              <ul className="space-y-3 text-left mb-8">
-                {[
-                  'Unlimited access to all seller leads',
-                  'Send unlimited offers',
-                  'Direct messaging with sellers',
-                  'Request phone number access',
-                  'Save custom filters',
-                  'Push & WhatsApp notifications',
-                  'Offer pipeline dashboard',
-                  'Admin-verified badge',
-                ].map(f => (
-                  <li key={f} className="flex items-center gap-2.5 text-sm text-gray-700">
-                    <Check size={16} className="text-green-500 flex-shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/login?role=dealer" className="flex items-center justify-center gap-2 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-4 rounded-xl text-lg transition-all">
-                Get Started Today <ChevronRight size={20} />
-              </Link>
-              <p className="text-xs text-gray-400 mt-3">Requires admin approval. Verification takes up to 24 hours.</p>
+            <motion.h2 variants={fadeUp} className="text-3xl font-black text-gray-900 text-center mb-10">
+              Why InstaOffer Beats the Alternatives
+            </motion.h2>
+            <motion.div variants={fadeUp} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-[#003087] text-white">
+                    <th className="text-left px-5 py-4 font-semibold w-1/2">Feature</th>
+                    <th className="px-4 py-4 font-bold">InstaOffer</th>
+                    <th className="px-4 py-4 font-semibold text-blue-200">Mzad Qatar</th>
+                    <th className="px-4 py-4 font-semibold text-blue-200">OLX</th>
+                    <th className="px-4 py-4 font-semibold text-blue-200">Cold Calling</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {COMPARISON.map((row, i) => (
+                    <tr key={row.feature} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-5 py-3.5 text-gray-700 font-medium">{row.feature}</td>
+                      {[row.instaOffer, row.mzad, row.olx, row.cold].map((val, j) => (
+                        <td key={j} className="px-4 py-3.5 text-center">
+                          {val
+                            ? <Check size={16} className="inline text-green-500" />
+                            : <X size={16} className="inline text-gray-300" />}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </motion.div>
           </motion.div>
         </div>
@@ -129,11 +268,16 @@ export default function ForDealersPage() {
 
       {/* CTA */}
       <section className="py-16 bg-[#003087] text-white text-center">
-        <h2 className="text-3xl font-black mb-4">Ready to access Qatar&apos;s best car leads?</h2>
-        <p className="text-blue-200 mb-8 max-w-md mx-auto">Join verified dealers on InstaOffer and start receiving high-quality seller leads today.</p>
-        <Link href="/login?role=dealer" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
-          Apply as a Dealer <ChevronRight size={20} />
-        </Link>
+        <h2 className="text-3xl font-black mb-4">Start acquiring smarter today</h2>
+        <p className="text-blue-200 mb-8 max-w-md mx-auto">Join 30+ verified Qatar dealers already using InstaOffer. First 30 days free.</p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link href="/dealer-signup" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
+            Start Free 30-Day Trial <ChevronRight size={20} />
+          </Link>
+          <a href="https://wa.me/97430000000?text=Hi, I'm interested in becoming an InstaOffer dealer" target="_blank" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl transition-all">
+            💬 Chat on WhatsApp first
+          </a>
+        </div>
       </section>
 
       <Footer />
