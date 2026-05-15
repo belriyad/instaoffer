@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { track } from '@vercel/analytics';
 
@@ -44,9 +44,14 @@ function getElementDetails(target: EventTarget | null): Record<string, string> |
 export default function AnalyticsInstrumentation() {
   const pathname = usePathname();
   const path = pathname ?? '/';
+  const pathRef = useRef(path);
 
   useEffect(() => {
-    const search = typeof window !== 'undefined' ? window.location.search : '';
+    pathRef.current = path;
+  }, [path]);
+
+  useEffect(() => {
+    const search = window.location.search;
     track('Page View', {
       path: `${path}${search}`,
       pathname: pathname ?? '/',
@@ -60,7 +65,7 @@ export default function AnalyticsInstrumentation() {
 
       track('Frontend Event', {
         eventType: event.type,
-        path,
+        path: pathRef.current,
         ...elementDetails,
       });
     };
@@ -74,7 +79,7 @@ export default function AnalyticsInstrumentation() {
         document.removeEventListener(eventType, capture, true);
       }
     };
-  }, [path]);
+  }, []);
 
   return null;
 }
