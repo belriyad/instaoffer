@@ -355,6 +355,28 @@ export default function DashboardPage() {
           ))}
         </div>
 
+        {/* Typed Lead Queues */}
+        {isApprovedDealer && (
+          <div className="mb-4">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Lead Queues</p>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {[
+                { href: '/dashboard/leads',           label: '🚗 All Leads',       sub: 'Seller offers' },
+                { href: '/dashboard/urgent',          label: '🔥 Urgent Sales',    sub: 'Sellers in a hurry' },
+                { href: '/dashboard/trade-ins',       label: '🔄 Trade-Ins',       sub: 'Trade-in requests' },
+                { href: '/dashboard/buyer-requests',  label: '🛒 Buyer Requests',  sub: 'Cars wanted' },
+                { href: '/dashboard/inquiries',       label: '📋 Inquiries',       sub: 'Dealer inquiries' },
+              ].map(item => (
+                <Link key={item.href} href={item.href}
+                  className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm hover:shadow-md hover:border-[#003087] transition-all group">
+                  <p className="font-bold text-sm text-gray-900 group-hover:text-[#003087] transition-colors">{item.label}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{item.sub}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Quick links to acquisition tools */}
         {isApprovedDealer && (
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
