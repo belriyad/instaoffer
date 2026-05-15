@@ -10,10 +10,12 @@ function truncate(value: string, max = 120): string {
   return value.length > max ? `${value.slice(0, max)}…` : value;
 }
 
-function getElementDetails(target: EventTarget | null): Record<string, string> {
-  if (!(target instanceof Element)) return {};
+function getElementDetails(target: EventTarget | null): Record<string, string> | null {
+  if (!(target instanceof Element)) return null;
 
-  const node = target.closest('a,button,input,select,textarea,form,[data-analytics-event]') ?? target;
+  const node = target.closest('a,button,input,select,textarea,form,[data-analytics-event]');
+  if (!node) return null;
+
   const details: Record<string, string> = {
     elementTag: node.tagName.toLowerCase(),
   };
@@ -22,15 +24,18 @@ function getElementDetails(target: EventTarget | null): Record<string, string> {
   if (analyticsName) details.analyticsName = truncate(analyticsName);
 
   if (node.id) details.elementId = truncate(node.id);
-  if (node.getAttribute('name')) details.elementName = truncate(node.getAttribute('name') || '');
-  if (node.className && typeof node.className === 'string') details.elementClass = truncate(node.className);
+  const elementName = node.getAttribute('name');
+  if (elementName) details.elementName = truncate(elementName);
+  if (node.className) details.elementClass = truncate(node.className);
 
-  if (node instanceof HTMLAnchorElement && node.getAttribute('href')) {
-    details.href = truncate(node.getAttribute('href') || '');
+  if (node instanceof HTMLAnchorElement) {
+    const href = node.getAttribute('href');
+    if (href) details.href = truncate(href);
   }
 
-  if (node instanceof HTMLFormElement && node.getAttribute('action')) {
-    details.formAction = truncate(node.getAttribute('action') || '');
+  if (node instanceof HTMLFormElement) {
+    const action = node.getAttribute('action');
+    if (action) details.formAction = truncate(action);
   }
 
   return details;
@@ -50,10 +55,13 @@ export default function AnalyticsInstrumentation() {
 
   useEffect(() => {
     const capture = (event: Event) => {
+      const elementDetails = getElementDetails(event.target);
+      if (!elementDetails) return;
+
       track('Frontend Event', {
         eventType: event.type,
         path,
-        ...getElementDetails(event.target),
+        ...elementDetails,
       });
     };
 
