@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { Analytics } from "@vercel/analytics/next";
 import AnalyticsInstrumentation from "@/components/AnalyticsInstrumentation";
+import WhatsAppFAB from "@/components/WhatsAppFAB";
 
 export const metadata: Metadata = {
   title: "InstaOffer – Sell Your Car Fast in Qatar",
@@ -21,6 +22,7 @@ export default function RootLayout({
         <AuthProvider>
           <AnalyticsInstrumentation />
           {children}
+          <WhatsAppFAB />
         </AuthProvider>
         <Analytics />
       </body>

@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Clock, ChevronRight, MessageSquare, Car, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock, ChevronRight, Car, AlertCircle, Lock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
@@ -22,19 +22,97 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending:   { label: 'Pending Review', color: 'bg-yellow-50 text-yellow-700' },
 };
 
+// ─── Unauthenticated teaser ───────────────────────────────────────────────────
+function UnauthenticatedState() {
+  return (
+    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <Navbar />
+      <div className="flex-1 max-w-lg mx-auto w-full px-4 py-12">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+          <h1 className="text-3xl font-black text-gray-900 mb-2">My Offers</h1>
+          <p className="text-gray-500">See what dealers are willing to pay for your car</p>
+        </motion.div>
+
+        {/* Blurred mock offer cards */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="relative mb-8">
+          <div className="space-y-3">
+            {[
+              { dealer: 'Al Meera Cars', amount: '285,000 QAR', badge: '🏆 Best Offer', color: 'border-orange-200' },
+              { dealer: 'Qatar Premium Auto', amount: '271,000 QAR', badge: null, color: 'border-gray-100' },
+              { dealer: 'Gulf Motors', amount: '268,500 QAR', badge: null, color: 'border-gray-100' },
+            ].map((card, i) => (
+              <div
+                key={i}
+                className={`bg-white rounded-2xl border-2 ${card.color} p-5 flex items-center justify-between select-none`}
+                style={{ filter: 'blur(4px)', userSelect: 'none' }}
+              >
+                <div>
+                  <p className="font-bold text-gray-900">{card.dealer}</p>
+                  <p className="text-sm text-gray-400">Toyota Camry 2022 · 45,000 km</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-black text-lg text-[#003087]">{card.amount}</p>
+                  {card.badge && <span className="text-xs font-bold bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{card.badge}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Lock overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-[#f5f7fa]/60 to-[#f5f7fa]/90 rounded-2xl">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 px-6 py-4 flex items-center gap-3">
+              <Lock size={20} className="text-[#003087]" />
+              <p className="font-bold text-gray-800 text-sm">List your car to unlock real offers</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* 3-step funnel */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex items-center justify-center gap-2 mb-8 text-sm">
+          {[
+            { num: '1', label: 'Enter car details' },
+            { num: '2', label: 'Get estimate' },
+            { num: '3', label: 'Dealers compete' },
+          ].map((step, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-6 h-6 rounded-full bg-[#003087] text-white text-xs font-black flex items-center justify-center flex-shrink-0">
+                  {step.num}
+                </div>
+                <span className="text-gray-600 font-medium whitespace-nowrap">{step.label}</span>
+              </div>
+              {i < 2 && <ChevronRight size={14} className="text-gray-300 flex-shrink-0" />}
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="space-y-3">
+          <Link
+            href="/urgent-sale"
+            className="flex items-center justify-center gap-2 w-full bg-[#ff6600] hover:bg-[#e05a00] text-white font-black py-4 rounded-xl text-lg shadow-md transition-all hover:scale-[1.02]"
+          >
+            <Car size={20} /> Get My First Offer — Free
+          </Link>
+          <p className="text-center text-xs text-gray-400">No account needed to get your estimate</p>
+          <div className="text-center pt-1">
+            <span className="text-sm text-gray-500">Already have an account? </span>
+            <Link href="/login?redirect=/my-offers" className="text-sm font-bold text-[#003087] hover:underline">
+              Sign in to see your offers
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+      <Footer />
+    </div>
+  );
+}
+
+// ─── Authenticated view ───────────────────────────────────────────────────────
 function MyOffersContent() {
-  const { user, token, loading } = useAuth();
-  const router = useRouter();
+  const { token } = useAuth();
   const searchParams = useSearchParams();
   const [requests, setRequests] = useState<OfferRequest[]>([]);
   const [fetching, setFetching] = useState(true);
   const submitted = searchParams.get('submitted');
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login?redirect=/my-offers');
-    }
-  }, [user, loading, router]);
 
   useEffect(() => {
     if (token) {
@@ -45,7 +123,7 @@ function MyOffersContent() {
     }
   }, [token]);
 
-  if (loading || fetching) {
+  if (fetching) {
     return (
       <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
         <Navbar />
@@ -153,7 +231,23 @@ function MyOffersContent() {
 export default function MyOffersPage() {
   return (
     <Suspense fallback={<div />}>
-      <MyOffersContent />
+      <MyOffersRouter />
     </Suspense>
   );
+}
+
+function MyOffersRouter() {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+  if (!user) return <UnauthenticatedState />;
+  return <MyOffersContent />;
 }
