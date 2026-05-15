@@ -119,40 +119,23 @@ function TradeInContent() {
   async function handleSubmit() {
     const err = validateStep();
     if (err) { setError(err); return; }
-    if (!token) {
-      const dest = `/trade-in?${params.toString()}`;
-      router.push(`/login?redirect=${encodeURIComponent(dest)}`);
-      return;
-    }
-    setSubmitting(true);
-    setError('');
-    try {
-      const desiredVehicle = [tgtYear, tgtMake, tgtModel].filter(Boolean).join(' ') || undefined;
-      const notesLines = [
-        timeline ? `Timeline: ${timeline}` : '',
-        notes,
-      ].filter(Boolean).join('\n');
-      await createTradeInRequest({
-        make: curMake,
-        class_name: curModel,
-        year: parseInt(curYear),
-        km: curKm!,
-        city: curCity,
-        condition: curCondition,
-        desired_vehicle: desiredVehicle,
-        target_budget_qar: tgtPriceNum || undefined,
-        target_car_id: targetCarId || undefined,
-        target_car_name: targetCarName || undefined,
-        target_price_qar: targetPriceNum || undefined,
-        notes: notesLines || undefined,
-      }, token);
-      setSubmitted(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Submission failed. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
+    const sp = new URLSearchParams({
+      make: curMake, class_name: curModel, year: curYear, km: curKm != null ? String(curKm) : '', city: curCity,
+      // Use intent=trade_in so /submit-offer routing engine derives lead_type from context,
+      // not from a button-injected lead_type param.
+      intent: 'trade_in', timeline,
+      ...(targetCarId && { target_car_id: targetCarId }),
+      ...(targetCarName && { target_car_name: targetCarName }),
+      ...(targetPriceRaw && { target_price: targetPriceRaw }),
+      ...(targetDealer && { target_dealer: targetDealer }),
+      ...(tgtMake && { target_make: tgtMake }),
+      ...(tgtModel && { target_model: tgtModel }),
+      ...(tgtYear && { target_year: tgtYear }),
+      ...(tgtPrice && { target_price: tgtPrice }),
+      ...(notes && { notes }),
+    });
+    router.push(`/submit-offer?${sp}`);
+    setSubmitted(true);
   }
 
   const tgtPriceNum = parseInt(tgtPrice.replace(/,/g, '')) || 0;

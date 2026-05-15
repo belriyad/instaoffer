@@ -58,7 +58,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
     make: data.make, class_name: data.class_name,
     year: String(data.year ?? ''), km: String(data.km ?? ''),
     condition: data.condition, city: data.city,
-    lead_type: 'seller_offer',
+    // No lead_type here — /submit-offer derives it from context (default: seller_offer)
     ...(data.model ? { model: data.model } : {}),
     ...(data.trim  ? { trim:  data.trim  } : {}),
   }).toString();

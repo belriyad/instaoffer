@@ -11,6 +11,7 @@ import { useAuth } from '@/lib/auth-context';
 import { createOfferRequest } from '@/lib/api';
 import { CONDITIONS, QATAR_CITIES, formatKM } from '@/lib/utils';
 import { MakeSelect, ModelSelect, TrimSelect, YearTiles, KmBucketPicker, kmLabel, ConditionPicker, CityPicker, PriceSlider } from '@/lib/form-controls';
+import { resolveLeadType } from '@/lib/routing';
 
 function SubmitOfferContent() {
   const { user, token, loading } = useAuth();
@@ -31,8 +32,8 @@ function SubmitOfferContent() {
     city:       searchParams.get('city')       || 'Doha',
   };
   const hasPrefill = !!(prefill.make && prefill.class_name && prefill.year && prefill.km);
-  const leadType = (searchParams.get('lead_type') || 'seller_offer') as
-    'seller_offer' | 'urgent_sale' | 'trade_in' | 'buyer_request' | 'dealer_inquiry';
+  // Derive lead_type from ?intent= context param — never from a raw ?lead_type= button param
+  const leadType = resolveLeadType(searchParams.get('intent'));
 
   // ── Extra fields only the submit form needs ────────────────────────────────
   const [extras, setExtras] = useState({
