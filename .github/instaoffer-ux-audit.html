@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstaOffer UX Audit</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #17171f;
+    --border: #2a2a38;
+    --accent: #f5a623;
+    --accent2: #e8ff5a;
+    --red: #ff4d4d;
+    --orange: #ff8c42;
+    --yellow: #f5c842;
+    --green: #4dff91;
+    --blue: #4da6ff;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --tag-bg: #1e1e2e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo-badge {
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .header h1 span { color: var(--muted); font-weight: 400; }
+
+  .meta-chips {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Score bar */
+  .score-strip {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .score-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 80px;
+  }
+
+  .score-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .score-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--border);
+  }
+
+  .overall-score {
+    background: linear-gradient(135deg, #1a1a2e, #12122a);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: auto;
+  }
+
+  .overall-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .overall-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .overall-verdict {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* Layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 140px);
+  }
+
+  /* Sidebar nav */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: sticky;
+    top: 113px;
+    height: fit-content;
+    max-height: calc(100vh - 113px);
+    overflow-y: auto;
+  }
+
+  .nav-section-label {
+    padding: 0 20px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { border-left-color: var(--accent); color: var(--text); background: var(--surface2); }
+
+  .nav-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .nav-count {
+    margin-left: auto;
+    font-size: 11px;
+    background: var(--tag-bg);
+    padding: 1px 7px;
+    border-radius: 10px;
+  }
+
+  /* Content */
+  .content {
+    padding: 40px;
+    max-width: 880px;
+  }
+
+  /* Sections */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .section-title-block h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .section-title-block p {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .section-score {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .section-score .num {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .section-score .label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* Finding cards */
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .finding::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+  }
+
+  .finding.critical::before { background: var(--red); }
+  .finding.high::before { background: var(--orange); }
+  .finding.medium::before { background: var(--yellow); }
+  .finding.low::before { background: var(--blue); }
+  .finding.pass::before { background: var(--green); }
+
+  .finding-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .severity-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .badge-critical { background: rgba(255,77,77,0.15); color: var(--red); border: 1px solid rgba(255,77,77,0.3); }
+  .badge-high { background: rgba(255,140,66,0.15); color: var(--orange); border: 1px solid rgba(255,140,66,0.3); }
+  .badge-medium { background: rgba(245,200,66,0.15); color: var(--yellow); border: 1px solid rgba(245,200,66,0.3); }
+  .badge-low { background: rgba(77,166,255,0.15); color: var(--blue); border: 1px solid rgba(77,166,255,0.3); }
+  .badge-pass { background: rgba(77,255,145,0.15); color: var(--green); border: 1px solid rgba(77,255,145,0.3); }
+
+  .finding-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .finding-body {
+    color: #b0b0cc;
+    font-size: 14px;
+    margin-bottom: 14px;
+    padding-left: 0;
+  }
+
+  .recommendation {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .rec-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+
+  .rec-text { color: var(--text); }
+
+  /* Tags */
+  .tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .tag {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Summary section */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .summary-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+
+  .issues-list { list-style: none; }
+  .issues-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: #c0c0d8;
+  }
+  .issues-list li:last-child { border-bottom: none; }
+
+  .dot-crit { color: var(--red); }
+  .dot-high { color: var(--orange); }
+  .dot-med { color: var(--yellow); }
+  .dot-low { color: var(--blue); }
+  .dot-pass { color: var(--green); }
+
+  /* Heuristic table */
+  .heuristic-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+  }
+
+  .heuristic-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+
+  .heuristic-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+    vertical-align: top;
+  }
+
+  .heuristic-table tr:hover td { background: var(--surface2); }
+
+  .score-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .pill-green { background: rgba(77,255,145,0.1); color: var(--green); }
+  .pill-yellow { background: rgba(245,200,66,0.1); color: var(--yellow); }
+  .pill-orange { background: rgba(255,140,66,0.1); color: var(--orange); }
+  .pill-red { background: rgba(255,77,77,0.1); color: var(--red); }
+
+  /* Roadmap */
+  .roadmap-phase {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .phase-num {
+    background: var(--accent);
+    color: #000;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .phase-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .phase-timeline {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+
+  .action-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+
+  .action-item:last-child { border-bottom: none; }
+
+  .action-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  .action-text strong { display: block; color: var(--text); margin-bottom: 2px; }
+  .action-text span { color: var(--muted); font-size: 13px; }
+
+  /* Wireframe vs live comparison */
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .compare-card h4 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .compare-card ul { list-style: none; }
+  .compare-card ul li {
+    padding: 6px 0;
+    font-size: 13px;
+    color: #b8b8d0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .compare-card ul li:last-child { border-bottom: none; }
+
+  /* Gap badges */
+  .gap-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-badge">UX Audit</div>
+    <h1>InstaOffer <span>/ UX Audit Report</span></h1>
+  </div>
+  <div class="meta-chips">
+    <span class="chip">instaoffer.vercel.app</span>
+    <span class="chip">FigJam Wireframe</span>
+    <span class="chip">May 2026</span>
+  </div>
+</div>
+
+<div class="score-strip">
+  <div class="score-item">
+    <div class="score-num" style="color:var(--red)">3</div>
+    <div class="score-label">Critical</div>
+  </div>
+  <div class="score-divider"></div>
+  <div class="score-item">
+    <div class="score-num" style="color:var(--orange)">5</div>
+    <div class="score-label">High</div>
+  </div>
+  <div class="score-divider"></div>
+  <div class="score-item">
+    <div class="score-num" style="color:var(--yellow)">6</div>
+    <div class="score-label">Medium</div>
+  </div>
+  <div class="score-divider"></div>
+  <div class="score-item">
+    <div class="score-num" style="color:var(--blue)">4</div>
+    <div class="score-label">Low</div>
+  </div>
+  <div class="score-divider"></div>
+  <div class="score-item">
+    <div class="score-num" style="color:var(--green)">5</div>
+    <div class="score-label">Passes</div>
+  </div>
+  <div class="overall-score">
+    <div>
+      <div class="overall-num">58</div>
+    </div>
+    <div>
+      <div class="overall-label">Overall UX Score</div>
+      <div class="overall-verdict">Needs Work</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="nav-section-label">Navigation</div>
+    <div class="nav-item active" onclick="showSection('overview')">
+      <div class="nav-dot" style="background:var(--accent)"></div>
+      Overview
+    </div>
+    <div class="nav-item" onclick="showSection('flows')">
+      <div class="nav-dot" style="background:var(--blue)"></div>
+      User Flows
+      <span class="nav-count">2</span>
+    </div>
+    <div class="nav-item" onclick="showSection('homepage')">
+      <div class="nav-dot" style="background:var(--orange)"></div>
+      Homepage
+      <span class="nav-count">5</span>
+    </div>
+    <div class="nav-item" onclick="showSection('valuation')">
+      <div class="nav-dot" style="background:var(--red)"></div>
+      Valuation Flow
+      <span class="nav-count">4</span>
+    </div>
+    <div class="nav-item" onclick="showSection('navigation')">
+      <div class="nav-dot" style="background:var(--yellow)"></div>
+      Navigation & IA
+      <span class="nav-count">3</span>
+    </div>
+    <div class="nav-item" onclick="showSection('dealer')">
+      <div class="nav-dot" style="background:var(--blue)"></div>
+      Dealer Experience
+      <span class="nav-count">3</span>
+    </div>
+    <div class="nav-item" onclick="showSection('heuristics')">
+      <div class="nav-dot" style="background:var(--accent)"></div>
+      Heuristics
+    </div>
+    <div class="nav-item" onclick="showSection('roadmap')">
+      <div class="nav-dot" style="background:var(--green)"></div>
+      Fix Roadmap
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- OVERVIEW -->
+    <section class="section active" id="overview">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(245,166,35,0.12)">🎯</div>
+        <div class="section-title-block">
+          <h2>Audit Overview</h2>
+          <p>Scope: live site vs FigJam wireframe flow — seller & dealer journeys</p>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <h4>What Works</h4>
+          <ul class="issues-list">
+            <li><span class="dot-pass">✓</span> Clear value prop headline</li>
+            <li><span class="dot-pass">✓</span> 5-step process visible on homepage</li>
+            <li><span class="dot-pass">✓</span> Trust signals present (privacy, non-binding)</li>
+            <li><span class="dot-pass">✓</span> Dealer alert card example is compelling</li>
+            <li><span class="dot-pass">✓</span> Social proof numbers (500+ cars, 30+ dealers)</li>
+          </ul>
+        </div>
+        <div class="summary-card">
+          <h4>Top Issues</h4>
+          <ul class="issues-list">
+            <li><span class="dot-crit">●</span> Valuation page shows only "Loading…"</li>
+            <li><span class="dot-crit">●</span> /urgent-sale renders empty shell</li>
+            <li><span class="dot-crit">●</span> No fallback / error states anywhere</li>
+            <li><span class="dot-high">●</span> 4 seller paths with no clear primary CTA</li>
+            <li><span class="dot-high">●</span> Nav bar has conflicting dual CTAs</li>
+          </ul>
+        </div>
+        <div class="summary-card">
+          <h4>Wireframe Gaps</h4>
+          <ul class="issues-list">
+            <li><span class="dot-high">●</span> Offer comparison screen not built</li>
+            <li><span class="dot-high">●</span> Phone approval flow missing</li>
+            <li><span class="dot-med">●</span> Trade-in journey stub only</li>
+            <li><span class="dot-med">●</span> Buy request flow stub only</li>
+            <li><span class="dot-low">●</span> Dealer dashboard behind login wall</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="finding pass">
+        <div class="finding-header">
+          <span class="severity-badge badge-pass">Methodology</span>
+          <div class="finding-title">How This Audit Was Conducted</div>
+        </div>
+        <div class="finding-body">
+          This audit covers: (1) Live site crawl of instaoffer.vercel.app — homepage, /valuation, /urgent-sale, /for-dealers pages; (2) FigJam wireframe flow analysis (QqTc15FAXJg2eV4LWFFEx3); (3) Nielsen's 10 Usability Heuristics scoring; (4) Conversion-focused UX review against a Qatar used-car market user model. Severity: <strong style="color:var(--red)">Critical</strong> = conversion blocker / broken, <strong style="color:var(--orange)">High</strong> = significant friction, <strong style="color:var(--yellow)">Medium</strong> = UX debt, <strong style="color:var(--blue)">Low</strong> = polish.
+        </div>
+      </div>
+    </section>
+
+    <!-- USER FLOWS -->
+    <section class="section" id="flows">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(77,166,255,0.12)">🔄</div>
+        <div class="section-title-block">
+          <h2>User Flow Analysis</h2>
+          <p>Wireframe intent vs. live implementation gaps</p>
+        </div>
+        <div class="section-score">
+          <div class="num" style="color:var(--orange)">52</div>
+          <div class="label">/ 100</div>
+        </div>
+      </div>
+
+      <p style="color:var(--muted); font-size:14px; margin-bottom:20px;">The FigJam wireframe defines 4 seller journeys + 1 dealer journey. Here's the current delivery status:</p>
+
+      <div style="overflow-x:auto">
+        <table class="heuristic-table">
+          <thead>
+            <tr>
+              <th>Journey</th>
+              <th>Wireframe Status</th>
+              <th>Live Status</th>
+              <th>Gap</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Know My Car Value</strong><br><span style="color:var(--muted);font-size:12px">→ /valuation</span></td>
+              <td>✅ Fully wireframed (multi-step form → estimate → offer request)</td>
+              <td><span style="color:var(--red)">⚠ Renders "Loading…" only — JS-dependent, broken without auth/data</span></td>
+              <td><span class="score-pill pill-red">Critical</span></td>
+            </tr>
+            <tr>
+              <td><strong>Urgent Sale</strong><br><span style="color:var(--muted);font-size:12px">→ /urgent-sale</span></td>
+              <td>✅ Wireframed — urgency flag, expedited offer timeline</td>
+              <td><span style="color:var(--red)">⚠ Page renders empty shell (just header + footer)</span></td>
+              <td><span class="score-pill pill-red">Critical</span></td>
+            </tr>
+            <tr>
+              <td><strong>Trade-In</strong><br><span style="color:var(--muted);font-size:12px">→ /trade-in</span></td>
+              <td>🔶 Partially wireframed</td>
+              <td><span style="color:var(--yellow)">⚠ Route exists but content unclear from crawl</span></td>
+              <td><span class="score-pill pill-orange">High</span></td>
+            </tr>
+            <tr>
+              <td><strong>Find Next Car</strong><br><span style="color:var(--muted);font-size:12px">→ /buy-request</span></td>
+              <td>🔶 Partially wireframed</td>
+              <td><span style="color:var(--yellow)">⚠ Route exists but likely stub</span></td>
+              <td><span class="score-pill pill-orange">High</span></td>
+            </tr>
+            <tr>
+              <td><strong>Dealer Flow</strong><br><span style="color:var(--muted);font-size:12px">→ /for-dealers → /dashboard</span></td>
+              <td>✅ Wireframed — alert feed, bid flow</td>
+              <td><span style="color:var(--yellow)">Dealer landing exists; dashboard behind login (OK for now)</span></td>
+              <td><span class="score-pill pill-yellow">Medium</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="finding critical" style="margin-top:24px">
+        <div class="finding-header">
+          <span class="severity-badge badge-critical">Critical</span>
+          <div class="finding-title">Core conversion flow is broken in production</div>
+        </div>
+        <div class="finding-body">The primary user action — "Get My Free Valuation" — leads to a page that shows only "Loading…" in production. This is likely a client-side rendering issue where the React/Next.js app fails to hydrate without a backend connection. Any real user clicking the main CTA sees nothing. This kills conversion entirely.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Add a static fallback UI for the valuation form that renders server-side. At minimum, show the form fields even if the AI estimate isn't ready. Add a loading skeleton, not a blank screen.</span>
+        </div>
+        <div class="tags">
+          <span class="tag">Next.js SSR</span><span class="tag">Hydration</span><span class="tag">P0</span>
+        </div>
+      </div>
+
+      <div class="finding high">
+        <div class="finding-header">
+          <span class="severity-badge badge-high">High</span>
+          <div class="finding-title">4 parallel entry points with no clear primary path</div>
+        </div>
+        <div class="finding-body">The homepage presents four equally-weighted seller journeys. Wireframe intent (from FigJam) suggests these should be sequential or tiered. The "Popular" badge on "Sell my car fast" is too subtle — it fails to create a clear primary CTA. Users in Qatar's market (often first-time platform users) will experience decision paralysis.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Make "Sell my car fast" the dominant primary CTA with a full-width button treatment. Collapse the other 3 options into a secondary "or choose another path" expandable row. Reduce cognitive load at entry.</span>
+        </div>
+        <div class="tags">
+          <span class="tag">Homepage</span><span class="tag">CTA Hierarchy</span><span class="tag">Decision Paralysis</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOMEPAGE -->
+    <section class="section" id="homepage">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(255,140,66,0.12)">🏠</div>
+        <div class="section-title-block">
+          <h2>Homepage UX</h2>
+          <p>instaoffer.vercel.app — above fold, content sections, CTAs</p>
+        </div>
+        <div class="section-score">
+          <div class="num" style="color:var(--yellow)">64</div>
+          <div class="label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="finding pass">
+        <div class="finding-header">
+          <span class="severity-badge badge-pass">Pass</span>
+          <div class="finding-title">Hero headline is clear and benefit-focused</div>
+        </div>
+        <div class="finding-body">"What do you want to do today?" + 4 goal options is a solid intent-based navigation pattern. The 🇶🇦 localization signal ("Designed for Qatar's car market") is a strong trust anchor for the target audience.</div>
+      </div>
+
+      <div class="finding high">
+        <div class="finding-header">
+          <span class="severity-badge badge-high">High</span>
+          <div class="finding-title">Dual CTAs in nav bar create conflict</div>
+        </div>
+        <div class="finding-body">The navbar contains both "Sell My Car" (text link) and "Sell My Car" (button) — two identical-label CTAs going to the same /valuation route. This is redundant noise. Additionally "New Cars" in the navbar is disconnected from the seller-focused value proposition of the entire page — it's an unfulfilled promise (likely a stub).</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Remove the text-link "Sell My Car" from nav. Keep only the button. Remove "New Cars" link until the /cars page is built with real inventory. Replace with "How It Works" as a trust-building nav item.</span>
+        </div>
+        <div class="tags"><span class="tag">Navbar</span><span class="tag">CTA Redundancy</span></div>
+      </div>
+
+      <div class="finding medium">
+        <div class="finding-header">
+          <span class="severity-badge badge-medium">Medium</span>
+          <div class="finding-title">Stats section feels unverified — no source or timeframe</div>
+        </div>
+        <div class="finding-body">"500+ Cars Sold", "30+ Verified Dealers", "< 5 min to get estimate" — no timeframe, no source, no third-party badge. For a new platform in Qatar, these numbers alone don't build credibility without context. Qatar users are skeptical of new platforms.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Add "since launch" or "this quarter" framing. Add a dealer logo strip or a testimonial from even one real user. Consider linking "30+ Verified Dealers" to a /dealers directory page.</span>
+        </div>
+        <div class="tags"><span class="tag">Social Proof</span><span class="tag">Trust</span></div>
+      </div>
+
+      <div class="finding medium">
+        <div class="finding-header">
+          <span class="severity-badge badge-medium">Medium</span>
+          <div class="finding-title">Car make grid lacks context — why is this here?</div>
+        </div>
+        <div class="finding-body">The "Value Any Car Make" section with brand buttons is visually busy and its purpose is unclear to a first-time user. Clicking "Toyota" takes you to /valuation?make=Toyota but there's no explanation of what that pre-selection does. The section appears to be SEO-driven but adds friction to the UI.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Add a microcopy intro: "Start with your car's make to get a faster estimate." Reduce to the top 6 makes by Qatar market share. Consider showing approximate price ranges per make to make this section feel more valuable.</span>
+        </div>
+        <div class="tags"><span class="tag">Content Clarity</span><span class="tag">SEO vs UX</span></div>
+      </div>
+
+      <div class="finding medium">
+        <div class="finding-header">
+          <span class="severity-badge badge-medium">Medium</span>
+          <div class="finding-title">Footer has 3 sections but some links are dead</div>
+        </div>
+        <div class="finding-body">"My Offers" in footer links to /my-offers with no indication it requires login. "How It Works" in footer goes to /how-it-works but nav bar's "Sell My Car" doesn't include a How It Works link. The 5-step homepage section IS how it works — inconsistent information architecture.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Add "(requires sign in)" label to /my-offers link. Consolidate the 5-step section into a dedicated /how-it-works page and link from nav. Audit all footer links for 404s before launch.</span>
+        </div>
+        <div class="tags"><span class="tag">IA</span><span class="tag">Footer</span><span class="tag">Dead Links</span></div>
+      </div>
+
+      <div class="finding low">
+        <div class="finding-header">
+          <span class="severity-badge badge-low">Low</span>
+          <div class="finding-title">Arabic language option is missing</div>
+        </div>
+        <div class="finding-body">The site claims to be built for Qatar's market but is English-only. A significant portion of Qatar's used car sellers (particularly older residents and those outside the expat bubble) communicate primarily in Arabic.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Add a language toggle (EN / عربي) in the navbar. Even a partial Arabic translation of the valuation form would significantly expand the addressable audience.</span>
+        </div>
+        <div class="tags"><span class="tag">Localization</span><span class="tag">Accessibility</span><span class="tag">Arabic</span></div>
+      </div>
+    </section>
+
+    <!-- VALUATION FLOW -->
+    <section class="section" id="valuation">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(255,77,77,0.12)">💡</div>
+        <div class="section-title-block">
+          <h2>Valuation Flow</h2>
+          <p>/valuation — the core conversion funnel</p>
+        </div>
+        <div class="section-score">
+          <div class="num" style="color:var(--red)">30</div>
+          <div class="label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="finding critical">
+        <div class="finding-header">
+          <span class="severity-badge badge-critical">Critical</span>
+          <div class="finding-title">Page renders "Loading…" — complete conversion blocker</div>
+        </div>
+        <div class="finding-body">The /valuation route returns only a "Loading…" text with no form, no content, and no error state. The page appears to depend entirely on client-side JavaScript with no SSR or static fallback. In production, this means 100% of users who click the primary CTA see a blank loading state — and likely bounce.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Implement the form as a statically-renderable multi-step component. Use progressive enhancement: render the first step (Make/Model/Year) as pure HTML, then layer in the ML estimate API call. Add a ProgressBar component matching the wireframe's step indicator.</span>
+        </div>
+        <div class="tags"><span class="tag">P0 Blocker</span><span class="tag">SSR</span><span class="tag">Critical Path</span></div>
+      </div>
+
+      <div class="finding critical">
+        <div class="finding-header">
+          <span class="severity-badge badge-critical">Critical</span>
+          <div class="finding-title">Wireframe's step-by-step form doesn't exist in implementation</div>
+        </div>
+        <div class="finding-body">The FigJam wireframe shows a clear multi-step valuation form: (1) Make/Model, (2) Year/Mileage, (3) Condition/Notes, (4) Estimate reveal, (5) Request offers. The live site has none of these steps rendered. The wireframe's progress indicator, step labels, and field validation states are all absent.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Build the form as a controlled multi-step wizard with URL-based step state (/valuation?step=2) so users can share/bookmark progress. Match the wireframe's field sequence exactly — it was designed for minimal cognitive load.</span>
+        </div>
+        <div class="tags"><span class="tag">Wireframe Gap</span><span class="tag">Form UX</span><span class="tag">Multi-step</span></div>
+      </div>
+
+      <div class="finding high">
+        <div class="finding-header">
+          <span class="severity-badge badge-high">High</span>
+          <div class="finding-title">No phone number privacy reassurance at the moment of data collection</div>
+        </div>
+        <div class="finding-body">The homepage prominently says "Phone number stays private" — but this reassurance must be repeated at the exact moment the valuation form asks for a phone number. Trust signals need to be contextual, not just on the homepage. The wireframe appears to show this inline but it's not implemented.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Add inline microcopy next to the phone field: "🔒 Only shared if you approve a dealer contact." Add a tooltip icon explaining the privacy model. This is a conversion-critical moment.</span>
+        </div>
+        <div class="tags"><span class="tag">Trust</span><span class="tag">Privacy</span><span class="tag">Inline Copy</span></div>
+      </div>
+
+      <div class="finding medium">
+        <div class="finding-header">
+          <span class="severity-badge badge-medium">Medium</span>
+          <div class="finding-title">No error handling or offline state designed</div>
+        </div>
+        <div class="finding-body">If the ML estimate API fails or times out, there is no fallback experience visible in either the live site or (from wireframe) an error state. For Qatar's network conditions (and Vercel cold starts), a slow estimate is very plausible.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Design an "estimate unavailable" fallback that still lets users request dealer offers with a manual price input. Add a 5-second timeout with a "Taking longer than usual — we'll email you" fallback message.</span>
+        </div>
+        <div class="tags"><span class="tag">Error States</span><span class="tag">Resilience</span><span class="tag">Fallback UX</span></div>
+      </div>
+    </section>
+
+    <!-- NAVIGATION & IA -->
+    <section class="section" id="navigation">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(245,200,66,0.12)">🗺️</div>
+        <div class="section-title-block">
+          <h2>Navigation & Information Architecture</h2>
+          <p>Wayfinding, menu structure, and content hierarchy</p>
+        </div>
+        <div class="section-score">
+          <div class="num" style="color:var(--yellow)">61</div>
+          <div class="label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="finding high">
+        <div class="finding-header">
+          <span class="severity-badge badge-high">High</span>
+          <div class="finding-title">"For Dealers" nav item has no dropdown or landing clarity</div>
+        </div>
+        <div class="finding-body">The navbar "For Dealers" link navigates to /for-dealers but presents itself ambiguously — it could be a login, a pricing page, or an info page. Dealers coming from search or referral won't know what they're getting. The wireframe suggests a distinct dealer-facing nav state.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Split the nav into two clear audiences with a toggle or sub-nav: "Sell My Car" and "I'm a Dealer." Alternatively, create a dedicated dealer landing page with a clear hero and distinct visual identity.</span>
+        </div>
+        <div class="tags"><span class="tag">IA</span><span class="tag">Audience Segmentation</span><span class="tag">Nav</span></div>
+      </div>
+
+      <div class="finding medium">
+        <div class="finding-header">
+          <span class="severity-badge badge-medium">Medium</span>
+          <div class="finding-title">No breadcrumbs or back navigation in sub-flows</div>
+        </div>
+        <div class="finding-body">Multi-step flows (valuation, urgent sale) have no visible way to go back to a previous step or to the homepage without using browser back. The wireframe shows a step indicator but no explicit back button. Mobile users especially will be disoriented.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Add "← Back" text link at top of each step. Implement browser history correctly so the native back button works per step. Add a step progress indicator (Step 2 of 5) at top of each form screen.</span>
+        </div>
+        <div class="tags"><span class="tag">Breadcrumbs</span><span class="tag">Multi-step Navigation</span></div>
+      </div>
+
+      <div class="finding medium">
+        <div class="finding-header">
+          <span class="severity-badge badge-medium">Medium</span>
+          <div class="finding-title">"My Offers" is in footer but has no authenticated session state</div>
+        </div>
+        <div class="finding-body">A logged-out user clicking "My Offers" is redirected to a login page (or a broken state). There's no unauthenticated landing that explains what offers are, how to get them, or how to sign up. This is a dead-end for curious users.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Create an unauthenticated /my-offers page with a teaser state: "You don't have any offers yet. Get your first valuation →" This converts a dead end into a funnel entry point.</span>
+        </div>
+        <div class="tags"><span class="tag">Auth States</span><span class="tag">Empty States</span><span class="tag">Funnel</span></div>
+      </div>
+    </section>
+
+    <!-- DEALER -->
+    <section class="section" id="dealer">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(77,166,255,0.12)">🏢</div>
+        <div class="section-title-block">
+          <h2>Dealer Experience</h2>
+          <p>/for-dealers — acquisition, pricing, dashboard</p>
+        </div>
+        <div class="section-score">
+          <div class="num" style="color:var(--yellow)">68</div>
+          <div class="label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="finding pass">
+        <div class="finding-header">
+          <span class="severity-badge badge-pass">Pass</span>
+          <div class="finding-title">Dealer alert card example is strong and specific</div>
+        </div>
+        <div class="finding-body">The example alert card on the homepage (2022 Toyota Land Cruiser, Score 87, 295k vs 325k market, ~30k margin) is exactly the right level of specificity. It answers the dealer's core question: "Is this a good deal?" before they even sign up. This is excellent conversion design for the dealer audience.</div>
+      </div>
+
+      <div class="finding high">
+        <div class="finding-header">
+          <span class="severity-badge badge-high">High</span>
+          <div class="finding-title">1,000 QAR/month pricing is stated once without a clear plan structure</div>
+        </div>
+        <div class="finding-body">The dealer section mentions "Only 1,000 QAR / month" but doesn't show what's included — no feature list, no comparison to alternatives, no free trial offer. Dealers won't pay without understanding what they get. This is a conversion drop-off in the dealer funnel.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Create a clear pricing table with 3 tiers or a feature checklist below the price. Add "First 30 days free" or "Pay after first deal" as a risk-reduction hook. Link to /for-dealers for the full breakdown.</span>
+        </div>
+        <div class="tags"><span class="tag">Pricing UX</span><span class="tag">Dealer Funnel</span><span class="tag">Conversion</span></div>
+      </div>
+
+      <div class="finding medium">
+        <div class="finding-header">
+          <span class="severity-badge badge-medium">Medium</span>
+          <div class="finding-title">Dealer dashboard linked but requires login with no signup path visible</div>
+        </div>
+        <div class="finding-body">The footer links to /dashboard and /login?role=dealer, but the homepage dealer section has no visible "Create Dealer Account" CTA. Dealers who want to sign up must know to click "Dealer Login" and then find a registration option there.</div>
+        <div class="recommendation">
+          <span class="rec-label">Fix →</span>
+          <span class="rec-text">Add a prominent "Apply as a Dealer" or "Start Free Trial" button directly in the dealer section on the homepage. Dealer registration should be a distinct, prominent path — not buried in a login flow.</span>
+        </div>
+        <div class="tags"><span class="tag">Onboarding</span><span class="tag">Dealer Registration</span><span class="tag">CTA</span></div>
+      </div>
+    </section>
+
+    <!-- HEURISTICS -->
+    <section class="section" id="heuristics">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(245,166,35,0.12)">📐</div>
+        <div class="section-title-block">
+          <h2>Nielsen's 10 Heuristics</h2>
+          <p>Systematic usability evaluation against industry-standard criteria</p>
+        </div>
+      </div>
+
+      <table class="heuristic-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Heuristic</th>
+            <th>Score</th>
+            <th>Key Issue</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--muted)">1</td>
+            <td><strong>Visibility of System Status</strong></td>
+            <td><span class="score-pill pill-red">2/10</span></td>
+            <td style="color:#b8b8d0;font-size:13px">"Loading…" with no spinner, no progress, no timeout state. Users have zero feedback that anything is happening.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">2</td>
+            <td><strong>Match Between System & Real World</strong></td>
+            <td><span class="score-pill pill-green">8/10</span></td>
+            <td style="color:#b8b8d0;font-size:13px">Language is clear and colloquial ("Sell My Car", "Get My Free Valuation"). "AI-powered" may need explanation for less tech-savvy Qatar users.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">3</td>
+            <td><strong>User Control & Freedom</strong></td>
+            <td><span class="score-pill pill-red">3/10</span></td>
+            <td style="color:#b8b8d0;font-size:13px">No visible back navigation in flows. No way to cancel or restart a valuation. No undo for offer requests.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">4</td>
+            <td><strong>Consistency & Standards</strong></td>
+            <td><span class="score-pill pill-yellow">6/10</span></td>
+            <td style="color:#b8b8d0;font-size:13px">Dual "Sell My Car" CTAs in nav. Inconsistent link treatment between nav and footer. "How It Works" exists as section but also as a footer link to a separate page.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">5</td>
+            <td><strong>Error Prevention</strong></td>
+            <td><span class="score-pill pill-red">2/10</span></td>
+            <td style="color:#b8b8d0;font-size:13px">No form validation visible. No confirmation for destructive actions. No guard against submitting incomplete data.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">6</td>
+            <td><strong>Recognition Rather Than Recall</strong></td>
+            <td><span class="score-pill pill-green">7/10</span></td>
+            <td style="color:#b8b8d0;font-size:13px">Icon-based step labels help. Car make grid is good recognition pattern. Dealer alert card uses familiar auction/listing format.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">7</td>
+            <td><strong>Flexibility & Efficiency of Use</strong></td>
+            <td><span class="score-pill pill-orange">4/10</span></td>
+            <td style="color:#b8b8d0;font-size:13px">No keyboard shortcuts. No "quick estimate" shortcut for repeat users. Car make buttons are good accelerators but lack any power-user features.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">8</td>
+            <td><strong>Aesthetic & Minimalist Design</strong></td>
+            <td><span class="score-pill pill-yellow">6/10</span></td>
+            <td style="color:#b8b8d0;font-size:13px">Homepage is slightly over-sectioned — 7 distinct content sections creates scroll fatigue. Car make grid and dealer section could be combined or condensed.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">9</td>
+            <td><strong>Help Users Recognize & Recover from Errors</strong></td>
+            <td><span class="score-pill pill-red">1/10</span></td>
+            <td style="color:#b8b8d0;font-size:13px">No error messages anywhere visible. Empty pages (/urgent-sale) provide zero guidance. "Loading…" doesn't tell the user what went wrong or what to do next.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">10</td>
+            <td><strong>Help & Documentation</strong></td>
+            <td><span class="score-pill pill-yellow">5/10</span></td>
+            <td style="color:#b8b8d0;font-size:13px">The 5-step explainer is on the homepage. No FAQ, no tooltip help, no chat support for users confused during the valuation flow.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ROADMAP -->
+    <section class="section" id="roadmap">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(77,255,145,0.12)">🗓️</div>
+        <div class="section-title-block">
+          <h2>Fix Roadmap</h2>
+          <p>Prioritized action plan to move UX score from 58 → 80+</p>
+        </div>
+      </div>
+
+      <div class="roadmap-phase">
+        <div class="phase-header">
+          <div class="phase-num">1</div>
+          <div class="phase-title" style="color:var(--red)">Critical Fixes — Ship This Week</div>
+          <div class="phase-timeline">Days 1–5</div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🔴</div>
+          <div class="action-text">
+            <strong>Fix /valuation SSR — render form on server, not just client</strong>
+            <span>The page must show Step 1 (Make/Model) on first load, even before JS hydrates. This is the #1 conversion blocker.</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🔴</div>
+          <div class="action-text">
+            <strong>Build /urgent-sale page content</strong>
+            <span>Currently an empty shell. Add the urgency flow from the wireframe: flag input, expedited timeline, matching logic.</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🔴</div>
+          <div class="action-text">
+            <strong>Add loading skeleton and timeout fallback to all async routes</strong>
+            <span>Replace "Loading…" text with a skeleton UI + 5s timeout with a "something went wrong" message + support link.</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🔴</div>
+          <div class="action-text">
+            <strong>Remove dead/stub nav links ("New Cars")</strong>
+            <span>Any nav link to an unbuilt page destroys trust. Remove or replace with coming-soon modal.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-phase">
+        <div class="phase-header">
+          <div class="phase-num">2</div>
+          <div class="phase-title" style="color:var(--orange)">High Impact — Sprint 2</div>
+          <div class="phase-timeline">Days 6–14</div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🟠</div>
+          <div class="action-text">
+            <strong>Implement multi-step valuation form matching wireframe</strong>
+            <span>5 steps, step indicator, back navigation, URL-based step state, inline validation, privacy microcopy on phone field.</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🟠</div>
+          <div class="action-text">
+            <strong>Consolidate homepage CTAs — make primary path dominant</strong>
+            <span>Elevate "Sell my car fast" to a full-width hero CTA. Collapse other 3 options into secondary "or choose another path" row.</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🟠</div>
+          <div class="action-text">
+            <strong>Add "Apply as Dealer" CTA on homepage dealer section</strong>
+            <span>Dealers need a visible registration path. Add a prominent "Start Free Trial →" button with a 30-day free offer.</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🟠</div>
+          <div class="action-text">
+            <strong>Build dealer pricing table on /for-dealers</strong>
+            <span>Feature list, QAR pricing, comparison to Mzad/OLX alternatives, testimonial from one pilot dealer.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-phase">
+        <div class="phase-header">
+          <div class="phase-num">3</div>
+          <div class="phase-title" style="color:var(--yellow)">UX Polish — Sprint 3</div>
+          <div class="phase-timeline">Days 15–30</div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🟡</div>
+          <div class="action-text">
+            <strong>Add Arabic language toggle (EN / عربي)</strong>
+            <span>At minimum translate: homepage hero, valuation form labels, trust badges. Full translation in Q2.</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🟡</div>
+          <div class="action-text">
+            <strong>Improve social proof — add dealer logos, testimonials, verified timestamps</strong>
+            <span>Replace bare stats with contextualized proof: "32 verified dealers including [logos]" and real seller testimonials.</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🟡</div>
+          <div class="action-text">
+            <strong>Build /my-offers unauthenticated empty state</strong>
+            <span>Convert the dead-end into a funnel entry. Show a teaser of what offers look like + "Get Your First Valuation →".</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon">🟡</div>
+          <div class="action-text">
+            <strong>Add WhatsApp as a contact option throughout the funnel</strong>
+            <span>Qatar market heavily uses WhatsApp. Add WA contact option at offer stage — sellers trust it more than email forms.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>

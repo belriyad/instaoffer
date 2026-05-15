@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Car, Info, Building2, FileText, Zap, RefreshCw, Search, ShoppingCart, MessageSquare, Bell, Settings } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Info, Building2, FileText, Zap, RefreshCw, Search, ShoppingCart, MessageSquare, Bell, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -15,9 +15,7 @@ const SELL_LINKS = [
   { href: '/buy-request',  label: 'Find my next car',   icon: <Search size={15} />,   desc: 'Dealers bring the car to you' },
 ];
 
-const BUY_LINKS = [
-  { href: '/cars',         label: 'New Cars',           icon: <Car size={15} />,      desc: 'Browse new car inventory' },
-];
+const BUY_LINKS: never[] = [];
 
 const DEALER_LINKS = [
   { href: '/for-dealers',                  label: 'For Dealers',         icon: <Building2 size={15} />,       desc: 'Grow your acquisition pipeline' },
@@ -152,21 +150,6 @@ export default function Navbar() {
             {/* Divider */}
             <span className="w-px h-4 bg-gray-200 mx-2" />
 
-            {/* Buy group — single link, no dropdown needed */}
-            <Link
-              href="/cars"
-              className={`text-sm font-semibold transition-colors px-2 py-1 rounded-lg ${
-                pathname.startsWith('/cars')
-                  ? 'text-[#003087] bg-[#003087]/5'
-                  : 'text-gray-600 hover:text-[#003087] hover:bg-gray-50'
-              }`}
-            >
-              New Cars
-            </Link>
-
-            {/* Divider */}
-            <span className="w-px h-4 bg-gray-200 mx-2" />
-
             {/* Dealers group */}
             <NavDropdown label="For Dealers" links={dealerLinks} pathname={pathname} onClose={() => {}} />
           </div>
@@ -278,19 +261,6 @@ export default function Navbar() {
                 <div>
                   <div className="text-sm font-semibold">How It Works</div>
                   <div className="text-xs text-gray-400">Step-by-step seller guide</div>
-                </div>
-              </Link>
-            </div>
-
-            {/* Browse section */}
-            <div className="pt-2 pb-2">
-              <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Browse</p>
-              <Link href="/cars" onClick={closeMobile}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl mx-2 transition-colors ${pathname.startsWith('/cars') ? 'bg-[#003087]/10 text-[#003087]' : 'text-gray-700 hover:bg-gray-50'}`}>
-                <Car size={16} className="text-gray-400" />
-                <div>
-                  <div className="text-sm font-semibold">New Cars</div>
-                  <div className="text-xs text-gray-400">Browse new car inventory</div>
                 </div>
               </Link>
             </div>

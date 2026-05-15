@@ -12,6 +12,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StepIndicator from '@/components/StepIndicator';
 import PriceGuidanceCard from '@/components/PriceGuidanceCard';
+import PhoneInput from '@/components/PhoneInput';
 import { useAuth } from '@/lib/auth-context';
 import { createOfferRequest, uploadFile } from '@/lib/api';
 import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
@@ -562,9 +563,11 @@ function UrgentSaleContent() {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                  <input type="tel" value={form.contact_phone} onChange={e => set('contact_phone', e.target.value)} placeholder="+974 XXXX XXXX"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
+                  <PhoneInput
+                    label="Phone"
+                    value={form.contact_phone}
+                    onChange={e => set('contact_phone', (e.target as HTMLInputElement).value)}
+                  />
                 </div>
               </div>
             </div>

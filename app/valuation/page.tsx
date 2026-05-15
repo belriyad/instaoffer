@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Car, AlertCircle, Lock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import { FormSkeleton } from '@/components/ui/Skeleton';
 import {
   FUEL_TYPES, GEAR_TYPES, CAR_TYPES, formatKM, formatQAR, MODEL_DEFAULTS, WARRANTY_STATUSES,
 } from '@/lib/utils';
@@ -560,7 +561,7 @@ function ValuationContent() {
 
 export default function ValuationPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-screen text-gray-400">Loading…</div>}>
+    <Suspense fallback={<FormSkeleton />}>
       <ValuationContent />
     </Suspense>
   );

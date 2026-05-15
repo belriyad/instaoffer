@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, AlertCircle, CheckCircle2, ChevronRight, Car, Users } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import PhoneInput from '@/components/PhoneInput';
 import { QATAR_CITIES, formatQAR } from '@/lib/utils';
 import { createBuyRequest } from '@/lib/api';
 import { SearchableMakeSelect, SearchableModelSelect } from '@/lib/form-controls';
@@ -314,14 +315,11 @@ function BuyRequestContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Phone Number *</label>
-                  <input
-                    type="tel"
+                  <PhoneInput
+                    label="Phone Number *"
                     value={form.contact_phone}
-                    onChange={e => set('contact_phone', e.target.value)}
+                    onChange={e => set('contact_phone', (e.target as HTMLInputElement).value)}
                     required
-                    placeholder="+974 XXXX XXXX"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
                   />
                 </div>
                 <div>

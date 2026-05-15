@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Upload, ChevronRight, AlertCircle, CheckCircle2, Car, Edit2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import PhoneInput from '@/components/PhoneInput';
 import { useAuth } from '@/lib/auth-context';
 import { createOfferRequest } from '@/lib/api';
 import { CONDITIONS, QATAR_CITIES, formatKM } from '@/lib/utils';
@@ -284,10 +285,11 @@ function SubmitOfferContent() {
                   <textarea value={extras.description} onChange={e => setExtra('description', e.target.value)} rows={3} placeholder="Service history, accident history, modifications, recent repairs, etc." className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] resize-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Phone Number <span className="text-gray-400 font-normal">(stays private)</span>
-                  </label>
-                  <input type="tel" value={extras.contact_phone} onChange={e => setExtra('contact_phone', e.target.value)} placeholder="+974 XXXX XXXX" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]" />
+                  <PhoneInput
+                    label="Phone Number"
+                    value={extras.contact_phone}
+                    onChange={e => setExtra('contact_phone', (e.target as HTMLInputElement).value)}
+                  />
                 </div>
                 {/* Inspection report toggle */}
                 <div className="flex items-center gap-3 sm:col-span-2 bg-gray-50 rounded-xl p-4">
