@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, Suspense } from 'react';
+import { useState, useRef, useCallback, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -16,6 +16,7 @@ import PhoneInput from '@/components/PhoneInput';
 import { useAuth } from '@/lib/auth-context';
 import { createOfferRequest, uploadFile } from '@/lib/api';
 import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
+import { readVehicleProfile, writeVehicleProfile } from '@/lib/vehicle-profile';
 
 const CITIES = ['Doha', 'Al Rayyan', 'Al Wakrah', 'Al Khor', 'Lusail', 'Umm Salal', 'Al Daayen', 'Al Shamal'];
 
@@ -83,9 +84,11 @@ function UrgentSaleContent() {
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>({
-    make: params.get('make') ?? '', class_name: params.get('class_name') ?? '',
+    make: params.get('make') ?? '',
+    class_name: params.get('class_name') ?? '',
     year: params.get('year') ?? '', km: snapKm(initKmNum),
-    condition: 'good', city: params.get('city') ?? 'Doha',
+    condition: params.get('condition') ?? 'good',
+    city: params.get('city') ?? 'Doha',
     contact_name: '', contact_phone: '',
     urgency_reason: '', sell_priority: 'balanced',
   });
@@ -133,6 +136,33 @@ function UrgentSaleContent() {
 
   const requiredComplete = REQUIRED_CATEGORIES.filter(k => !!categoryFiles[k]).length;
   const totalComplete    = EVIDENCE_CATEGORIES.filter(c => !!categoryFiles[c.key]).length;
+
+  useEffect(() => {
+    if (params.get('make') || params.get('class_name') || params.get('year') || params.get('km')) return;
+    const shared = readVehicleProfile();
+    if (!shared) return;
+    setForm(prev => ({
+      ...prev,
+      make: prev.make || shared.make,
+      class_name: prev.class_name || shared.class_name,
+      year: prev.year || (shared.year ? String(shared.year) : ''),
+      km: prev.km ?? shared.km,
+      condition: prev.condition === 'good' ? (shared.condition || prev.condition) : prev.condition,
+      city: prev.city === 'Doha' ? (shared.city || prev.city) : prev.city,
+    }));
+  }, [params]);
+
+  useEffect(() => {
+    if (!form.make || !form.class_name || !form.year || !form.km) return;
+    writeVehicleProfile({
+      make: form.make,
+      class_name: form.class_name,
+      year: parseInt(form.year),
+      km: form.km,
+      condition: form.condition,
+      city: form.city,
+    });
+  }, [form.make, form.class_name, form.year, form.km, form.condition, form.city]);
 
   function set(field: keyof FormState, value: string) {
     setForm(prev => ({ ...prev, [field]: value }));

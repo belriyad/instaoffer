@@ -11,6 +11,7 @@ import PriceGuidanceCard from '@/components/PriceGuidanceCard';
 import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
 import { formatQAR } from '@/lib/utils';
 import { getMLEstimate } from '@/lib/api';
+import { readVehicleProfile, writeVehicleProfile } from '@/lib/vehicle-profile';
 
 const STEPS = ['Current vehicle', 'Desired next vehicle', 'Timeline & Submit'];
 const CURRENT_YEAR = new Date().getFullYear();
@@ -79,6 +80,28 @@ function TradeInContent() {
       .then(r => setTradeEstimate(r.confidence_range))
       .catch(() => setTradeEstimate(null))
       .finally(() => setEstimateLoading(false));
+  }, [curMake, curModel, curYear, curKm, curCity]);
+
+  useEffect(() => {
+    if (params.get('make') || params.get('class_name') || params.get('year') || params.get('km')) return;
+    const shared = readVehicleProfile();
+    if (!shared) return;
+    setCurMake(prev => prev || shared.make);
+    setCurModel(prev => prev || shared.class_name);
+    setCurYear(prev => prev || (shared.year ? String(shared.year) : ''));
+    setCurKm(prev => prev ?? shared.km);
+    setCurCity(prev => (prev === 'Doha' ? (shared.city || prev) : prev));
+  }, [params]);
+
+  useEffect(() => {
+    if (!curMake || !curModel || !curYear || !curKm) return;
+    writeVehicleProfile({
+      make: curMake,
+      class_name: curModel,
+      year: parseInt(curYear),
+      km: curKm,
+      city: curCity,
+    });
   }, [curMake, curModel, curYear, curKm, curCity]);
 
   // Step 2: timeline
