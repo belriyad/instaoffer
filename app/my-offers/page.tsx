@@ -156,9 +156,17 @@ function MyOffersContent() {
             className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-6 flex items-start gap-3"
           >
             <CheckCircle2 size={20} className="text-green-600 mt-0.5 flex-shrink-0" />
-            <div>
+            <div className="flex-1">
               <p className="font-bold text-green-800">Request submitted successfully!</p>
               <p className="text-sm text-green-700 mt-0.5">Dealers will start reviewing your car and sending offers shortly.</p>
+              <a
+                href={`https://wa.me/97430000000?text=Hi%20InstaOffer%2C%20I%20just%20submitted%20my%20car%20listing%20(ref%3A%20${submitted}).%20Can%20you%20confirm%20it%20was%20received%3F`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 mt-3 bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors"
+              >
+                💬 WhatsApp us for help
+              </a>
             </div>
           </motion.div>
         )}
