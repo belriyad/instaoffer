@@ -227,7 +227,7 @@ export default function Navbar() {
           <div className="md:hidden flex items-center gap-2">
             {!user && (
               <Link href="/valuation" className="bg-[#ff6600] text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-1">
-                <Zap size={12} /> Sell
+                <Zap size={12} /> Get Estimate
               </Link>
             )}
             <button

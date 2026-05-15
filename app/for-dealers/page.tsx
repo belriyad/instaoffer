@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, Check, Filter, MessageSquare, Bell, Star, Users, TrendingUp, X } from 'lucide-react';
+import { ChevronRight, Check, Filter, MessageSquare, Bell, Star, Users, TrendingUp, X, RefreshCw, ShoppingCart } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -82,6 +82,8 @@ const PLANS = [
 
 const COMPARISON = [
   { feature: 'Qualified seller leads', instaOffer: true, mzad: false, olx: false, cold: false },
+  { feature: 'Trade-in acquisition leads', instaOffer: true, mzad: false, olx: false, cold: false },
+  { feature: 'Buyer request (demand signals)', instaOffer: true, mzad: false, olx: false, cold: false },
   { feature: 'Real-time WhatsApp alerts', instaOffer: true, mzad: false, olx: false, cold: false },
   { feature: 'Margin visibility per lead', instaOffer: true, mzad: false, olx: false, cold: false },
   { feature: 'Seller contact (on approval)', instaOffer: true, mzad: true, olx: true, cold: true },
@@ -237,6 +239,68 @@ export default function ForDealersPage() {
                 <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Lead Types */}
+      <section className="py-16 bg-[#f5f7fa]">
+        <div className="max-w-5xl mx-auto px-4">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-3xl font-black text-gray-900 mb-3">5 Lead Types — All in One Platform</h2>
+              <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+                Every lead is routed into a typed queue so you always know who you&apos;re dealing with.
+              </p>
+            </motion.div>
+            <motion.div variants={stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[
+                {
+                  icon: '⚡',
+                  title: 'Urgent Sellers',
+                  desc: 'Motivated sellers who need to close in 24–72 hours. Include evidence packages: photos, VIN, inspection reports, and accident history.',
+                  badge: 'High conversion',
+                  badgeColor: 'bg-orange-100 text-orange-700',
+                },
+                {
+                  icon: '🔄',
+                  title: 'Trade-In Leads',
+                  desc: 'Buyers who want to upgrade and sell their current car as part of the same transaction. Separate queue — never mixed with normal sellers.',
+                  badge: 'Exclusive queue',
+                  badgeColor: 'bg-blue-100 text-blue-700',
+                },
+                {
+                  icon: '🔍',
+                  title: 'Buyer Requests',
+                  desc: 'Inbound demand signals — buyers who specified exactly the car they want (make, model, budget, timeline). Be first to match their request.',
+                  badge: 'New lead type',
+                  badgeColor: 'bg-purple-100 text-purple-700',
+                },
+                {
+                  icon: '📋',
+                  title: 'Seller Leads',
+                  desc: 'Standard private sellers who want dealer offers on their car. Valuation-backed, with market comps and ML price estimates attached.',
+                  badge: 'Highest volume',
+                  badgeColor: 'bg-green-100 text-green-700',
+                },
+                {
+                  icon: '💬',
+                  title: 'Direct Inquiries',
+                  desc: 'Buyers browsing your listed inventory who hit "Contact dealer." Hot intent — they came to you.',
+                  badge: 'Warm inbound',
+                  badgeColor: 'bg-yellow-100 text-yellow-700',
+                },
+              ].map(lt => (
+                <motion.div key={lt.title} variants={fadeUp} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                  <div className="text-3xl mb-3">{lt.icon}</div>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-bold text-gray-900">{lt.title}</h3>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${lt.badgeColor}`}>{lt.badge}</span>
+                  </div>
+                  <p className="text-sm text-gray-500 leading-relaxed">{lt.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
           </motion.div>
         </div>
       </section>

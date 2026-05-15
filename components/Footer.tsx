@@ -61,7 +61,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><Link href="/privacy" className="text-gray-400 text-sm hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="text-gray-400 text-sm hover:text-white transition-colors">Terms of Use</Link></li>
-              <li><Link href="/how-it-works" className="text-gray-400 text-sm hover:text-white transition-colors">Contact Us</Link></li>
+              <li><a href="https://wa.me/97430000000?text=Hi%20InstaOffer%2C%20I%20need%20some%20help" target="_blank" rel="noopener noreferrer" className="text-gray-400 text-sm hover:text-white transition-colors">Contact Us</a></li>
             </ul>
           </div>
         </div>

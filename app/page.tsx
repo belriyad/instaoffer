@@ -172,6 +172,7 @@ export default function Home() {
               </div>
             ))}
           </div>
+          <p className="text-center text-xs text-gray-400 mt-4">as of May 2026</p>
         </div>
       </section>
 
@@ -256,7 +257,7 @@ export default function Home() {
               <Star size={32} className="text-[#ff6600] mx-auto mb-4" />
               <h2 className="text-3xl md:text-4xl font-black mb-3">Acquire profitable inventory faster than competitors</h2>
               <p className="text-blue-200 text-lg max-w-2xl mx-auto">
-                InstaOffer is a dealer acquisition intelligence system — not a lead-gen platform. Only <strong className="text-white">1,000 QAR / month</strong>.
+                InstaOffer is a dealer acquisition intelligence system — not a lead-gen platform. From <strong className="text-white">499 QAR / month</strong>. First 30 days free.
               </p>
             </motion.div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
