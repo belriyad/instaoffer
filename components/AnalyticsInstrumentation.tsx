@@ -10,6 +10,11 @@ function truncate(value: string, max = 120): string {
   return value.length > max ? `${value.slice(0, max)}…` : value;
 }
 
+function compactClassName(value: string): string {
+  const topClasses = value.split(/\s+/).filter(Boolean).slice(0, 6).join(' ');
+  return truncate(topClasses);
+}
+
 function getElementDetails(target: EventTarget | null): Record<string, string> | null {
   if (!(target instanceof Element)) return null;
 
@@ -26,7 +31,7 @@ function getElementDetails(target: EventTarget | null): Record<string, string> |
   if (node.id) details.elementId = truncate(node.id);
   const elementName = node.getAttribute('name');
   if (elementName) details.elementName = truncate(elementName);
-  if (node.className) details.elementClass = truncate(node.className);
+  if (node.className) details.elementClass = compactClassName(node.className);
 
   if (node instanceof HTMLAnchorElement) {
     const href = node.getAttribute('href');
@@ -51,9 +56,8 @@ export default function AnalyticsInstrumentation() {
   }, [path]);
 
   useEffect(() => {
-    const search = window.location.search;
     track('Page View', {
-      path: `${path}${search}`,
+      path,
       pathname: pathname ?? '/',
     });
   }, [path, pathname]);
