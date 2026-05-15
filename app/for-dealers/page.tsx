@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight, Check, Filter, MessageSquare, Bell, Star, Users, TrendingUp, X, RefreshCw, ShoppingCart } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { waLink } from '@/lib/utils';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -66,7 +67,7 @@ const PLANS = [
     period: 'contact us',
     desc: 'For dealer groups and large operations.',
     cta: 'Contact Us',
-    href: 'https://wa.me/97430000000?text=Hi, I\'m interested in InstaOffer Enterprise for dealers',
+    href: waLink("Hi, I'm interested in InstaOffer Enterprise for dealers"),
     highlight: false,
     features: [
       'Everything in Pro',
@@ -114,7 +115,7 @@ export default function ForDealersPage() {
               <Link href="/dealer-signup" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
                 Start Free 30-Day Trial <ChevronRight size={20} />
               </Link>
-              <a href="https://wa.me/97430000000?text=Hi, I'm interested in becoming an InstaOffer dealer" target="_blank" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl text-base transition-all">
+              <a href={waLink("Hi, I'm interested in becoming an InstaOffer dealer")} target="_blank" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl text-base transition-all">
                 💬 Chat on WhatsApp
               </a>
             </motion.div>
@@ -338,7 +339,7 @@ export default function ForDealersPage() {
           <Link href="/dealer-signup" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
             Start Free 30-Day Trial <ChevronRight size={20} />
           </Link>
-          <a href="https://wa.me/97430000000?text=Hi, I'm interested in becoming an InstaOffer dealer" target="_blank" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl transition-all">
+          <a href={waLink("Hi, I'm interested in becoming an InstaOffer dealer")} target="_blank" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl transition-all">
             💬 Chat on WhatsApp first
           </a>
         </div>

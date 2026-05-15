@@ -9,7 +9,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
 import { getMyOfferRequests, OfferRequest } from '@/lib/api';
-import { formatQAR, formatDate } from '@/lib/utils';
+import { formatQAR, formatDate, waLink } from '@/lib/utils';
 import { Suspense } from 'react';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -160,7 +160,7 @@ function MyOffersContent() {
               <p className="font-bold text-green-800">Request submitted successfully!</p>
               <p className="text-sm text-green-700 mt-0.5">Dealers will start reviewing your car and sending offers shortly.</p>
               <a
-                href={`https://wa.me/97430000000?text=Hi%20InstaOffer%2C%20I%20just%20submitted%20my%20car%20listing%20(ref%3A%20${submitted}).%20Can%20you%20confirm%20it%20was%20received%3F`}
+                href={waLink(`Hi InstaOffer, I just submitted my car listing (ref: ${submitted}). Can you confirm it was received?`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 mt-3 bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors"

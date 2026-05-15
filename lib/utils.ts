@@ -1,3 +1,12 @@
+// ─── WhatsApp contact number ──────────────────────────────────────────────────
+// TODO (#114): Replace with real business WhatsApp number before launch.
+export const WA_NUMBER = '97430000000';
+
+/** Build a wa.me URL with an optional pre-filled message */
+export function waLink(message = ''): string {
+  return `https://wa.me/${WA_NUMBER}${message ? `?text=${encodeURIComponent(message)}` : ''}`;
+}
+
 export function formatQAR(amount: number): string {
   return `QAR ${amount.toLocaleString('en-QA')}`;
 }

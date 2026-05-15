@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight, CheckCircle2, Building2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { waLink } from '@/lib/utils';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -89,7 +90,7 @@ export default function DealerSignupPage() {
               <p><span className="text-gray-400">Specialization:</span> {form.specialization}</p>
             </div>
             <a
-              href={`https://wa.me/97430000000?text=Hi InstaOffer, I just submitted a dealer application for ${encodeURIComponent(form.business_name)}. Looking forward to your review!`}
+              href={waLink(`Hi InstaOffer, I just submitted a dealer application for ${form.business_name}. Looking forward to your review!`)}
               target="_blank"
               className="flex items-center justify-center gap-2 w-full bg-[#25d366] hover:bg-[#1ebe5c] text-white font-bold py-3.5 rounded-xl transition-colors mb-3"
             >

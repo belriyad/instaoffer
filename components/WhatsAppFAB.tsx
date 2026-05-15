@@ -1,9 +1,11 @@
 'use client';
 
+import { waLink } from '@/lib/utils';
+
 export default function WhatsAppFAB() {
   return (
     <a
-      href="https://wa.me/97430000000?text=Hi%20InstaOffer%2C%20I%20need%20some%20help"
+      href={waLink('Hi InstaOffer, I need some help')}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with InstaOffer support on WhatsApp"
