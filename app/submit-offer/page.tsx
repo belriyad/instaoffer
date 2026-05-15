@@ -11,6 +11,7 @@ import { useAuth } from '@/lib/auth-context';
 import { createOfferRequest } from '@/lib/api';
 import { CONDITIONS, QATAR_CITIES, formatKM } from '@/lib/utils';
 import { MakeSelect, ModelSelect, TrimSelect, YearTiles, KmBucketPicker, kmLabel, ConditionPicker, CityPicker, PriceSlider } from '@/lib/form-controls';
+import { readVehicleProfile, writeVehicleProfile } from '@/lib/vehicle-profile';
 
 function SubmitOfferContent() {
   const { user, token, loading } = useAuth();
@@ -30,7 +31,6 @@ function SubmitOfferContent() {
     condition:  searchParams.get('condition')  || 'good',
     city:       searchParams.get('city')       || 'Doha',
   };
-  const hasPrefill = !!(prefill.make && prefill.class_name && prefill.year && prefill.km);
   const leadType = (searchParams.get('lead_type') || 'seller_offer') as
     'seller_offer' | 'urgent_sale' | 'trade_in' | 'buyer_request' | 'dealer_inquiry';
 
@@ -54,6 +54,7 @@ function SubmitOfferContent() {
     condition:  prefill.condition,
     city:       prefill.city,
   });
+  const hasPrefill = !!(overrides.make && overrides.class_name && overrides.year && overrides.km);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -68,6 +69,23 @@ function SubmitOfferContent() {
     }
   }, [user, loading, router, searchParams]);
 
+  useEffect(() => {
+    if (searchParams.get('make') || searchParams.get('class_name') || searchParams.get('year') || searchParams.get('km')) return;
+    const shared = readVehicleProfile();
+    if (!shared) return;
+    setOverrides(prev => ({
+      ...prev,
+      make: prev.make || shared.make,
+      class_name: prev.class_name || shared.class_name,
+      model: prev.model || shared.model,
+      trim: prev.trim || shared.trim,
+      year: prev.year || shared.year,
+      km: prev.km || shared.km,
+      condition: prev.condition === 'good' ? (shared.condition || prev.condition) : prev.condition,
+      city: prev.city === 'Doha' ? (shared.city || prev.city) : prev.city,
+    }));
+  }, [searchParams]);
+
   function setExtra<K extends keyof typeof extras>(key: K, value: typeof extras[K]) {
     setExtras(e => ({ ...e, [key]: value }));
   }
@@ -75,6 +93,20 @@ function SubmitOfferContent() {
   function setOverride<K extends keyof typeof overrides>(key: K, value: typeof overrides[K]) {
     setOverrides(o => ({ ...o, [key]: value }));
   }
+
+  useEffect(() => {
+    if (!overrides.make || !overrides.class_name || !overrides.year || !overrides.km) return;
+    writeVehicleProfile({
+      make: overrides.make,
+      class_name: overrides.class_name,
+      model: overrides.model,
+      trim: overrides.trim,
+      year: overrides.year,
+      km: overrides.km,
+      condition: overrides.condition,
+      city: overrides.city,
+    });
+  }, [overrides]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -86,6 +118,16 @@ function SubmitOfferContent() {
     setSubmitting(true);
     setError('');
     try {
+      writeVehicleProfile({
+        make: overrides.make,
+        class_name: overrides.class_name,
+        model: overrides.model,
+        trim: overrides.trim,
+        year: overrides.year,
+        km: overrides.km,
+        condition: overrides.condition,
+        city: overrides.city,
+      });
       const result = await createOfferRequest({
         make:             overrides.make,
         class_name:       overrides.class_name,

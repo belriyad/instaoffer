@@ -18,6 +18,7 @@ import {
 } from '@/lib/form-controls';
 import { getMLEstimate, getMLForecast, getMarketComps, getMLTimeToSell, MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { readVehicleProfile, writeVehicleProfile } from '@/lib/vehicle-profile';
 import EstimateResult from './EstimateResult';
 
 export interface ValuationData {
@@ -315,14 +316,14 @@ function ValuationContent() {
     const defaults: ValuationData = {
       make:            searchParams.get('make') || '',
       class_name:      searchParams.get('class_name') || '',
-      model:           '',
+      model:           searchParams.get('model') || '',
       year:            searchParams.get('year') ? Number(searchParams.get('year')) : null,
       km:              searchParams.get('km') ? Number(searchParams.get('km')) : null,
       car_type:        '',
       fuel_type:       '',
       gear_type:       'Automatic',
-      condition:       '',
-      city:            'Doha',
+      condition:       searchParams.get('condition') || '',
+      city:            searchParams.get('city') || 'Doha',
       trim:            searchParams.get('trim') || '',
       cylinder_count:  null,
       warranty_status: 'Under Warranty',
@@ -360,6 +361,37 @@ function ValuationContent() {
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({ screen, data, estimate, forecast, comps, timeToSell }));
     } catch { /* ignore */ }
   }, [screen, data, estimate, forecast, comps, timeToSell]);
+
+  useEffect(() => {
+    if (hasQueryCar) return;
+    const shared = readVehicleProfile();
+    if (!shared) return;
+    setData(d => ({
+      ...d,
+      make: d.make || shared.make,
+      class_name: d.class_name || shared.class_name,
+      model: d.model || shared.model,
+      trim: d.trim || shared.trim,
+      year: d.year || shared.year,
+      km: d.km || shared.km,
+      condition: d.condition || shared.condition,
+      city: d.city === 'Doha' ? (shared.city || d.city) : d.city,
+    }));
+  }, [hasQueryCar]);
+
+  useEffect(() => {
+    if (!data.make || !data.class_name || !data.year || !data.km) return;
+    writeVehicleProfile({
+      make: data.make,
+      class_name: data.class_name,
+      model: data.model,
+      trim: data.trim,
+      year: data.year,
+      km: data.km,
+      condition: data.condition,
+      city: data.city,
+    });
+  }, [data]);
 
   // If make+model pre-filled from query params, skip to screen 2
   useEffect(() => {
