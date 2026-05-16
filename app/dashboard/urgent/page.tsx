@@ -128,17 +128,18 @@ export default function UrgentSellersPage() {
     setFetching(true);
     setError('');
     getAllOfferRequests(token, {
-      sort_by:  'urgency',
-      sort_dir: 'desc',
-      status:   status || undefined,
-      limit:    LIMIT,
-      offset:   page * LIMIT,
+      sort_by:   'urgency',
+      sort_dir:  'desc',
+      status:    status || undefined,
+      lead_type: 'urgent_sale',   // server-side filter: urgent_sale queue only
+      limit:     LIMIT,
+      offset:    page * LIMIT,
     })
       .then((res: unknown) => {
         const r = res as { rows?: OfferRequest[]; total?: number } | OfferRequest[];
         const allRows = Array.isArray(r) ? r : (r as { rows?: OfferRequest[] }).rows ?? [];
         const tot     = Array.isArray(r) ? allRows.length : (r as { total?: number }).total ?? allRows.length;
-        // Client-side filter on is_urgent until BE adds ?is_urgent=true param
+        // Keep client-side is_urgent guard for extra safety
         const urgent  = allRows.filter((r: OfferRequest) => r.is_urgent === true);
         setRows(urgent);
         setTotal(tot);
