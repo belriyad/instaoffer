@@ -8,9 +8,10 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StepIndicator from '@/components/StepIndicator';
 import PriceGuidanceCard from '@/components/PriceGuidanceCard';
-import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
+import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel, ConditionPicker } from '@/lib/form-controls';
 import { formatQAR } from '@/lib/utils';
-import { getMLEstimate } from '@/lib/api';
+import { getMLEstimate, createTradeInRequest } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 const STEPS = ['Current vehicle', 'Desired next vehicle', 'Timeline & Submit'];
 const CURRENT_YEAR = new Date().getFullYear();
@@ -28,10 +29,12 @@ type Timeline = 'urgent' | 'flexible' | 'open' | '';
 function TradeInContent() {
   const params = useSearchParams();
   const router = useRouter();
+  const { user, token, loading: authLoading } = useAuth();
 
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Target car context (when coming from /cars/[slug])
   const targetCarId = params.get('target_car_id') ?? '';
@@ -45,6 +48,7 @@ function TradeInContent() {
   const [curModel, setCurModel] = useState(params.get('class_name') ?? '');
   const [curYear, setCurYear] = useState(params.get('year') ?? '');
   const [curCity, setCurCity] = useState(params.get('city') ?? 'Doha');
+  const [curCondition, setCurCondition] = useState('good');
 
   // Snap incoming km string to nearest bucket
   const snapKm = (raw: string | null): number | null => {
@@ -81,6 +85,14 @@ function TradeInContent() {
       .finally(() => setEstimateLoading(false));
   }, [curMake, curModel, curYear, curKm, curCity]);
 
+  // Auth guard: redirect to login when the user reaches the final step without being signed in
+  useEffect(() => {
+    if (!authLoading && !user && step === 2) {
+      const dest = `/trade-in?${params.toString()}`;
+      router.push(`/login?redirect=${encodeURIComponent(dest)}`);
+    }
+  }, [authLoading, user, step, params, router]);
+
   // Step 2: timeline
   const [timeline, setTimeline] = useState<Timeline>('');
   const [notes, setNotes] = useState('');
@@ -104,24 +116,43 @@ function TradeInContent() {
   }
   function goBack() { setError(''); setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const err = validateStep();
     if (err) { setError(err); return; }
-    const sp = new URLSearchParams({
-      make: curMake, class_name: curModel, year: curYear, km: curKm != null ? String(curKm) : '', city: curCity,
-      intent: 'trade_in', timeline, lead_type: 'trade_in',
-      ...(targetCarId && { target_car_id: targetCarId }),
-      ...(targetCarName && { target_car_name: targetCarName }),
-      ...(targetPriceRaw && { target_price: targetPriceRaw }),
-      ...(targetDealer && { target_dealer: targetDealer }),
-      ...(tgtMake && { target_make: tgtMake }),
-      ...(tgtModel && { target_model: tgtModel }),
-      ...(tgtYear && { target_year: tgtYear }),
-      ...(tgtPrice && { target_price: tgtPrice }),
-      ...(notes && { notes }),
-    });
-    router.push(`/submit-offer?${sp}`);
-    setSubmitted(true);
+    if (!token) {
+      const dest = `/trade-in?${params.toString()}`;
+      router.push(`/login?redirect=${encodeURIComponent(dest)}`);
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    try {
+      const desiredVehicle = [tgtYear, tgtMake, tgtModel].filter(Boolean).join(' ') || undefined;
+      const notesLines = [
+        timeline ? `Timeline: ${timeline}` : '',
+        notes,
+      ].filter(Boolean).join('\n');
+      await createTradeInRequest({
+        make: curMake,
+        class_name: curModel,
+        year: parseInt(curYear),
+        km: curKm!,
+        city: curCity,
+        condition: curCondition,
+        desired_vehicle: desiredVehicle,
+        target_budget_qar: tgtPriceNum || undefined,
+        target_car_id: targetCarId || undefined,
+        target_car_name: targetCarName || undefined,
+        target_price_qar: targetPriceNum || undefined,
+        notes: notesLines || undefined,
+      }, token);
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Submission failed. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const tgtPriceNum = parseInt(tgtPrice.replace(/,/g, '')) || 0;
@@ -224,6 +255,10 @@ function TradeInContent() {
                     {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Condition</label>
+                  <ConditionPicker value={curCondition} onChange={setCurCondition} />
+                </div>
               </div>
             </div>
             <PriceGuidanceCard make={curMake} class_name={curModel} year={curYear} km={curKm != null ? String(curKm) : ''} city={curCity} />
@@ -233,6 +268,28 @@ function TradeInContent() {
         {/* STEP 1: Desired next vehicle */}
         {step === 1 && (
           <div className="space-y-5">
+
+            {/* Current car value summary card */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Your Current Vehicle</p>
+              <p className="text-base font-black text-gray-900 mb-3">{curYear} {curMake} {curModel} · {curKm != null ? kmLabel(curKm) : ''}</p>
+              <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                <p className="text-xs font-bold text-green-700 uppercase tracking-wide mb-1">Current Car Trade-in Value</p>
+                {estimateLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-green-700">
+                    <span className="w-4 h-4 border-2 border-green-400/40 border-t-green-600 rounded-full animate-spin" />
+                    Calculating…
+                  </div>
+                ) : tradeEstimate ? (
+                  <p className="text-2xl font-black text-green-800">
+                    {formatQAR(tradeEstimate[0])} – {formatQAR(tradeEstimate[1])}
+                  </p>
+                ) : (
+                  <p className="text-sm text-green-700">—</p>
+                )}
+              </div>
+            </div>
+
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <h2 className="font-bold text-gray-900 mb-1 text-base">🎯 What Car Do You Want Next?</h2>
               <p className="text-xs text-gray-500 mb-4">Optional — helps dealers match you to the right deal.</p>
@@ -263,42 +320,50 @@ function TradeInContent() {
               </div>
             </div>
 
-            {/* Estimated difference — uses real ML estimate */}
-            {tgtPriceNum > 0 && (
-              <div className="bg-[#f0f4ff] rounded-xl border border-[#003087]/15 p-4">
-                <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-1">Estimated Difference to Pay</p>
-                {estimateLoading ? (
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span className="w-4 h-4 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
-                    Calculating…
-                  </div>
-                ) : tradeEstimate ? (
-                  <>
-                    <p className="text-sm text-gray-600">
-                      After your trade-in, you&apos;d need approximately{' '}
-                      <span className="font-bold text-[#003087]">
+            {/* Estimated difference — always shown once ML estimate is available */}
+            <div className="bg-[#f0f4ff] rounded-xl border border-[#003087]/15 p-4">
+              <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-2">Estimated Difference</p>
+              {estimateLoading ? (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <span className="w-4 h-4 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+                  Calculating…
+                </div>
+              ) : tradeEstimate ? (
+                <>
+                  {tgtPriceNum > 0 ? (
+                    <>
+                      <p className="text-2xl font-black text-[#003087] mb-1">
                         {(() => {
-                          const mid = (tradeEstimate[0] + tradeEstimate[1]) / 2;
-                          const diff = Math.max(0, tgtPriceNum - mid);
-                          return `${formatQAR(Math.round(diff * 0.95))} – ${formatQAR(Math.round(diff * 1.05))}`;
+                          const diffLow  = Math.max(0, Math.round((tgtPriceNum - tradeEstimate[1]) / 1000) * 1000);
+                          const diffHigh = Math.max(0, Math.round((tgtPriceNum - tradeEstimate[0]) / 1000) * 1000);
+                          return diffLow === 0 && diffHigh === 0
+                            ? 'Your trade-in may fully cover the cost'
+                            : `${formatQAR(diffLow)} – ${formatQAR(diffHigh)}`;
                         })()}
-                      </span>
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Amount you&apos;d likely need to add toward your next car.
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-600">
+                      Enter a target price above to see your estimated upgrade cost.
                     </p>
-                    <p className="text-xs text-gray-400 mt-2">
-                      Est. trade-in value:{' '}
-                      <span className="font-semibold">{formatQAR(tradeEstimate[0])} – {formatQAR(tradeEstimate[1])}</span>
-                    </p>
-                  </>
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    Complete your current car details to see the estimated difference.
+                  )}
+                  <p className="text-xs text-gray-400 mt-2">
+                    Est. trade-in value:{' '}
+                    <span className="font-semibold">{formatQAR(tradeEstimate[0])} – {formatQAR(tradeEstimate[1])}</span>
                   </p>
-                )}
-                <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                  <Info size={11} /> Based on ML price estimate. Actual depends on dealer inspection.
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  Complete your current car details to see the estimated difference.
                 </p>
-              </div>
-            )}
+              )}
+              <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                <Info size={11} /> Based on ML price estimate. Actual depends on dealer inspection.
+              </p>
+            </div>
           </div>
         )}
 
@@ -327,12 +392,27 @@ function TradeInContent() {
               <div className="text-sm text-gray-700 space-y-0.5">
                 <p><span className="text-gray-400">Current car:</span> {curYear} {curMake} {curModel}</p>
                 <p><span className="text-gray-400">Mileage:</span> {curKm != null ? kmLabel(curKm) : '—'}</p>
+                <p><span className="text-gray-400">Condition:</span> <span className="capitalize">{curCondition}</span></p>
+                {tradeEstimate && (
+                  <p><span className="text-gray-400">Est. trade-in value:</span> <span className="font-semibold text-green-700">{formatQAR(tradeEstimate[0])} – {formatQAR(tradeEstimate[1])}</span></p>
+                )}
                 {tgtMake && <p><span className="text-gray-400">Looking for:</span> {tgtYear} {tgtMake} {tgtModel}</p>}
+                {tgtPriceNum > 0 && tradeEstimate && (
+                  <p>
+                    <span className="text-gray-400">Est. difference:</span>{' '}
+                    <span className="font-semibold text-[#003087]">
+                      {formatQAR(Math.max(0, Math.round((tgtPriceNum - tradeEstimate[1]) / 1000) * 1000))} – {formatQAR(Math.max(0, Math.round((tgtPriceNum - tradeEstimate[0]) / 1000) * 1000))}
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
-            <button type="button" onClick={handleSubmit}
-              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl text-base transition-all shadow-md">
-              <RefreshCw size={18} /> Find Matching Dealers
+            <button type="button" onClick={handleSubmit} disabled={submitting}
+              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-bold py-4 rounded-xl text-base transition-all shadow-md">
+              {submitting
+                ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting…</>
+                : <><RefreshCw size={18} /> Find Matching Dealers</>
+              }
             </button>
             <p className="text-center text-xs text-gray-400">Your details are only shared with dealers who respond.</p>
           </div>
