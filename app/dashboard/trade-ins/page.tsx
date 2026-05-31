@@ -11,12 +11,13 @@ import { getDealerTradeIns, TradeInRequest } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
-  new:       { label: 'New',        badgeClass: 'bg-blue-100 text-blue-700' },
-  reviewing: { label: 'Reviewing',  badgeClass: 'bg-yellow-100 text-yellow-700' },
-  proposed:  { label: 'Proposed',   badgeClass: 'bg-purple-100 text-purple-700' },
-  accepted:  { label: 'Accepted',   badgeClass: 'bg-green-100 text-green-700' },
-  rejected:  { label: 'Rejected',   badgeClass: 'bg-red-100 text-red-700' },
-  closed:    { label: 'Closed',     badgeClass: 'bg-gray-100 text-gray-500' },
+  open:         { label: 'Open',          badgeClass: 'bg-blue-100 text-blue-700' },
+  under_review: { label: 'Under Review',  badgeClass: 'bg-yellow-100 text-yellow-700' },
+  offer_made:   { label: 'Offer Sent',    badgeClass: 'bg-purple-100 text-purple-700' },
+  accepted:     { label: 'Accepted',      badgeClass: 'bg-green-100 text-green-700' },
+  rejected:     { label: 'Declined',      badgeClass: 'bg-red-100 text-red-700' },
+  expired:      { label: 'Expired',       badgeClass: 'bg-gray-100 text-gray-400' },
+  cancelled:    { label: 'Cancelled',     badgeClass: 'bg-gray-100 text-gray-400' },
 };
 
 function TradeInCard({ req }: { req: TradeInRequest }) {
@@ -51,26 +52,20 @@ function TradeInCard({ req }: { req: TradeInRequest }) {
       </div>
 
       {/* Estimates */}
-      {(req.estimate_low_qar || req.estimate_high_qar) && (
+      {req.market_est_qar && (
         <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-gray-50">
           <div>
-            <p className="text-xs text-gray-400 font-medium">Est. Trade-in Value</p>
-            <p className="text-sm font-bold text-gray-800">
-              {req.estimate_low_qar && req.estimate_high_qar
-                ? `${formatQAR(req.estimate_low_qar)} – ${formatQAR(req.estimate_high_qar)}`
-                : req.estimate_low_qar ? formatQAR(req.estimate_low_qar)
-                : req.estimate_high_qar ? formatQAR(req.estimate_high_qar)
-                : '—'}
-            </p>
+            <p className="text-xs text-gray-400 font-medium">Est. Market Value</p>
+            <p className="text-sm font-bold text-gray-800">{formatQAR(req.market_est_qar)}</p>
           </div>
-          <div>
-            <p className="text-xs text-gray-400 font-medium">Est. Difference</p>
-            <p className="text-sm font-bold text-[#ff6600]">
-              {req.difference_low_qar && req.difference_high_qar
-                ? `${formatQAR(req.difference_low_qar)} – ${formatQAR(req.difference_high_qar)}`
-                : '—'}
-            </p>
-          </div>
+          {req.target_price_qar && req.market_est_qar < req.target_price_qar && (
+            <div>
+              <p className="text-xs text-gray-400 font-medium">Gap to Target</p>
+              <p className="text-sm font-bold text-[#ff6600]">
+                {formatQAR(req.target_price_qar - req.market_est_qar)}
+              </p>
+            </div>
+          )}
         </div>
       )}
 

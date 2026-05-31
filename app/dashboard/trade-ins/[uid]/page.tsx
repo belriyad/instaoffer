@@ -15,12 +15,13 @@ import { getTradeInDetail, submitTradeInProposal, declineTradeIn, TradeInRequest
 import { formatQAR, formatDate } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
-  new:       { label: 'New',        badgeClass: 'bg-blue-100 text-blue-700' },
-  reviewing: { label: 'Reviewing',  badgeClass: 'bg-yellow-100 text-yellow-700' },
-  proposed:  { label: 'Proposed',   badgeClass: 'bg-purple-100 text-purple-700' },
-  accepted:  { label: 'Accepted',   badgeClass: 'bg-green-100 text-green-700' },
-  rejected:  { label: 'Rejected',   badgeClass: 'bg-red-100 text-red-700' },
-  closed:    { label: 'Closed',     badgeClass: 'bg-gray-100 text-gray-500' },
+  open:         { label: 'Open',          badgeClass: 'bg-blue-100 text-blue-700' },
+  under_review: { label: 'Under Review',  badgeClass: 'bg-yellow-100 text-yellow-700' },
+  offer_made:   { label: 'Offer Sent',    badgeClass: 'bg-purple-100 text-purple-700' },
+  accepted:     { label: 'Accepted',      badgeClass: 'bg-green-100 text-green-700' },
+  rejected:     { label: 'Declined',      badgeClass: 'bg-red-100 text-red-700' },
+  expired:      { label: 'Expired',       badgeClass: 'bg-gray-100 text-gray-400' },
+  cancelled:    { label: 'Cancelled',     badgeClass: 'bg-gray-100 text-gray-400' },
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -89,8 +90,7 @@ export default function TradeInDetailPage() {
     try {
       // Build transparent breakdown message
       const packagePrice = Math.max(0, newCarNum - offerNum);
-      const mktMid = req.estimate_low_qar && req.estimate_high_qar
-        ? Math.round((req.estimate_low_qar + req.estimate_high_qar) / 2) : null;
+      const mktMid = req.market_est_qar ?? null;
       const mktPackage = mktMid ? Math.max(0, newCarNum - mktMid) : null;
       const lines = [
         `📦 Package Deal Proposal`,
@@ -165,18 +165,17 @@ export default function TradeInDetailPage() {
   const tradeInRequired = req.notes?.includes('REQUIRED') ?? false;
   const tradeInOptional = req.notes?.includes('Optional') ?? false;
 
-  const diffLow = req.difference_low_qar ?? (req.target_price_qar && req.estimate_high_qar
-    ? Math.max(0, req.target_price_qar - req.estimate_high_qar) : null);
-  const diffHigh = req.difference_high_qar ?? (req.target_price_qar && req.estimate_low_qar
-    ? Math.max(0, req.target_price_qar - req.estimate_low_qar) : null);
+  const diffLow = req.target_price_qar && req.market_est_qar
+    ? Math.max(0, req.target_price_qar - req.market_est_qar) : null;
+  const diffHigh = diffLow;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
       <Navbar />
       <div className="max-w-3xl mx-auto w-full px-4 py-8 flex-1">
-        <Link href="/dashboard/trade-ins"
+        <Link href="/dashboard"
           className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#003087] mb-6 transition-colors">
-          <ChevronLeft size={16} /> Trade-in Requests
+          <ChevronLeft size={16} /> Dashboard
         </Link>
 
         {/* Header */}
@@ -239,17 +238,13 @@ export default function TradeInDetailPage() {
             <div className="bg-blue-50 rounded-xl p-4">
               <p className="text-xs text-blue-600 font-bold uppercase tracking-wide mb-1">Est. Trade-in Value</p>
               <p className="text-lg font-black text-gray-900">
-                {req.estimate_low_qar && req.estimate_high_qar
-                  ? `${formatQAR(req.estimate_low_qar)} – ${formatQAR(req.estimate_high_qar)}`
-                  : '—'}
+                {req.market_est_qar ? formatQAR(req.market_est_qar) : '—'}
               </p>
             </div>
             <div className="bg-orange-50 rounded-xl p-4">
-              <p className="text-xs text-orange-600 font-bold uppercase tracking-wide mb-1">Est. Difference</p>
+              <p className="text-xs text-orange-600 font-bold uppercase tracking-wide mb-1">Est. Gap to Target</p>
               <p className="text-lg font-black text-gray-900">
-                {diffLow != null && diffHigh != null
-                  ? `${formatQAR(diffLow)} – ${formatQAR(diffHigh)}`
-                  : '—'}
+                {diffLow != null ? formatQAR(diffLow) : '—'}
               </p>
             </div>
           </div>
@@ -369,8 +364,7 @@ export default function TradeInDetailPage() {
               const offerNum   = parseFloat(tradeInOffer.replace(/[^0-9.]/g, '')) || 0;
               const newCarNum  = parseFloat(newCarPrice.replace(/[^0-9.]/g, ''))  || req.target_price_qar || 0;
               const pkgPrice   = offerNum > 0 && newCarNum > 0 ? Math.max(0, newCarNum - offerNum) : null;
-              const mktMid     = req.estimate_low_qar && req.estimate_high_qar
-                ? Math.round((req.estimate_low_qar + req.estimate_high_qar) / 2) : null;
+              const mktMid     = req.market_est_qar ?? null;
               const mktPkg     = mktMid && newCarNum > 0 ? Math.max(0, newCarNum - mktMid) : null;
               const saving     = pkgPrice != null && mktPkg != null ? mktPkg - pkgPrice : null;
 
@@ -460,9 +454,7 @@ export default function TradeInDetailPage() {
                           <div className="flex items-center justify-between text-xs text-gray-500">
                             <span>Market trade-in value (est.)</span>
                             <span className="font-semibold text-gray-800">
-                              {req.estimate_low_qar && req.estimate_high_qar
-                                ? `${formatQAR(req.estimate_low_qar)} – ${formatQAR(req.estimate_high_qar)}`
-                                : `~${formatQAR(mktMid)}`}
+                              {mktMid ? formatQAR(mktMid) : '—'}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs text-gray-500">
