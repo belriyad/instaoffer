@@ -213,7 +213,7 @@ export default function CarDetailPage() {
                 <span className="text-xs font-normal opacity-75">Ask about this vehicle</span>
               </button>
               <Link
-                href={`/trade-in?target_car_id=${car.car_id}&target_name=${encodeURIComponent(`${car.year} ${car.make} ${car.model}`)}&target_price=${trimPrice ?? ''}&target_dealer=${encodeURIComponent(car.dealer ?? '')}`}
+                href={`/trade-in?target_car_id=${car.car_id}&target_slug=${car.slug}&target_name=${encodeURIComponent(`${car.year} ${car.make} ${car.model}`)}&target_price=${trimPrice ?? ''}&target_dealer=${encodeURIComponent(car.dealer ?? '')}`}
                 className="flex flex-col items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-3.5 rounded-2xl text-sm transition-colors text-center"
               >
                 <RefreshCw size={18} />

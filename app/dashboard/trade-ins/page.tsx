@@ -82,15 +82,20 @@ function TradeInCard({ req }: { req: TradeInRequest }) {
       <div className="flex gap-2 mt-3">
         <Link
           href={`/dashboard/trade-ins/${req.uid}`}
-          className="flex items-center gap-1.5 bg-[#003087] hover:bg-[#002070] text-white font-bold px-3 py-2 rounded-xl text-xs transition-colors flex-1 justify-center"
+          className="flex items-center gap-1.5 bg-white border border-gray-200 hover:border-[#003087] text-gray-700 hover:text-[#003087] font-bold px-3 py-2 rounded-xl text-xs transition-colors flex-1 justify-center"
         >
           <Eye size={13} /> View Details
         </Link>
-        <button
-          className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-2 rounded-xl text-xs transition-colors flex-1 justify-center"
+        <Link
+          href={`/dashboard/trade-ins/${req.uid}#proposal`}
+          className={`flex items-center gap-1.5 font-bold px-3 py-2 rounded-xl text-xs transition-colors flex-1 justify-center ${
+            ['accepted', 'rejected', 'closed'].includes(req.status)
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none'
+              : 'bg-green-600 hover:bg-green-700 text-white'
+          }`}
         >
           <Send size={13} /> Send Proposal
-        </button>
+        </Link>
       </div>
     </div>
   );

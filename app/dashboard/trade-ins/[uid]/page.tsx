@@ -57,6 +57,13 @@ export default function TradeInDetailPage() {
   const [proposalError, setProposalError] = useState<string | null>(null);
   const [declining, setDeclining] = useState(false);
 
+  // Auto-open proposal form if navigated here via #proposal hash (from list "Send Proposal" button)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#proposal') {
+      setProposalOpen(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (!loading && !user) router.push('/login/dealer');
   }, [user, loading, router]);
