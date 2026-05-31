@@ -558,6 +558,118 @@ export async function changePassword(
   }, token);
 }
 
+// ─── Wakalat (Dealer New Car Inventory) ───────────────────────────────────────
+
+export interface WakalatFilterOptions {
+  makes: string[];
+  models: string[];
+  years: number[];
+  body_types: string[];
+  dealers: string[];
+  transmissions: string[];
+  fuel_types: string[];
+  drivetrains: string[];
+  price_range: { min: number; max: number };
+}
+
+export interface WakalatCarSummary {
+  id: number;
+  slug: string;
+  car_id: string;
+  make: string;
+  model: string;
+  year: number;
+  dealer: string;
+  base_price_qar: number | null;
+  body_type: string;
+  fuel_type: string;
+  transmission: string;
+  drivetrain: string;
+  engine: string;
+  horsepower_hp: string;
+  /** API path e.g. /api/wakalat/images/cars/119.jpg — pass through imgProxyUrl() */
+  thumbnail: string | null;
+  image_count: number;
+}
+
+export interface WakalatTrim {
+  name: string;
+  price_qar: number | null;
+  features: string[];
+}
+
+export interface WakalatImage {
+  url: string;
+  type: 'thumbnail' | 'card' | 'detail';
+}
+
+export interface WakalatCarDetail extends WakalatCarSummary {
+  displacement_cc: string;
+  torque_nm: string;
+  accel_0_100_s: string;
+  top_speed_kmh: string;
+  fuel_consumption_l100: string;
+  tank_l: string;
+  battery_kwh: string;
+  dimensions_mm: string;
+  features_json: string[];
+  image_urls_json: string[];
+  trims: WakalatTrim[];
+  images: WakalatImage[];
+}
+
+export interface WakalatCarList {
+  total: number;
+  page: number;
+  per_page: number;
+  pages: number;
+  cars: WakalatCarSummary[];
+}
+
+export interface WakalatFilters {
+  make?: string;
+  model?: string;
+  dealer?: string;
+  body_type?: string;
+  fuel_type?: string;
+  transmission?: string;
+  drivetrain?: string;
+  year_min?: number;
+  year_max?: number;
+  price_min?: number;
+  price_max?: number;
+  q?: string;
+  has_image?: 0 | 1;
+  sort?: 'price_asc' | 'price_desc' | 'year_desc' | 'year_asc' | 'make_asc';
+  page?: number;
+  per_page?: number;
+}
+
+/** Resolve a wakalat thumbnail path to a full proxied URL */
+export function wakalatImgUrl(apiPath: string | null): string {
+  if (!apiPath) return '';
+  // apiPath is already an /api/... path — strip leading /api if present so we don't double-prefix
+  const clean = apiPath.replace(/^\/api\//, '/');
+  return `${BASE_URL}${clean}`;
+}
+
+export async function getWakalatFilters(): Promise<WakalatFilterOptions> {
+  return apiFetch('/wakalat/filters');
+}
+
+export async function getWakalatCars(filters: WakalatFilters = {}): Promise<WakalatCarList> {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([k, v]) => {
+    if (v !== undefined && v !== '') params.set(k, String(v));
+  });
+  const qs = params.toString();
+  return apiFetch(`/wakalat/cars${qs ? `?${qs}` : ''}`);
+}
+
+export async function getWakalatCar(slug: string): Promise<{ car: WakalatCarDetail }> {
+  return apiFetch(`/wakalat/cars/${slug}`);
+}
+
 // ─── Listings ─────────────────────────────────────────────────────────────────
 
 export interface ListingCreate {
@@ -981,120 +1093,6 @@ export async function getDealerLeads(
       .map(([k, v]) => [k, String(v)])
   ).toString();
   return apiFetch(`/dealer/leads${qs}`, {}, token);
-}
-
-// ─── Wakalat — Dealer new-car inventory ──────────────────────────────────────
-
-export interface WakalatFilterOptions {
-  makes: string[];
-  models: string[];
-  dealers: string[];
-  body_types: string[];
-  transmissions: string[];
-  fuel_types: string[];
-  drivetrains: string[];
-  price_range: { min: number; max: number };
-}
-
-export interface WakalatImage {
-  url: string;
-  type: 'thumbnail' | 'card' | 'detail';
-}
-
-export interface WakalatTrim {
-  name: string;
-  price_qar: number | null;
-  features: string[];
-}
-
-export interface WakalatCarSummary {
-  id: number;
-  slug: string;
-  car_id: string;
-  make: string;
-  model: string;
-  year: number;
-  dealer: string;
-  base_price_qar: number | null;
-  body_type: string;
-  fuel_type: string;
-  transmission: string;
-  drivetrain: string;
-  engine: string;
-  horsepower_hp: string;
-  thumbnail: string | null;
-  image_count: number;
-}
-
-export interface WakalatCarDetail extends WakalatCarSummary {
-  displacement_cc: string;
-  torque_nm: string;
-  accel_0_100_s: string;
-  top_speed_kmh: string;
-  fuel_consumption_l100: string;
-  tank_l: string;
-  battery_kwh: string;
-  dimensions_mm: string;
-  features_json: string[];
-  image_urls_json: string[];
-  trims: WakalatTrim[];
-  images: WakalatImage[];
-}
-
-export interface WakalatCarList {
-  total: number;
-  page: number;
-  per_page: number;
-  pages: number;
-  cars: WakalatCarSummary[];
-}
-
-export interface WakalatCarsParams {
-  make?: string;
-  model?: string;
-  dealer?: string;
-  body_type?: string;
-  fuel_type?: string;
-  transmission?: string;
-  drivetrain?: string;
-  year_min?: number;
-  year_max?: number;
-  price_min?: number;
-  price_max?: number;
-  q?: string;
-  has_image?: 0 | 1;
-  sort?: 'price_asc' | 'price_desc' | 'year_desc' | 'year_asc' | 'make_asc';
-  page?: number;
-  per_page?: number;
-}
-
-export function wakalatImageUrl(path: string): string {
-  if (!path) return '';
-  // path is already an API URL like /api/wakalat/images/cars/119.jpg
-  if (path.startsWith('/api/')) {
-    const relative = path.replace('/api/', '/');
-    return `${BASE_URL}${relative}`;
-  }
-  return `${BASE_URL}/wakalat/images/${path}`;
-}
-
-export async function getWakalatFilters(): Promise<WakalatFilterOptions> {
-  return apiFetch<WakalatFilterOptions>('/wakalat/filters');
-}
-
-export async function getWakalatCars(params?: WakalatCarsParams): Promise<WakalatCarList> {
-  const qs = params
-    ? '?' + new URLSearchParams(
-        Object.entries(params)
-          .filter(([, v]) => v !== undefined && v !== '')
-          .map(([k, v]) => [k, String(v)])
-      ).toString()
-    : '';
-  return apiFetch<WakalatCarList>(`/wakalat/cars${qs}`);
-}
-
-export async function getWakalatCar(slug: string): Promise<{ car: WakalatCarDetail }> {
-  return apiFetch<{ car: WakalatCarDetail }>(`/wakalat/cars/${slug}`);
 }
 
 // ─── ML Time-to-Sell ─────────────────────────────────────────────────────────

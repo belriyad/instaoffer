@@ -1,32 +1,34 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, SlidersHorizontal, MapPin, Fuel, Car, X,
-  ExternalLink, ChevronDown, ChevronUp, Zap, AlertCircle,
+  Search, SlidersHorizontal, Car, X,
+  ChevronDown, ChevronUp, ChevronLeft, ChevronRight as ChevronRightIcon,
+  AlertCircle, Fuel, Settings2, MapPin,
 } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { getListings, Listing, imgProxyUrl } from '@/lib/api';
-import { formatQAR, formatKM, CAR_MAKES } from '@/lib/utils';
+import {
+  getWakalatCars, getWakalatFilters,
+  WakalatCarSummary, WakalatFilters, WakalatFilterOptions,
+  wakalatImgUrl,
+} from '@/lib/api';
+import { formatQAR } from '@/lib/utils';
 
 const SORT_OPTIONS = [
-  { value: 'price_asc',   label: 'Price: Low → High' },
-  { value: 'price_desc',  label: 'Price: High → Low' },
-  { value: 'year_desc',   label: 'Newest First' },
-  { value: 'km_asc',      label: 'Lowest KM' },
-  { value: 'created_desc', label: 'Recently Added' },
+  { value: 'price_asc',  label: 'Price: Low → High' },
+  { value: 'price_desc', label: 'Price: High → Low' },
+  { value: 'year_desc',  label: 'Newest First' },
+  { value: 'year_asc',   label: 'Oldest First' },
+  { value: 'make_asc',   label: 'Make A → Z' },
 ];
 
-const YEAR_MIN = 2000;
-const YEAR_MAX = new Date().getFullYear() + 1;
-
-function CarCard({ car }: { car: Listing }) {
+function CarCard({ car }: { car: WakalatCarSummary }) {
   const [imgErr, setImgErr] = useState(false);
-  const thumb = car.main_image_url && !imgErr ? imgProxyUrl(car.main_image_url) : null;
+  const thumb = car.thumbnail && !imgErr ? wakalatImgUrl(car.thumbnail) : null;
 
   return (
     <motion.div
@@ -36,51 +38,55 @@ function CarCard({ car }: { car: Listing }) {
       exit={{ opacity: 0, scale: 0.97 }}
       className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden group"
     >
-      {/* Image */}
       <div className="aspect-[16/10] bg-gray-100 relative overflow-hidden">
         {thumb ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={thumb}
-            alt={car.title}
-            onError={() => setImgErr(true)}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          <img src={thumb} alt={`${car.make} ${car.model}`} onError={() => setImgErr(true)}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Car size={40} className="text-gray-300" />
+          <div className="w-full h-full flex flex-col items-center justify-center gap-1">
+            <Car size={36} className="text-gray-300" />
+            <span className="text-xs text-gray-300">No image</span>
           </div>
         )}
-        {car.seller_type === 'dealer' && (
-          <span className="absolute top-2 left-2 bg-[#003087] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-            Dealer
+        {car.year && (
+          <span className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            {car.year}
           </span>
         )}
       </div>
-
-      {/* Info */}
       <div className="p-4">
-        <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-1">
-          {car.title}
-        </h3>
-
-        <div className="flex items-center gap-3 text-xs text-gray-400 mt-2 flex-wrap">
-          {car.manufacture_year && <span>{car.manufacture_year}</span>}
-          {car.km != null && <span>{formatKM(car.km)}</span>}
-          {car.city && (
-            <span className="flex items-center gap-0.5">
-              <MapPin size={11} /> {car.city}
+        <p className="text-xs font-semibold text-[#003087] uppercase tracking-wide mb-0.5">{car.make}</p>
+        <h3 className="font-bold text-gray-900 text-sm leading-snug">{car.model}</h3>
+        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+          {car.body_type && (
+            <span className="flex items-center gap-1 text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
+              <Car size={10} /> {car.body_type.replace(' Cars', '')}
+            </span>
+          )}
+          {car.fuel_type && (
+            <span className="flex items-center gap-1 text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
+              <Fuel size={10} /> {car.fuel_type}
+            </span>
+          )}
+          {car.transmission && (
+            <span className="flex items-center gap-1 text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
+              <Settings2 size={10} /> {car.transmission}
             </span>
           )}
         </div>
-
+        {car.dealer && (
+          <p className="text-xs text-gray-400 mt-2 flex items-center gap-1 truncate">
+            <MapPin size={11} /> {car.dealer}
+          </p>
+        )}
         <div className="flex items-center justify-between mt-3">
-          <span className="text-[#003087] font-black text-base">{formatQAR(car.price_qar)}</span>
-          <Link
-            href={`/listings/${car.product_id}`}
-            className="flex items-center gap-1 text-xs font-semibold text-[#ff6600] hover:text-[#e05a00] transition-colors"
-          >
-            View <ExternalLink size={11} />
+          {car.base_price_qar
+            ? <span className="text-[#003087] font-black text-base">{formatQAR(car.base_price_qar)}</span>
+            : <span className="text-gray-400 text-sm italic">Price on request</span>}
+          <Link href={`/listings/${car.slug}`}
+            className="text-xs font-bold text-white bg-[#003087] hover:bg-[#002570] px-3 py-1.5 rounded-lg transition-colors">
+            Details
           </Link>
         </div>
       </div>
@@ -101,99 +107,89 @@ export default function BrowseCarsPage() {
 }
 
 function BrowseCarsInner() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Filter state — initialise from URL params
-  const [search,    setSearch]    = useState(searchParams.get('search') || '');
-  const [make,      setMake]      = useState(searchParams.get('make') || '');
-  const [minYear,   setMinYear]   = useState(searchParams.get('min_year') || '');
-  const [maxYear,   setMaxYear]   = useState(searchParams.get('max_year') || '');
-  const [minPrice,  setMinPrice]  = useState(searchParams.get('min_price') || '');
-  const [maxPrice,  setMaxPrice]  = useState(searchParams.get('max_price') || '');
-  const [city,      setCity]      = useState(searchParams.get('city') || '');
-  const [fuelType,  setFuelType]  = useState(searchParams.get('fuel_type') || '');
-  const [gearType,  setGearType]  = useState(searchParams.get('gear_type') || '');
-  const [sellerType, setSellerType] = useState(searchParams.get('seller_type') || '');
-  const [sort,      setSort]      = useState(searchParams.get('sort') || 'created_desc');
-  const [dealsOnly, setDealsOnly] = useState(searchParams.get('deals_only') === '1');
+  const [q,            setQ]            = useState(searchParams.get('q') || '');
+  const [make,         setMake]         = useState(searchParams.get('make') || '');
+  const [bodyType,     setBodyType]     = useState(searchParams.get('body_type') || '');
+  const [fuelType,     setFuelType]     = useState(searchParams.get('fuel_type') || '');
+  const [transmission, setTransmission] = useState(searchParams.get('transmission') || '');
+  const [dealer,       setDealer]       = useState(searchParams.get('dealer') || '');
+  const [minPrice,     setMinPrice]     = useState(searchParams.get('price_min') || '');
+  const [maxPrice,     setMaxPrice]     = useState(searchParams.get('price_max') || '');
+  const [minYear,      setMinYear]      = useState(searchParams.get('year_min') || '');
+  const [maxYear,      setMaxYear]      = useState(searchParams.get('year_max') || '');
+  const [sort, setSort] = useState<WakalatFilters['sort']>((searchParams.get('sort') as WakalatFilters['sort']) || 'price_asc');
+  const [page, setPage] = useState(1);
 
-  const [cars,       setCars]       = useState<Listing[]>([]);
-  const [makes,      setMakes]      = useState<string[]>([]);
-  const [cities,     setCities]     = useState<string[]>([]);
+  const [cars,       setCars]       = useState<WakalatCarSummary[]>([]);
+  const [total,      setTotal]      = useState(0);
+  const [pages,      setPages]      = useState(1);
+  const [filterOpts, setFilterOpts] = useState<WakalatFilterOptions | null>(null);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const activeFilterCount = [make, minYear, maxYear, minPrice, maxPrice, city, fuelType, gearType, sellerType, dealsOnly ? '1' : ''].filter(Boolean).length;
+  const PER_PAGE = 24;
+  const activeFilterCount = [make, bodyType, fuelType, transmission, dealer, minPrice, maxPrice, minYear, maxYear].filter(Boolean).length;
 
-  const fetchCars = useCallback(async () => {
-    setLoading(true);
-    setError('');
+  useEffect(() => { getWakalatFilters().then(setFilterOpts).catch(() => {}); }, []);
+
+  const fetchCars = useCallback(async (p = 1) => {
+    setLoading(true); setError('');
     try {
-      const res = await getListings({
-        search:    search    || undefined,
-        make:      make      || undefined,
-        city:      city      || undefined,
-        sort:      sort      || undefined,
-        fuel_type: fuelType  || undefined,
-        gear_type: gearType  || undefined,
-        seller_type: sellerType || undefined,
-        min_year:  minYear   ? Number(minYear)  : undefined,
-        max_year:  maxYear   ? Number(maxYear)  : undefined,
-        min_price: minPrice  ? Number(minPrice) : undefined,
-        max_price: maxPrice  ? Number(maxPrice) : undefined,
-        deals_only: dealsOnly ? '1' : '0',
-        limit: 120,
+      const res = await getWakalatCars({
+        q:            q            || undefined,
+        make:         make         || undefined,
+        body_type:    bodyType     || undefined,
+        fuel_type:    fuelType     || undefined,
+        transmission: transmission || undefined,
+        dealer:       dealer       || undefined,
+        price_min:    minPrice  ? Number(minPrice) : undefined,
+        price_max:    maxPrice  ? Number(maxPrice) : undefined,
+        year_min:     minYear   ? Number(minYear)  : undefined,
+        year_max:     maxYear   ? Number(maxYear)  : undefined,
+        sort, page: p, per_page: PER_PAGE,
       });
-      setCars(res.rows || []);
-      if (res.makes?.length)  setMakes(res.makes);
-      if (res.cities?.length) setCities(res.cities);
+      setCars(res.cars || []);
+      setTotal(res.total || 0);
+      setPages(res.pages || 1);
+      setPage(p);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load listings');
+      setError(e instanceof Error ? e.message : 'Failed to load cars');
     } finally {
       setLoading(false);
     }
-  }, [search, make, city, sort, minYear, maxYear, minPrice, maxPrice, dealsOnly, fuelType, gearType, sellerType]);
+  }, [q, make, bodyType, fuelType, transmission, dealer, minPrice, maxPrice, minYear, maxYear, sort]);
 
-  useEffect(() => { fetchCars(); }, [fetchCars]);
+  useEffect(() => { fetchCars(1); }, [fetchCars]);
 
   function clearFilters() {
-    setMake(''); setMinYear(''); setMaxYear('');
-    setMinPrice(''); setMaxPrice(''); setCity('');
-    setFuelType(''); setGearType(''); setSellerType(''); setDealsOnly(false);
+    setMake(''); setBodyType(''); setFuelType(''); setTransmission('');
+    setDealer(''); setMinPrice(''); setMaxPrice(''); setMinYear(''); setMaxYear('');
   }
 
-  const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] bg-white';
-  const selectCls = inputCls + ' appearance-none';
+  const selectCls = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] appearance-none bg-white';
+  const inputCls  = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]';
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      {/* Hero strip */}
       <div className="bg-[#003087] text-white py-8">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-2xl md:text-3xl font-black mb-1">Browse Cars</h1>
-          <p className="text-blue-200 text-sm">Dealer inventory across Qatar — find your next car</p>
-
-          {/* Main search bar */}
+          <h1 className="text-2xl md:text-3xl font-black mb-0.5">New Cars</h1>
+          <p className="text-blue-200 text-sm">Brand-new dealer inventory across Qatar</p>
           <div className="mt-5 flex gap-2 max-w-2xl">
             <div className="relative flex-1">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && fetchCars()}
-                placeholder="Search by make, model, title…"
-                className="w-full pl-9 pr-4 py-3 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ff6600]"
-              />
+              <input type="text" value={q} onChange={e => setQ(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && fetchCars(1)}
+                placeholder="Search make, model, dealer…"
+                className="w-full pl-9 pr-4 py-3 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ff6600]" />
             </div>
-            <button
-              onClick={fetchCars}
-              className="bg-[#ff6600] hover:bg-[#e05a00] text-white text-sm font-bold px-5 rounded-xl transition-colors"
-            >
+            <button onClick={() => fetchCars(1)}
+              className="bg-[#ff6600] hover:bg-[#e05a00] text-white text-sm font-bold px-5 rounded-xl transition-colors">
               Search
             </button>
           </div>
@@ -202,43 +198,21 @@ function BrowseCarsInner() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
 
-        {/* Filter bar */}
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Sort */}
-            <div className="relative">
-              <select value={sort} onChange={e => setSort(e.target.value)}
-                className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]">
-                {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-
-            {/* Make quick filter */}
-            <div className="relative">
-              <select value={make} onChange={e => setMake(e.target.value)}
-                className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]">
-                <option value="">All Makes</option>
-                {(makes.length ? makes : CAR_MAKES).map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
-
-            {/* Deals toggle */}
-            <button
-              onClick={() => setDealsOnly(v => !v)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold border transition-colors ${
-                dealsOnly ? 'bg-[#ff6600] text-white border-[#ff6600]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#003087]'
-              }`}
-            >
-              <Zap size={13} /> Good Deals Only
-            </button>
-
-            {/* Advanced filters toggle */}
-            <button
-              onClick={() => setFiltersOpen(v => !v)}
+            <select value={sort} onChange={e => setSort(e.target.value as WakalatFilters['sort'])}
+              className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#003087]/20">
+              {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <select value={make} onChange={e => setMake(e.target.value)}
+              className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#003087]/20">
+              <option value="">All Makes</option>
+              {(filterOpts?.makes || []).map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <button onClick={() => setFiltersOpen(v => !v)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold border transition-colors relative ${
                 filtersOpen ? 'bg-[#003087] text-white border-[#003087]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#003087]'
-              }`}
-            >
+              }`}>
               <SlidersHorizontal size={13} /> Filters
               {activeFilterCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#ff6600] text-white text-[9px] font-black rounded-full flex items-center justify-center">
@@ -247,92 +221,84 @@ function BrowseCarsInner() {
               )}
               {filtersOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
             </button>
-
             {activeFilterCount > 0 && (
               <button onClick={clearFilters} className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors">
-                <X size={12} /> Clear filters
+                <X size={12} /> Clear
               </button>
             )}
           </div>
-
           <span className="text-sm text-gray-400">
-            {loading ? 'Loading…' : `${cars.length} car${cars.length !== 1 ? 's' : ''} found`}
+            {loading ? 'Loading…' : `${total.toLocaleString()} car${total !== 1 ? 's' : ''}`}
           </span>
         </div>
 
-        {/* Expanded filter panel */}
         <AnimatePresence>
           {filtersOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden mb-4"
-            >
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-4">
               <div className="bg-white rounded-2xl border border-gray-100 p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">City</label>
-                  <select value={city} onChange={e => setCity(e.target.value)} className={selectCls}>
-                    <option value="">All Cities</option>
-                    {(cities.length ? cities : ['Doha','Al Rayyan','Al Wakrah','Lusail','Al Khor']).map(c => <option key={c} value={c}>{c}</option>)}
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Body Type</label>
+                  <select value={bodyType} onChange={e => setBodyType(e.target.value)} className={selectCls}>
+                    <option value="">Any</option>
+                    {(filterOpts?.body_types || []).map(b => <option key={b} value={b}>{b.replace(' Cars', '')}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Fuel Type</label>
                   <select value={fuelType} onChange={e => setFuelType(e.target.value)} className={selectCls}>
                     <option value="">Any</option>
-                    {['Petrol','Diesel','Hybrid','Electric'].map(f => <option key={f} value={f}>{f}</option>)}
+                    {(filterOpts?.fuel_types || ['Petrol','Diesel','Hybrid','Electric']).map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Transmission</label>
-                  <select value={gearType} onChange={e => setGearType(e.target.value)} className={selectCls}>
+                  <select value={transmission} onChange={e => setTransmission(e.target.value)} className={selectCls}>
                     <option value="">Any</option>
-                    {['Automatic','Manual'].map(g => <option key={g} value={g}>{g}</option>)}
+                    {(filterOpts?.transmissions || ['Automatic','Manual']).map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Seller Type</label>
-                  <select value={sellerType} onChange={e => setSellerType(e.target.value)} className={selectCls}>
-                    <option value="">Any</option>
-                    {['individual','dealer','company'].map(s => <option key={s} value={s} className="capitalize">{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Dealer</label>
+                  <select value={dealer} onChange={e => setDealer(e.target.value)} className={selectCls}>
+                    <option value="">All Dealers</option>
+                    {(filterOpts?.dealers || []).map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Min Year</label>
-                  <input type="number" value={minYear} onChange={e => setMinYear(e.target.value)} min={YEAR_MIN} max={YEAR_MAX} placeholder={String(YEAR_MIN)} className={inputCls} />
+                  <input type="number" value={minYear} onChange={e => setMinYear(e.target.value)} placeholder="2024" className={inputCls} />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Max Year</label>
-                  <input type="number" value={maxYear} onChange={e => setMaxYear(e.target.value)} min={YEAR_MIN} max={YEAR_MAX} placeholder={String(YEAR_MAX)} className={inputCls} />
+                  <input type="number" value={maxYear} onChange={e => setMaxYear(e.target.value)} placeholder="2026" className={inputCls} />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Min Price (QAR)</label>
-                  <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="0" min={0} className={inputCls} />
+                  <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="0" className={inputCls} />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Max Price (QAR)</label>
-                  <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Any" min={0} className={inputCls} />
+                  <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Any" className={inputCls} />
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Error */}
         {error && (
           <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 px-4 py-3 rounded-xl mb-4 border border-red-100">
             <AlertCircle size={16} /> {error}
           </div>
         )}
 
-        {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
                 <div className="aspect-[16/10] bg-gray-200" />
                 <div className="p-4 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                  <div className="h-3 bg-gray-100 rounded w-1/3" />
+                  <div className="h-4 bg-gray-200 rounded w-2/3" />
                   <div className="h-5 bg-gray-200 rounded w-1/3 mt-3" />
                 </div>
               </div>
@@ -348,11 +314,29 @@ function BrowseCarsInner() {
             </button>
           </div>
         ) : (
-          <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <AnimatePresence mode="popLayout">
-              {cars.map(car => <CarCard key={car.product_id} car={car} />)}
-            </AnimatePresence>
-          </motion.div>
+          <>
+            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <AnimatePresence mode="popLayout">
+                {cars.map(car => <CarCard key={car.id} car={car} />)}
+              </AnimatePresence>
+            </motion.div>
+
+            {pages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8">
+                <button onClick={() => fetchCars(page - 1)} disabled={page <= 1}
+                  className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 hover:border-[#003087] disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="text-sm text-gray-600 px-3">
+                  Page <strong>{page}</strong> of <strong>{pages}</strong>
+                </span>
+                <button onClick={() => fetchCars(page + 1)} disabled={page >= pages}
+                  className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 hover:border-[#003087] disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                  <ChevronRightIcon size={16} />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
