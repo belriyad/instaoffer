@@ -1240,7 +1240,11 @@ export async function getDealerTradeIns(
 }
 
 export async function getTradeInDetail(uid: string, token: string): Promise<TradeInRequest> {
-  return apiFetch<TradeInRequest>(`/trade-in/requests/${uid}`, {}, token);
+  // No single-item GET endpoint — fetch the list and find by uid
+  const { rows } = await apiFetch<{ rows: TradeInRequest[]; total: number }>('/trade-in/requests?limit=200', {}, token);
+  const found = rows.find(r => (r.trade_in_uid ?? r.uid) === uid || String(r.id) === uid);
+  if (!found) throw new Error('Trade-in request not found');
+  return found;
 }
 
 export async function cancelTradeInRequest(uid: string, token: string): Promise<{ ok: boolean; request: TradeInRequest }> {
