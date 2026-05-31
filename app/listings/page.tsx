@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, SlidersHorizontal, Car, X,
   ChevronDown, ChevronUp, ChevronLeft, ChevronRight as ChevronRightIcon,
-  AlertCircle, Fuel, Settings2, MapPin,
+  AlertCircle, Fuel, Settings2, MapPin, Bike, Ship,
 } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -17,6 +17,49 @@ import {
   wakalatImgUrl,
 } from '@/lib/api';
 import { formatQAR } from '@/lib/utils';
+
+type TabId = 'cars' | 'motorcycles' | 'watercrafts';
+
+const VEHICLE_TABS: { id: TabId; label: string; icon: React.ElementType; keywords: string[]; emptyLabel: string }[] = [
+  {
+    id: 'cars',
+    label: 'Cars',
+    icon: Car,
+    keywords: ['car', 'suv', 'sedan', 'coupe', 'pickup', 'van', 'truck', 'hatchback', 'crossover', 'wagon', 'convertible', 'sport', 'luxury'],
+    emptyLabel: 'No cars found',
+  },
+  {
+    id: 'motorcycles',
+    label: 'Motorcycles',
+    icon: Bike,
+    keywords: ['motorcycle', 'bike', 'scooter', 'moped', 'motorbike', 'quad', 'atv'],
+    emptyLabel: 'No motorcycles found',
+  },
+  {
+    id: 'watercrafts',
+    label: 'Watercrafts',
+    icon: Ship,
+    keywords: ['boat', 'watercraft', 'jet ski', 'yacht', 'marine', 'vessel', 'speedboat', 'dinghy', 'pontoon'],
+    emptyLabel: 'No watercrafts found',
+  },
+];
+
+/** Returns body_type values from the filter list that match the given tab */
+function bodyTypesForTab(allBodyTypes: string[], tab: TabId): string[] {
+  if (!allBodyTypes.length) return [];
+  const t = VEHICLE_TABS.find(v => v.id === tab)!;
+  if (tab === 'cars') {
+    // Cars tab = anything NOT exclusively motorcycle/watercraft
+    const otherKeywords = VEHICLE_TABS
+      .filter(v => v.id !== 'cars')
+      .flatMap(v => v.keywords);
+    return allBodyTypes.filter(bt => {
+      const lower = bt.toLowerCase();
+      return !otherKeywords.some(k => lower.includes(k));
+    });
+  }
+  return allBodyTypes.filter(bt => t.keywords.some(k => bt.toLowerCase().includes(k)));
+}
 
 const SORT_OPTIONS = [
   { value: 'price_asc',  label: 'Price: Low → High' },
@@ -108,6 +151,9 @@ export default function BrowseCarsPage() {
 
 function BrowseCarsInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [activeTab, setActiveTab] = useState<TabId>((searchParams.get('tab') as TabId) || 'cars');
 
   const [q,            setQ]            = useState(searchParams.get('q') || '');
   const [make,         setMake]         = useState(searchParams.get('make') || '');
@@ -133,15 +179,22 @@ function BrowseCarsInner() {
   const PER_PAGE = 24;
   const activeFilterCount = [make, bodyType, fuelType, transmission, dealer, minPrice, maxPrice, minYear, maxYear].filter(Boolean).length;
 
+  // Body types filtered to current tab
+  const tabBodyTypes = filterOpts?.body_types ? bodyTypesForTab(filterOpts.body_types, activeTab) : [];
+
+  // Tab-level body_type constraint (comma-separated) sent to API when no specific body_type chosen
+  const tabBodyTypeConstraint = tabBodyTypes.length ? tabBodyTypes.join(',') : undefined;
+
   useEffect(() => { getWakalatFilters().then(setFilterOpts).catch(() => {}); }, []);
 
   const fetchCars = useCallback(async (p = 1) => {
     setLoading(true); setError('');
     try {
+      const effectiveBodyType = bodyType || tabBodyTypeConstraint;
       const res = await getWakalatCars({
         q:            q            || undefined,
         make:         make         || undefined,
-        body_type:    bodyType     || undefined,
+        body_type:    effectiveBodyType,
         fuel_type:    fuelType     || undefined,
         transmission: transmission || undefined,
         dealer:       dealer       || undefined,
@@ -156,18 +209,28 @@ function BrowseCarsInner() {
       setPages(res.pages || 1);
       setPage(p);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load cars');
+      setError(e instanceof Error ? e.message : 'Failed to load');
     } finally {
       setLoading(false);
     }
-  }, [q, make, bodyType, fuelType, transmission, dealer, minPrice, maxPrice, minYear, maxYear, sort]);
+  }, [q, make, bodyType, tabBodyTypeConstraint, fuelType, transmission, dealer, minPrice, maxPrice, minYear, maxYear, sort]);
 
   useEffect(() => { fetchCars(1); }, [fetchCars]);
+
+  function switchTab(tab: TabId) {
+    setActiveTab(tab);
+    clearFilters();
+    setPage(1);
+    router.replace(`/listings?tab=${tab}`, { scroll: false });
+  }
 
   function clearFilters() {
     setMake(''); setBodyType(''); setFuelType(''); setTransmission('');
     setDealer(''); setMinPrice(''); setMaxPrice(''); setMinYear(''); setMaxYear('');
   }
+
+  const currentTab = VEHICLE_TABS.find(t => t.id === activeTab)!;
+  const TabIcon = currentTab.icon;
 
   const selectCls = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] appearance-none bg-white';
   const inputCls  = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]';
@@ -176,9 +239,9 @@ function BrowseCarsInner() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="bg-[#003087] text-white py-8">
+      <div className="bg-[#003087] text-white pt-8 pb-0">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-2xl md:text-3xl font-black mb-0.5">New Cars</h1>
+          <h1 className="text-2xl md:text-3xl font-black mb-0.5">New Vehicle Inventory</h1>
           <p className="text-blue-200 text-sm">Brand-new dealer inventory across Qatar</p>
           <div className="mt-5 flex gap-2 max-w-2xl">
             <div className="relative flex-1">
@@ -192,6 +255,28 @@ function BrowseCarsInner() {
               className="bg-[#ff6600] hover:bg-[#e05a00] text-white text-sm font-bold px-5 rounded-xl transition-colors">
               Search
             </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1 mt-6">
+            {VEHICLE_TABS.map(tab => {
+              const Icon = tab.icon;
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => switchTab(tab.id)}
+                  className={`flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-t-xl transition-colors border-b-2 ${
+                    active
+                      ? 'bg-white text-[#003087] border-b-white'
+                      : 'text-blue-200 hover:text-white border-b-transparent hover:border-b-blue-300'
+                  }`}
+                >
+                  <Icon size={15} />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -228,7 +313,7 @@ function BrowseCarsInner() {
             )}
           </div>
           <span className="text-sm text-gray-400">
-            {loading ? 'Loading…' : `${total.toLocaleString()} car${total !== 1 ? 's' : ''}`}
+            {loading ? 'Loading…' : `${total.toLocaleString()} result${total !== 1 ? 's' : ''}`}
           </span>
         </div>
 
@@ -236,13 +321,15 @@ function BrowseCarsInner() {
           {filtersOpen && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-4">
               <div className="bg-white rounded-2xl border border-gray-100 p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Body Type</label>
-                  <select value={bodyType} onChange={e => setBodyType(e.target.value)} className={selectCls}>
-                    <option value="">Any</option>
-                    {(filterOpts?.body_types || []).map(b => <option key={b} value={b}>{b.replace(' Cars', '')}</option>)}
-                  </select>
-                </div>
+                {tabBodyTypes.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Body Type</label>
+                    <select value={bodyType} onChange={e => setBodyType(e.target.value)} className={selectCls}>
+                      <option value="">Any</option>
+                      {tabBodyTypes.map(b => <option key={b} value={b}>{b.replace(' Cars', '')}</option>)}
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Fuel Type</label>
                   <select value={fuelType} onChange={e => setFuelType(e.target.value)} className={selectCls}>
@@ -306,12 +393,14 @@ function BrowseCarsInner() {
           </div>
         ) : cars.length === 0 ? (
           <div className="text-center py-24">
-            <Car size={48} className="text-gray-200 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-gray-400">No cars found</h3>
+            <TabIcon size={48} className="text-gray-200 mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-gray-400">{currentTab.emptyLabel}</h3>
             <p className="text-sm text-gray-400 mt-1">Try adjusting your filters or search term.</p>
-            <button onClick={clearFilters} className="mt-4 px-5 py-2 bg-[#003087] text-white text-sm font-semibold rounded-xl hover:bg-[#002570] transition-colors">
-              Clear Filters
-            </button>
+            {activeFilterCount > 0 && (
+              <button onClick={clearFilters} className="mt-4 px-5 py-2 bg-[#003087] text-white text-sm font-semibold rounded-xl hover:bg-[#002570] transition-colors">
+                Clear Filters
+              </button>
+            )}
           </div>
         ) : (
           <>
