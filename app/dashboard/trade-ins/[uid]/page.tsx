@@ -5,7 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ChevronLeft, RefreshCw, Car, Clock, AlertCircle,
-  MapPin, Gauge, Phone, FileText, Send, CheckCircle2, X
+  MapPin, Gauge, Phone, FileText, Send, CheckCircle2, X,
+  TrendingDown, TrendingUp, Package, Info, ArrowRight,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -51,7 +52,8 @@ export default function TradeInDetailPage() {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [proposalOpen, setProposalOpen] = useState(false);
   const [proposalNote, setProposalNote] = useState('');
-  const [proposalPrice, setProposalPrice] = useState('');
+  const [tradeInOffer, setTradeInOffer] = useState('');     // what dealer offers for customer's car
+  const [newCarPrice,  setNewCarPrice]  = useState('');     // price of new car (pre-filled from target)
   const [submitting, setSubmitting] = useState(false);
   const [proposalSent, setProposalSent] = useState(false);
   const [proposalError, setProposalError] = useState<string | null>(null);
@@ -79,12 +81,27 @@ export default function TradeInDetailPage() {
 
   async function handleSendProposal() {
     if (!token || !req) return;
-    const offer = parseFloat(proposalPrice.replace(/[^0-9.]/g, ''));
-    if (!offer || offer <= 0) { setProposalError('Enter a valid offer amount'); return; }
+    const offerNum     = parseFloat(tradeInOffer.replace(/[^0-9.]/g, ''));
+    const newCarNum    = parseFloat(newCarPrice.replace(/[^0-9.]/g, '')) || req.target_price_qar || 0;
+    if (!offerNum || offerNum <= 0) { setProposalError('Enter a valid trade-in offer amount'); return; }
     setSubmitting(true);
     setProposalError(null);
     try {
-      await submitTradeInProposal(uid, { offer_qar: offer, message: proposalNote || undefined }, token);
+      // Build transparent breakdown message
+      const packagePrice = Math.max(0, newCarNum - offerNum);
+      const mktMid = req.estimate_low_qar && req.estimate_high_qar
+        ? Math.round((req.estimate_low_qar + req.estimate_high_qar) / 2) : null;
+      const mktPackage = mktMid ? Math.max(0, newCarNum - mktMid) : null;
+      const lines = [
+        `📦 Package Deal Proposal`,
+        `• Trade-in offer for your vehicle: QAR ${offerNum.toLocaleString()}`,
+        `• New vehicle price (${req.target_car_name ?? 'target car'}): QAR ${newCarNum.toLocaleString()}`,
+        `• You pay (package price): QAR ${packagePrice.toLocaleString()}`,
+        mktMid ? `• Market value of your car: ~QAR ${mktMid.toLocaleString()}` : null,
+        mktPackage != null ? `• At market rate, you'd pay: ~QAR ${mktPackage.toLocaleString()}` : null,
+        proposalNote ? `\nMessage: ${proposalNote}` : null,
+      ].filter(Boolean).join('\n');
+      await submitTradeInProposal(uid, { offer_qar: offerNum, message: lines }, token);
       setProposalSent(true);
       setProposalOpen(false);
     } catch (err) {
@@ -317,7 +334,11 @@ export default function TradeInDetailPage() {
             {!proposalOpen ? (
               <div className="flex gap-3">
                 <button
-                  onClick={() => setProposalOpen(true)}
+                  onClick={() => {
+                    setProposalOpen(true);
+                    // Pre-fill new car price from request target
+                    if (req.target_price_qar && !newCarPrice) setNewCarPrice(String(req.target_price_qar));
+                  }}
                   disabled={['accepted', 'rejected', 'closed'].includes(req.status)}
                   className="flex items-center gap-2 bg-[#003087] hover:bg-[#002070] text-white font-bold px-5 py-3 rounded-xl text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
@@ -334,53 +355,170 @@ export default function TradeInDetailPage() {
                   Decline
                 </button>
               </div>
-            ) : (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Offer for trade-in (QAR)</label>
-                  <input
-                    type="number"
-                    value={proposalPrice}
-                    onChange={e => setProposalPrice(e.target.value)}
-                    placeholder="e.g. 160000"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Message to buyer (optional)</label>
-                  <textarea
-                    value={proposalNote}
-                    onChange={e => setProposalNote(e.target.value)}
-                    rows={3}
-                    placeholder="e.g. We can offer QAR 160,000 for your car toward the Land Cruiser..."
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087] resize-none"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleSendProposal}
-                    disabled={submitting || !proposalPrice}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {submitting
-                      ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                      : <Send size={14} />}
-                    {submitting ? 'Sending…' : 'Send Proposal'}
-                  </button>
-                  <button
-                    onClick={() => { setProposalOpen(false); setProposalError(null); }}
-                    className="text-sm text-gray-500 hover:text-gray-700 font-semibold px-4 py-2.5 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                {proposalError && (
-                  <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
-                    <AlertCircle size={12} /> {proposalError}
+            ) : (() => {
+              // Live package calculation
+              const offerNum   = parseFloat(tradeInOffer.replace(/[^0-9.]/g, '')) || 0;
+              const newCarNum  = parseFloat(newCarPrice.replace(/[^0-9.]/g, ''))  || req.target_price_qar || 0;
+              const pkgPrice   = offerNum > 0 && newCarNum > 0 ? Math.max(0, newCarNum - offerNum) : null;
+              const mktMid     = req.estimate_low_qar && req.estimate_high_qar
+                ? Math.round((req.estimate_low_qar + req.estimate_high_qar) / 2) : null;
+              const mktPkg     = mktMid && newCarNum > 0 ? Math.max(0, newCarNum - mktMid) : null;
+              const saving     = pkgPrice != null && mktPkg != null ? mktPkg - pkgPrice : null;
+
+              return (
+                <div className="space-y-4" id="proposal">
+                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <Info size={12} /> Fill in the package deal details so the buyer can see exactly what they are getting.
                   </p>
-                )}
-              </div>
-            )}
+
+                  {/* ── Input fields ── */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                        Your offer for their car (QAR) *
+                      </label>
+                      <input
+                        type="number"
+                        value={tradeInOffer}
+                        onChange={e => setTradeInOffer(e.target.value)}
+                        placeholder={mktMid ? `Market ~${Math.round(mktMid / 1000)}k` : 'e.g. 60000'}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
+                      />
+                      {mktMid && offerNum > 0 && (
+                        <p className={`text-xs mt-1 font-semibold ${offerNum >= mktMid ? 'text-green-600' : 'text-orange-500'}`}>
+                          {offerNum >= mktMid
+                            ? `✓ Above market (${formatQAR(mktMid)} mid)`
+                            : `↓ Below market by ${formatQAR(mktMid - offerNum)}`}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                        New car price (QAR)
+                      </label>
+                      <input
+                        type="number"
+                        value={newCarPrice}
+                        onChange={e => setNewCarPrice(e.target.value)}
+                        placeholder={req.target_price_qar ? String(req.target_price_qar) : 'e.g. 280000'}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* ── Live package breakdown ── */}
+                  {(offerNum > 0 || newCarNum > 0) && (
+                    <div className="bg-[#f0f4ff] border border-[#003087]/15 rounded-2xl p-4 space-y-3">
+                      <p className="text-xs font-black text-[#003087] uppercase tracking-wide flex items-center gap-1">
+                        <Package size={13} /> Package Deal Breakdown
+                      </p>
+
+                      {/* Row: new car */}
+                      {newCarNum > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600 flex items-center gap-1.5">
+                            🚗 {req.target_car_name ?? 'New vehicle'}
+                          </span>
+                          <span className="font-bold text-gray-900">{formatQAR(newCarNum)}</span>
+                        </div>
+                      )}
+
+                      {/* Row: trade-in credit */}
+                      {offerNum > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600 flex items-center gap-1.5">
+                            <TrendingDown size={13} className="text-green-600" /> Trade-in credit
+                          </span>
+                          <span className="font-bold text-green-700">− {formatQAR(offerNum)}</span>
+                        </div>
+                      )}
+
+                      {/* Divider + package price */}
+                      {pkgPrice != null && (
+                        <>
+                          <div className="border-t border-[#003087]/15" />
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-black text-gray-900">Buyer pays</span>
+                            <span className="text-xl font-black text-[#003087]">{formatQAR(pkgPrice)}</span>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Market comparison */}
+                      {mktMid && mktPkg != null && pkgPrice != null && (
+                        <div className="bg-white rounded-xl p-3 border border-gray-100 space-y-1.5">
+                          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Market Value Comparison</p>
+                          <div className="flex items-center justify-between text-xs text-gray-500">
+                            <span>Market trade-in value (est.)</span>
+                            <span className="font-semibold text-gray-800">
+                              {req.estimate_low_qar && req.estimate_high_qar
+                                ? `${formatQAR(req.estimate_low_qar)} – ${formatQAR(req.estimate_high_qar)}`
+                                : `~${formatQAR(mktMid)}`}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-gray-500">
+                            <span>If buyer sold at market rate, they&apos;d pay</span>
+                            <span className="font-semibold text-gray-800">~{formatQAR(mktPkg)}</span>
+                          </div>
+                          <div className="flex items-center justify-between border-t pt-1.5 mt-1">
+                            <span className="text-xs font-bold text-gray-700 flex items-center gap-1">
+                              {saving != null && saving > 0
+                                ? <><TrendingUp size={12} className="text-green-600" /> Buyer saves</>
+                                : <><ArrowRight size={12} className="text-orange-500" /> Extra cost vs market</>}
+                            </span>
+                            <span className={`text-sm font-black ${saving != null && saving > 0 ? 'text-green-700' : 'text-orange-600'}`}>
+                              {saving != null ? (saving > 0 ? `${formatQAR(saving)}` : `${formatQAR(-saving)}`) : '—'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                            <Info size={10} /> Market estimate is indicative. Actual value depends on inspection.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── Optional message ── */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                      Message to buyer (optional)
+                    </label>
+                    <textarea
+                      value={proposalNote}
+                      onChange={e => setProposalNote(e.target.value)}
+                      rows={2}
+                      placeholder="e.g. This package includes a full service and 1-year warranty..."
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087] resize-none"
+                    />
+                  </div>
+
+                  {/* ── Submit row ── */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSendProposal}
+                      disabled={submitting || !tradeInOffer}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {submitting
+                        ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        : <Send size={14} />}
+                      {submitting ? 'Sending…' : 'Send Package Proposal'}
+                    </button>
+                    <button
+                      onClick={() => { setProposalOpen(false); setProposalError(null); }}
+                      className="text-sm text-gray-500 hover:text-gray-700 font-semibold px-4 py-2.5 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {proposalError && (
+                    <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
+                      <AlertCircle size={12} /> {proposalError}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>

@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   RefreshCw, ArrowLeft, ChevronRight, ChevronLeft, Info, Clock,
-  TrendingUp, AlertTriangle, CheckCircle2, Car, Tag, Building2,
+  TrendingUp, AlertTriangle, CheckCircle2, Car, Tag, Building2, LogIn, UserPlus,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -92,12 +92,7 @@ function TradeInContent() {
       .finally(() => setEstimateLoading(false));
   }, [curMake, curModel, curYear, curKm, curCity]);
 
-  // Auth guard on final step
-  useEffect(() => {
-    if (!authLoading && !user && step === TIMELINE_STEP) {
-      router.push(`/login?redirect=${encodeURIComponent(`/trade-in?${params.toString()}`)}`);
-    }
-  }, [authLoading, user, step, TIMELINE_STEP, params, router]);
+  // auth guard is now rendered inline — no redirect needed
 
   // Timeline + notes
   const [timeline, setTimeline] = useState<Timeline>('');
@@ -389,7 +384,39 @@ function TradeInContent() {
         )}
 
         {/* ── TIMELINE step ── */}
-        {step === TIMELINE_STEP && (
+        {step === TIMELINE_STEP && !authLoading && !user && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+            <div className="w-14 h-14 bg-[#003087]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <LogIn size={26} className="text-[#003087]" />
+            </div>
+            <h2 className="text-xl font-black text-gray-900 mb-2">Sign in to submit your request</h2>
+            <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
+              Create a free account or sign in to send your trade-in request to the dealer and track its status.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link
+                href={`/login?redirect=${encodeURIComponent(`/trade-in?${params.toString()}`)}`}
+                className="flex items-center justify-center gap-2 bg-[#003087] text-white font-bold py-3 rounded-xl hover:bg-[#002070] transition-colors"
+              >
+                <LogIn size={16} /> Sign In
+              </Link>
+              <Link
+                href={`/login?mode=register&redirect=${encodeURIComponent(`/trade-in?${params.toString()}`)}`}
+                className="flex items-center justify-center gap-2 border-2 border-[#003087] text-[#003087] font-bold py-3 rounded-xl hover:bg-[#003087]/5 transition-colors"
+              >
+                <UserPlus size={16} /> Create Free Account
+              </Link>
+            </div>
+            <button
+              onClick={goBack}
+              className="mt-4 text-sm text-gray-400 hover:text-gray-600 font-semibold"
+            >
+              ← Back to edit
+            </button>
+          </div>
+        )}
+
+        {step === TIMELINE_STEP && (authLoading || user) && (
           <div className="space-y-5">
 
             {/* Summary card */}
@@ -452,6 +479,7 @@ function TradeInContent() {
           </div>
         )}
 
+        {/* Hide nav Continue button when showing auth wall */}
         {/* ── Navigation ── */}
         <div className="flex items-center justify-between mt-6">
           {step > 0
