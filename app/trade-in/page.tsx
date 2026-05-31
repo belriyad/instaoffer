@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   RefreshCw, ArrowLeft, ChevronRight, ChevronLeft, Info, Clock,
   TrendingUp, AlertTriangle, CheckCircle2, Car, Tag, Building2, LogIn, UserPlus,
+  Upload, X, FileCheck, Camera,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -13,12 +14,12 @@ import StepIndicator from '@/components/StepIndicator';
 import PriceGuidanceCard from '@/components/PriceGuidanceCard';
 import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel, ConditionPicker } from '@/lib/form-controls';
 import { formatQAR } from '@/lib/utils';
-import { getMLEstimate, createTradeInRequest } from '@/lib/api';
+import { getMLEstimate, createTradeInRequest, uploadFile } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
-/** When coming with a pre-selected target car we use 2 steps; otherwise 3. */
-const STEPS_WITH_TARGET    = ['Your trade-in car', 'Timeline & Submit'];
-const STEPS_WITHOUT_TARGET = ['Your trade-in car', 'Desired next car', 'Timeline & Submit'];
+/** When coming with a pre-selected target car we use 3 steps; otherwise 4. */
+const STEPS_WITH_TARGET    = ['Your trade-in car', 'Photos & Documents', 'Timeline & Submit'];
+const STEPS_WITHOUT_TARGET = ['Your trade-in car', 'Photos & Documents', 'Desired next car', 'Timeline & Submit'];
 
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 25 }, (_, i) => CURRENT_YEAR - i);
@@ -47,9 +48,9 @@ function TradeInContent() {
 
   const hasTarget = Boolean(targetCarId || targetCarName);
   const STEPS = hasTarget ? STEPS_WITH_TARGET : STEPS_WITHOUT_TARGET;
-  // When hasTarget: step 0 = current vehicle, step 1 = timeline
-  // When !hasTarget: step 0 = current vehicle, step 1 = desired next, step 2 = timeline
-  const TIMELINE_STEP = hasTarget ? 1 : 2;
+  // step 0 = current vehicle, step 1 = photos/docs, step 2 = desired (no target only), last = timeline
+  const EVIDENCE_STEP  = 1;
+  const TIMELINE_STEP  = hasTarget ? 2 : 3;
 
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
@@ -132,11 +133,47 @@ function TradeInContent() {
   const [notes,            setNotes]            = useState('');
   const [tradeInRequired,  setTradeInRequired]  = useState<'required' | 'optional'>('optional');
 
+  // Step 1: evidence uploads
+  type PhotoSlot = { label: string; required: boolean; file: File | null; url: string | null; uploading: boolean; error: string | null };
+  const PHOTO_SLOTS: { key: string; label: string; required: boolean; hint: string }[] = [
+    { key: 'license',   label: 'Car Registration / License',  required: true,  hint: 'Clear photo of both sides' },
+    { key: 'front',     label: 'Front',                       required: true,  hint: 'Straight-on front view' },
+    { key: 'rear',      label: 'Rear',                        required: true,  hint: 'Straight-on rear view' },
+    { key: 'driver',    label: 'Driver Side',                 required: true,  hint: 'Full side profile' },
+    { key: 'passenger', label: 'Passenger Side',              required: true,  hint: 'Full side profile' },
+    { key: 'top',       label: 'Top / Roof',                  required: true,  hint: 'Looking down from above' },
+    { key: 'engine',    label: 'Engine Bay',                  required: true,  hint: 'Hood open, engine visible' },
+    { key: 'interior',  label: 'Interior / Dashboard',        required: false, hint: 'Full interior view' },
+    { key: 'inspection',label: 'Inspection Report',           required: false, hint: 'Optional — any recent report' },
+  ];
+  const initSlots = (): Record<string, PhotoSlot> =>
+    Object.fromEntries(PHOTO_SLOTS.map(s => [s.key, { label: s.label, required: s.required, file: null, url: null, uploading: false, error: null }]));
+  const [photoSlots, setPhotoSlots] = useState<Record<string, PhotoSlot>>(initSlots);
+
+  async function handlePhotoSelect(key: string, file: File) {
+    if (!token) return;
+    setPhotoSlots(prev => ({ ...prev, [key]: { ...prev[key], file, uploading: true, error: null } }));
+    try {
+      const { url } = await uploadFile(file, token);
+      setPhotoSlots(prev => ({ ...prev, [key]: { ...prev[key], uploading: false, url } }));
+    } catch {
+      setPhotoSlots(prev => ({ ...prev, [key]: { ...prev[key], uploading: false, error: 'Upload failed. Try again.' } }));
+    }
+  }
+
+  function removePhoto(key: string) {
+    setPhotoSlots(prev => ({ ...prev, [key]: { ...prev[key], file: null, url: null, error: null } }));
+  }
+
   function validateStep(): string {
     if (step === 0) {
       if (!curMake || !curModel) return 'Please select make and model of your current car.';
       if (!curYear)  return 'Please select the year.';
       if (!curKm)    return 'Please enter the mileage.';
+    }
+    if (step === EVIDENCE_STEP) {
+      const missing = PHOTO_SLOTS.filter(s => s.required && !photoSlots[s.key]?.url);
+      if (missing.length > 0) return `Please upload: ${missing.map(s => s.label).join(', ')}.`;
     }
     if (step === TIMELINE_STEP && !timeline) return 'Please select a timeline.';
     return '';
@@ -165,6 +202,11 @@ function TradeInContent() {
         ? 'Trade-in: REQUIRED (buyer will not proceed without it)'
         : 'Trade-in: Optional (buyer is open to other arrangements)';
       const notesLines = [tradeInLabel, timeline ? `Timeline: ${timeline}` : '', notes].filter(Boolean).join('\n');
+      // collect uploaded photo URLs in order (skip nulls)
+      const photoUrls = PHOTO_SLOTS
+        .map(s => photoSlots[s.key]?.url ? { label: s.label, url: photoSlots[s.key].url! } : null)
+        .filter(Boolean) as { label: string; url: string }[];
+      const photoUrlsJson = photoUrls.length > 0 ? JSON.stringify(photoUrls.map(p => p.url)) : undefined;
       await createTradeInRequest({
         make:              curMake,
         class_name:        curModel,
@@ -177,6 +219,7 @@ function TradeInContent() {
         target_car_id:     targetCarId   || undefined,
         target_car_name:   targetCarName || undefined,
         target_price_qar:  targetPriceNum || undefined,
+        photo_urls_json:   photoUrlsJson,
         notes:             notesLines || undefined,
       }, token);
       setSubmitted(true);
@@ -358,8 +401,89 @@ function TradeInContent() {
           </div>
         )}
 
-        {/* ── STEP 1 (no target): Desired next vehicle ── */}
-        {!hasTarget && step === 1 && (
+        {/* ── STEP 1: Photos & Evidence ── */}
+        {step === EVIDENCE_STEP && (
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex gap-3">
+              <Camera size={18} className="text-blue-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-blue-800 mb-0.5">Upload car evidence</p>
+                <p className="text-xs text-blue-600">Required photos help the dealer assess your trade-in remotely and give you a faster, more accurate offer.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              {PHOTO_SLOTS.map(slot => {
+                const ps = photoSlots[slot.key];
+                return (
+                  <div key={slot.key} className={`bg-white rounded-xl border-2 p-4 transition-all ${ps.url ? 'border-green-400' : slot.required ? 'border-gray-200' : 'border-dashed border-gray-200'}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="text-sm font-bold text-gray-900">{slot.label}</p>
+                          {slot.required
+                            ? <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded">Required</span>
+                            : <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">Optional</span>}
+                        </div>
+                        <p className="text-xs text-gray-400">{slot.hint}</p>
+                        {ps.error && <p className="text-xs text-red-500 mt-1">{ps.error}</p>}
+                      </div>
+
+                      <div className="shrink-0">
+                        {ps.url ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                              <FileCheck size={16} className="text-green-600" />
+                            </div>
+                            <button type="button" onClick={() => removePhoto(slot.key)}
+                              className="w-7 h-7 bg-gray-100 hover:bg-red-100 rounded-lg flex items-center justify-center transition-colors">
+                              <X size={14} className="text-gray-400 hover:text-red-500" />
+                            </button>
+                          </div>
+                        ) : ps.uploading ? (
+                          <div className="w-8 h-8 border-2 border-[#003087]/20 border-t-[#003087] rounded-full animate-spin" />
+                        ) : (
+                          <label className="cursor-pointer flex items-center gap-1.5 bg-[#003087] hover:bg-[#002070] text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors">
+                            <Upload size={13} />
+                            Upload
+                            <input
+                              type="file"
+                              accept="image/*,.pdf"
+                              className="hidden"
+                              onChange={e => {
+                                const f = e.target.files?.[0];
+                                if (f) handlePhotoSelect(slot.key, f);
+                                e.target.value = '';
+                              }}
+                            />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+
+                    {ps.url && (
+                      <div className="mt-2">
+                        {ps.file?.type?.startsWith('image/') || ps.url.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={ps.url} alt={slot.label} className="w-full max-h-32 object-cover rounded-lg border border-green-200" />
+                        ) : (
+                          <p className="text-xs text-green-700 font-medium truncate">✓ {ps.file?.name ?? 'Uploaded'}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1">
+              <Info size={11} /> Photos are only shared with the dealer who responds to your request.
+            </p>
+          </div>
+        )}
+
+        {/* ── STEP 2 (no target): Desired next vehicle ── */}
+        {!hasTarget && step === 2 && (
           <div className="space-y-5">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Your Trade-in</p>
