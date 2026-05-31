@@ -1243,6 +1243,12 @@ export async function getTradeInDetail(uid: string, token: string): Promise<Trad
   return apiFetch<TradeInRequest>(`/trade-in/requests/${uid}`, {}, token);
 }
 
+export async function cancelTradeInRequest(uid: string, token: string): Promise<{ ok: boolean }> {
+  return apiFetch<{ ok: boolean }>(`/trade-in/requests/${uid}/cancel`, {
+    method: 'POST',
+  }, token);
+}
+
 export async function submitTradeInProposal(
   uid: string,
   data: { offer_qar: number; message?: string },
