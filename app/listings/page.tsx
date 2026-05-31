@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -89,6 +89,18 @@ function CarCard({ car }: { car: Listing }) {
 }
 
 export default function BrowseCarsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#003087] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <BrowseCarsInner />
+    </Suspense>
+  );
+}
+
+function BrowseCarsInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
