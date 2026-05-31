@@ -49,7 +49,6 @@ function bodyTypesForTab(allBodyTypes: string[], tab: TabId): string[] {
   if (!allBodyTypes.length) return [];
   const t = VEHICLE_TABS.find(v => v.id === tab)!;
   if (tab === 'cars') {
-    // Cars tab = anything NOT exclusively motorcycle/watercraft
     const otherKeywords = VEHICLE_TABS
       .filter(v => v.id !== 'cars')
       .flatMap(v => v.keywords);
@@ -59,6 +58,19 @@ function bodyTypesForTab(allBodyTypes: string[], tab: TabId): string[] {
     });
   }
   return allBodyTypes.filter(bt => t.keywords.some(k => bt.toLowerCase().includes(k)));
+}
+
+/** Client-side guard: does this car belong to the given tab? */
+function carMatchesTab(bodyType: string | undefined | null, tab: TabId): boolean {
+  if (!bodyType) return tab === 'cars'; // items with no body_type fall under Cars
+  const lower = bodyType.toLowerCase();
+  const motoKeywords = VEHICLE_TABS.find(t => t.id === 'motorcycles')!.keywords;
+  const waterKeywords = VEHICLE_TABS.find(t => t.id === 'watercrafts')!.keywords;
+  const isMoto  = motoKeywords.some(k => lower.includes(k));
+  const isWater = waterKeywords.some(k => lower.includes(k));
+  if (tab === 'motorcycles') return isMoto;
+  if (tab === 'watercrafts') return isWater;
+  return !isMoto && !isWater; // cars tab = everything else
 }
 
 const SORT_OPTIONS = [
@@ -127,7 +139,7 @@ function CarCard({ car }: { car: WakalatCarSummary }) {
           {car.base_price_qar
             ? <span className="text-[#003087] font-black text-base">{formatQAR(car.base_price_qar)}</span>
             : <span className="text-gray-400 text-sm italic">Price on request</span>}
-          <Link href={`/listings/${car.slug}`}
+          <Link href={`/cars/${car.slug}`}
             className="text-xs font-bold text-white bg-[#003087] hover:bg-[#002570] px-3 py-1.5 rounded-lg transition-colors">
             Details
           </Link>
@@ -204,7 +216,7 @@ function BrowseCarsInner() {
         year_max:     maxYear   ? Number(maxYear)  : undefined,
         sort, page: p, per_page: PER_PAGE,
       });
-      setCars(res.cars || []);
+      setCars((res.cars || []).filter(c => carMatchesTab(c.body_type, activeTab)));
       setTotal(res.total || 0);
       setPages(res.pages || 1);
       setPage(p);

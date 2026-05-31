@@ -78,8 +78,8 @@ export default function CarDetailPage() {
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <p className="text-gray-500 font-medium">Car not found</p>
-        <Link href="/cars" className="text-[#003087] font-semibold hover:underline flex items-center gap-1">
-          <ChevronLeft size={16} /> Back to cars
+        <Link href="/listings" className="text-[#003087] font-semibold hover:underline flex items-center gap-1">
+          <ChevronLeft size={16} /> Browse Vehicles
         </Link>
       </div>
     </div>
@@ -114,8 +114,8 @@ export default function CarDetailPage() {
       <Navbar />
       <div className="max-w-5xl mx-auto w-full px-4 py-6 flex-1">
         {/* Back */}
-        <Link href="/cars" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] font-medium mb-5 transition-colors">
-          <ChevronLeft size={16} /> All Cars
+        <Link href="/listings" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] font-medium mb-5 transition-colors">
+          <ChevronLeft size={16} /> Browse Vehicles
         </Link>
 
         <div className="grid md:grid-cols-2 gap-8">
