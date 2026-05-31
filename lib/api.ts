@@ -653,6 +653,12 @@ export function wakalatImgUrl(apiPath: string | null): string {
   return `${BASE_URL}${clean}`;
 }
 
+/** @deprecated Use wakalatImgUrl instead */
+export const wakalatImageUrl = wakalatImgUrl;
+
+/** @deprecated Use WakalatFilters instead */
+export type WakalatCarsParams = WakalatFilters;
+
 export async function getWakalatFilters(): Promise<WakalatFilterOptions> {
   return apiFetch('/wakalat/filters');
 }
