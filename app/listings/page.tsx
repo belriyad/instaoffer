@@ -112,6 +112,9 @@ function BrowseCarsInner() {
   const [minPrice,  setMinPrice]  = useState(searchParams.get('min_price') || '');
   const [maxPrice,  setMaxPrice]  = useState(searchParams.get('max_price') || '');
   const [city,      setCity]      = useState(searchParams.get('city') || '');
+  const [fuelType,  setFuelType]  = useState(searchParams.get('fuel_type') || '');
+  const [gearType,  setGearType]  = useState(searchParams.get('gear_type') || '');
+  const [sellerType, setSellerType] = useState(searchParams.get('seller_type') || '');
   const [sort,      setSort]      = useState(searchParams.get('sort') || 'created_desc');
   const [dealsOnly, setDealsOnly] = useState(searchParams.get('deals_only') === '1');
 
@@ -122,7 +125,7 @@ function BrowseCarsInner() {
   const [error,      setError]      = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const activeFilterCount = [make, minYear, maxYear, minPrice, maxPrice, city, dealsOnly ? '1' : ''].filter(Boolean).length;
+  const activeFilterCount = [make, minYear, maxYear, minPrice, maxPrice, city, fuelType, gearType, sellerType, dealsOnly ? '1' : ''].filter(Boolean).length;
 
   const fetchCars = useCallback(async () => {
     setLoading(true);
@@ -133,6 +136,9 @@ function BrowseCarsInner() {
         make:      make      || undefined,
         city:      city      || undefined,
         sort:      sort      || undefined,
+        fuel_type: fuelType  || undefined,
+        gear_type: gearType  || undefined,
+        seller_type: sellerType || undefined,
         min_year:  minYear   ? Number(minYear)  : undefined,
         max_year:  maxYear   ? Number(maxYear)  : undefined,
         min_price: minPrice  ? Number(minPrice) : undefined,
@@ -148,13 +154,14 @@ function BrowseCarsInner() {
     } finally {
       setLoading(false);
     }
-  }, [search, make, city, sort, minYear, maxYear, minPrice, maxPrice, dealsOnly]);
+  }, [search, make, city, sort, minYear, maxYear, minPrice, maxPrice, dealsOnly, fuelType, gearType, sellerType]);
 
   useEffect(() => { fetchCars(); }, [fetchCars]);
 
   function clearFilters() {
     setMake(''); setMinYear(''); setMaxYear('');
-    setMinPrice(''); setMaxPrice(''); setCity(''); setDealsOnly(false);
+    setMinPrice(''); setMaxPrice(''); setCity('');
+    setFuelType(''); setGearType(''); setSellerType(''); setDealsOnly(false);
   }
 
   const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] bg-white';
@@ -260,12 +267,33 @@ function BrowseCarsInner() {
               initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden mb-4"
             >
-              <div className="bg-white rounded-2xl border border-gray-100 p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              <div className="bg-white rounded-2xl border border-gray-100 p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">City</label>
                   <select value={city} onChange={e => setCity(e.target.value)} className={selectCls}>
                     <option value="">All Cities</option>
                     {(cities.length ? cities : ['Doha','Al Rayyan','Al Wakrah','Lusail','Al Khor']).map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Fuel Type</label>
+                  <select value={fuelType} onChange={e => setFuelType(e.target.value)} className={selectCls}>
+                    <option value="">Any</option>
+                    {['Petrol','Diesel','Hybrid','Electric'].map(f => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Transmission</label>
+                  <select value={gearType} onChange={e => setGearType(e.target.value)} className={selectCls}>
+                    <option value="">Any</option>
+                    {['Automatic','Manual'].map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Seller Type</label>
+                  <select value={sellerType} onChange={e => setSellerType(e.target.value)} className={selectCls}>
+                    <option value="">Any</option>
+                    {['individual','dealer','company'].map(s => <option key={s} value={s} className="capitalize">{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}
                   </select>
                 </div>
                 <div>

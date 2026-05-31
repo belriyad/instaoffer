@@ -110,6 +110,17 @@ export interface MLEstimate {
   model_version: string;
   r2: number;
   mape: number;
+  // New: which estimator produced this response
+  pricing_model?: 'taxonomy' | 'classifier' | 'consensus';
+  // Consensus-mode fields (when pricing_model=consensus)
+  consensus_status?: 'agree' | 'diverged';
+  taxonomy_estimated_price_qar?: number;
+  classifier_estimated_price_qar?: number;
+  estimate_gap_qar?: number;
+  // Classifier-mode fields (when pricing_model=classifier)
+  bucket_index?: number;
+  bucket_label?: string;
+  bucket_probability?: number;
 }
 
 export interface ValuationParams {
@@ -126,6 +137,8 @@ export interface ValuationParams {
   city?: string;
   seller_type?: string;
   condition?: string;
+  /** Select the estimator backend. Defaults to taxonomy. */
+  pricing_model?: 'taxonomy' | 'classifier' | 'consensus';
 }
 
 export async function getMLEstimate(params: ValuationParams, token?: string): Promise<MLEstimate> {
@@ -599,6 +612,7 @@ export interface ListingsFilters {
   city?: string;
   sort?: string;
   limit?: number;
+  offset?: number;
   min_year?: number;
   max_year?: number;
   min_price?: number;
@@ -606,6 +620,18 @@ export interface ListingsFilters {
   min_km?: number;
   max_km?: number;
   deals_only?: '0' | '1';
+  /** Filter by urgency flag. 1=urgent only, 0=non-urgent only */
+  is_urgent?: '0' | '1';
+  /** Minimum urgency score 0-100 */
+  min_urgency_score?: number;
+  /** Filter by seller type: individual, dealer, company */
+  seller_type?: string;
+  /** Filter by fuel type: Petrol, Diesel, Hybrid, Electric */
+  fuel_type?: string;
+  /** Filter by transmission: Automatic, Manual */
+  gear_type?: string;
+  /** Filter by trim level */
+  trim?: string;
 }
 
 export interface ListingsResponse {

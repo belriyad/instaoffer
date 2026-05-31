@@ -386,6 +386,34 @@ paths:
           name: max_peer_count
           schema: { type: integer }
         - in: query
+          name: is_urgent
+          schema: { type: string, enum: ["0", "1"] }
+          description: Filter by urgency flag. 1=urgent only, 0=non-urgent only.
+        - in: query
+          name: min_urgency_score
+          schema: { type: integer, minimum: 0, maximum: 100 }
+          description: Minimum urgency score (0-100).
+        - in: query
+          name: seller_type
+          schema: { type: string }
+          description: Filter by seller type (individual, dealer, company).
+        - in: query
+          name: fuel_type
+          schema: { type: string }
+          description: Filter by fuel type (Petrol, Diesel, Hybrid, Electric).
+        - in: query
+          name: gear_type
+          schema: { type: string }
+          description: Filter by transmission (Automatic, Manual).
+        - in: query
+          name: trim
+          schema: { type: string }
+          description: Filter by trim level.
+        - in: query
+          name: offset
+          schema: { type: integer, minimum: 0, default: 0 }
+          description: Pagination offset for results.
+        - in: query
           name: include_unapproved
           schema: { type: string, enum: ["0", "1"], default: "0" }
           description: Admin only. Include listings with is_approved=false.
@@ -400,7 +428,7 @@ paths:
             Approval filter.
             `1` = approved only (public default),
             `0` = unapproved only (admin),
-            `any` = all listings regardless of approval (admin).
+            `any` = all listings regardless of approval.
       responses:
         "200":
           description: Listing search result
@@ -1030,10 +1058,12 @@ paths:
   /ml/estimate:
     get:
       tags: [MLValuation]
-      summary: ML-powered car price estimate (model v6 — LightGBM + Optuna)
+      summary: ML-powered car price estimate (taxonomy default, classifier optional)
       description: |
-        Returns a price estimate using a segmented LightGBM model tuned with Optuna
-        (budget ≤120k QAR / premium >120k QAR).
+        Returns a price estimate using the current taxonomy-routed regression
+        model by default. Set `pricing_model=classifier` to use the legacy
+        bucket-classifier estimator and derive the estimate from bucket
+        probabilities.
 
         **For best accuracy supply all fields marked required plus as many optional
         fields as known.** The model handles missing values internally but accuracy
@@ -1125,6 +1155,11 @@ paths:
           name: seller_type
           required: false
           schema: { type: string, enum: [dealer, private] }
+        - in: query
+          name: pricing_model
+          required: false
+          schema: { type: string, enum: [taxonomy, classifier, consensus] }
+          description: "Select the estimator backend. Defaults to taxonomy. Consensus requires the two raw estimates to be within 5k to be treated as agreeing."
       responses:
         "200":
           description: ML price estimate
@@ -1135,6 +1170,7 @@ paths:
               example:
                 estimated_price_qar: 199653
                 confidence_range: [170610, 228696]
+                pricing_model: taxonomy
                 segment: premium
                 model_version: "6.0.0"
                 r2: 0.7013
@@ -2450,14 +2486,40 @@ components:
           description: Point estimate in QAR
         confidence_range:
           type: array
-          description: "[low, high] range in QAR based on ±MAE of the segment model"
+          description: "[low, high] range in QAR"
           items: { type: number }
           minItems: 2
           maxItems: 2
+        pricing_model:
+          type: string
+          enum: [taxonomy, classifier, consensus]
+          description: Which estimator produced the response
+        consensus_status:
+          type: string
+          enum: [agree, diverged]
+          description: Present for consensus responses
+        taxonomy_estimated_price_qar:
+          type: number
+          description: Present for consensus responses
+        classifier_estimated_price_qar:
+          type: number
+          description: Present for consensus responses
+        estimate_gap_qar:
+          type: number
+          description: Absolute gap between the two raw model estimates
         segment:
           type: string
           enum: [budget, premium]
           description: budget = ≤120k QAR, premium = >120k QAR
+        bucket_index:
+          type: integer
+          description: Present for classifier responses
+        bucket_label:
+          type: string
+          description: Present for classifier responses
+        bucket_probability:
+          type: number
+          description: Top-class probability for classifier responses
         model_version:
           type: string
           description: Trained model version
