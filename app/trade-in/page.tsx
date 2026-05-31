@@ -56,12 +56,12 @@ function TradeInContent() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Step 0: current car
-  const [curMake,      setCurMake]      = useState(params.get('make')       ?? '');
-  const [curModel,     setCurModel]     = useState(params.get('class_name') ?? '');
-  const [curYear,      setCurYear]      = useState(params.get('year')       ?? '');
-  const [curCity,      setCurCity]      = useState(params.get('city')       ?? 'Doha');
-  const [curCondition, setCurCondition] = useState('good');
+  // Step 0: current car — read from URL params so they survive the login redirect round-trip
+  const [curMake,      setCurMake]      = useState(params.get('cur_make')      ?? params.get('make')       ?? '');
+  const [curModel,     setCurModel]     = useState(params.get('cur_model')     ?? params.get('class_name') ?? '');
+  const [curYear,      setCurYear]      = useState(params.get('cur_year')      ?? params.get('year')       ?? '');
+  const [curCity,      setCurCity]      = useState(params.get('cur_city')      ?? params.get('city')       ?? 'Doha');
+  const [curCondition, setCurCondition] = useState(params.get('cur_condition') ?? 'good');
 
   const snapKm = (raw: string | null): number | null => {
     if (!raw) return null;
@@ -70,7 +70,21 @@ function TradeInContent() {
     const sorted = [...KM_BUCKETS].sort((a, b) => Math.abs(a.value - num) - Math.abs(b.value - num));
     return sorted[0]?.value ?? null;
   };
-  const [curKm, setCurKm] = useState<number | null>(snapKm(params.get('km')));
+  const [curKm, setCurKm] = useState<number | null>(
+    snapKm(params.get('cur_km') ?? params.get('km'))
+  );
+
+  /** Build a redirect URL that carries all current form state so the user returns to a fully-populated form. */
+  function buildLoginRedirect(loginPath: string) {
+    const p = new URLSearchParams(params.toString());
+    if (curMake)      p.set('cur_make',      curMake);
+    if (curModel)     p.set('cur_model',     curModel);
+    if (curYear)      p.set('cur_year',      curYear);
+    if (curCity)      p.set('cur_city',      curCity);
+    if (curCondition) p.set('cur_condition', curCondition);
+    if (curKm != null) p.set('cur_km',       String(curKm));
+    return `${loginPath}?redirect=${encodeURIComponent(`/trade-in?${p.toString()}`)}`;
+  }
 
   // Step 1 (when no target): desired next car
   const [tgtMake,  setTgtMake]  = useState('');
@@ -114,8 +128,9 @@ function TradeInContent() {
   }, [user, authLoading]);
 
   // Timeline + notes
-  const [timeline, setTimeline] = useState<Timeline>('');
-  const [notes,    setNotes]    = useState('');
+  const [timeline,         setTimeline]         = useState<Timeline>('');
+  const [notes,            setNotes]            = useState('');
+  const [tradeInRequired,  setTradeInRequired]  = useState<'required' | 'optional'>('optional');
 
   function validateStep(): string {
     if (step === 0) {
@@ -140,13 +155,16 @@ function TradeInContent() {
     const err = validateStep();
     if (err) { setError(err); return; }
     if (!token) {
-      router.push(`/login?redirect=${encodeURIComponent(`/trade-in?${params.toString()}`)}`);
+      router.push(buildLoginRedirect('/login'));
       return;
     }
     setSubmitting(true); setError('');
     try {
       const desiredVehicle = targetCarName || [tgtYear, tgtMake, tgtModel].filter(Boolean).join(' ') || undefined;
-      const notesLines = [timeline ? `Timeline: ${timeline}` : '', notes].filter(Boolean).join('\n');
+      const tradeInLabel = tradeInRequired === 'required'
+        ? 'Trade-in: REQUIRED (buyer will not proceed without it)'
+        : 'Trade-in: Optional (buyer is open to other arrangements)';
+      const notesLines = [tradeInLabel, timeline ? `Timeline: ${timeline}` : '', notes].filter(Boolean).join('\n');
       await createTradeInRequest({
         make:              curMake,
         class_name:        curModel,
@@ -414,13 +432,13 @@ function TradeInContent() {
             </p>
             <div className="flex flex-col gap-3">
               <Link
-                href={`/login?redirect=${encodeURIComponent(`/trade-in?${params.toString()}`)}`}
+                href={buildLoginRedirect('/login')}
                 className="flex items-center justify-center gap-2 bg-[#003087] text-white font-bold py-3 rounded-xl hover:bg-[#002070] transition-colors"
               >
                 <LogIn size={16} /> Sign In
               </Link>
               <Link
-                href={`/login?mode=register&redirect=${encodeURIComponent(`/trade-in?${params.toString()}`)}`}
+                href={buildLoginRedirect('/login') + '&mode=register'}
                 className="flex items-center justify-center gap-2 border-2 border-[#003087] text-[#003087] font-bold py-3 rounded-xl hover:bg-[#003087]/5 transition-colors"
               >
                 <UserPlus size={16} /> Create Free Account
@@ -464,6 +482,25 @@ function TradeInContent() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <h2 className="font-bold text-gray-900 mb-1 text-base">🔄 Is your trade-in required?</h2>
+              <p className="text-xs text-gray-500 mb-3">Tell the dealer whether you can only proceed if they accept your trade-in, or if you&apos;re flexible.</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button type="button" onClick={() => setTradeInRequired('required')}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${tradeInRequired === 'required' ? 'border-orange-400 bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <div className="text-base mb-0.5">🚫</div>
+                  <div className="font-bold text-sm text-gray-900">Must trade-in</div>
+                  <div className="text-xs text-gray-500 mt-0.5">I will not buy without trading in my car</div>
+                </button>
+                <button type="button" onClick={() => setTradeInRequired('optional')}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${tradeInRequired === 'optional' ? 'border-green-400 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <div className="text-base mb-0.5">✅</div>
+                  <div className="font-bold text-sm text-gray-900">Optional</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Open to other arrangements too</div>
+                </button>
               </div>
             </div>
 

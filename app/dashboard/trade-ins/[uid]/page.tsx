@@ -161,6 +161,10 @@ export default function TradeInDetailPage() {
     try { return req.photo_urls_json ? JSON.parse(req.photo_urls_json) : []; } catch { return []; }
   })();
 
+  // Parse trade-in required flag from notes
+  const tradeInRequired = req.notes?.includes('REQUIRED') ?? false;
+  const tradeInOptional = req.notes?.includes('Optional') ?? false;
+
   const diffLow = req.difference_low_qar ?? (req.target_price_qar && req.estimate_high_qar
     ? Math.max(0, req.target_price_qar - req.estimate_high_qar) : null);
   const diffHigh = req.difference_high_qar ?? (req.target_price_qar && req.estimate_low_qar
@@ -191,6 +195,11 @@ export default function TradeInDetailPage() {
                 {req.city && <span className="flex items-center gap-1"><MapPin size={13} /> {req.city}</span>}
                 {req.condition && <span className="capitalize">{req.condition}</span>}
               </div>
+              {(tradeInRequired || tradeInOptional) && (
+                <div className={`inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-bold ${tradeInRequired ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                  {tradeInRequired ? '🚫 Trade-in REQUIRED to proceed' : '✅ Trade-in is optional'}
+                </div>
+              )}
               <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
                 <Clock size={12} /> Submitted {formatDate(req.created_at)}
               </p>

@@ -13,7 +13,9 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const { signIn, signUp } = useAuth();
 
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register'>(
+    searchParams.get('mode') === 'register' ? 'register' : 'login'
+  );
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
