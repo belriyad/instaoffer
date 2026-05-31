@@ -591,6 +591,38 @@ export interface Listing {
   created_at: string;
 }
 
+export interface ListingsFilters {
+  search?: string;
+  make?: string;
+  class_name?: string;
+  model?: string;
+  city?: string;
+  sort?: string;
+  limit?: number;
+  min_year?: number;
+  max_year?: number;
+  min_price?: number;
+  max_price?: number;
+  min_km?: number;
+  max_km?: number;
+  deals_only?: '0' | '1';
+}
+
+export interface ListingsResponse {
+  rows: Listing[];
+  makes: string[];
+  classes: string[];
+  models: string[];
+  cities: string[];
+}
+
+export async function getListings(filters: ListingsFilters = {}): Promise<ListingsResponse> {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([k, v]) => { if (v !== undefined && v !== '') params.set(k, String(v)); });
+  const qs = params.toString();
+  return apiFetch(`/listings${qs ? `?${qs}` : ''}`);
+}
+
 // Swagger does not define the 201 response body shape for POST /listings.
 export async function createListing(
   data: ListingCreate,

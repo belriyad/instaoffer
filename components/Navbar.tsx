@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Info, Building2, FileText, Zap, RefreshCw, Search, ShoppingCart, MessageSquare, Bell, Settings } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Info, Building2, FileText, Zap, RefreshCw, Search, ShoppingCart, MessageSquare, Bell, Settings, Car } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useLocale } from '@/lib/locale-context';
 import { useRouter, usePathname } from 'next/navigation';
@@ -146,6 +146,25 @@ export default function Navbar() {
           {/* Desktop centre nav — grouped by intent */}
           <div className="hidden md:flex items-center gap-1 flex-1">
 
+            {/* Browse Cars */}
+            <Link
+              href="/listings"
+              className={`flex items-center gap-1.5 text-sm font-semibold py-1 px-2 rounded-lg transition-colors ${
+                pathname === '/listings' || pathname.startsWith('/listings/')
+                  ? 'text-[#003087]'
+                  : 'text-gray-600 hover:text-[#003087]'
+              }`}
+            >
+              <Car size={14} />
+              Browse Cars
+              {(pathname === '/listings' || pathname.startsWith('/listings/')) && (
+                <span className="w-1 h-1 rounded-full bg-[#ff6600]" />
+              )}
+            </Link>
+
+            {/* Divider */}
+            <span className="w-px h-4 bg-gray-200 mx-2" />
+
             {/* Sell group */}
             <NavDropdown label="Sell My Car" links={sellLinks} pathname={pathname} onClose={() => {}} />
 
@@ -255,6 +274,19 @@ export default function Navbar() {
         {/* ── Mobile Menu ── */}
         {mobileOpen && (
           <div className="md:hidden pb-5 border-t border-gray-100">
+
+            {/* Browse Cars */}
+            <div className="pt-4 pb-2">
+              <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Browse</p>
+              <Link href="/listings" onClick={closeMobile}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl mx-2 transition-colors ${pathname.startsWith('/listings') ? 'bg-[#003087]/10 text-[#003087]' : 'text-gray-700 hover:bg-gray-50'}`}>
+                <Car size={16} className="text-[#003087]" />
+                <div>
+                  <div className="text-sm font-semibold">Browse Cars</div>
+                  <div className="text-xs text-gray-400">Dealer inventory across Qatar</div>
+                </div>
+              </Link>
+            </div>
 
             {/* Sell section */}
             <div className="pt-4 pb-2">
