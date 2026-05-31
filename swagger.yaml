@@ -1418,6 +1418,73 @@ paths:
                     $ref: "#/components/schemas/TradeInRequest"
         "400":
           description: Missing or invalid required field
+  /trade-in/requests/{uid}:
+    patch:
+      tags: [TradeIns]
+      summary: Update a trade-in request
+      description: >
+        Owner-only. Mutable while `status='open'`. Returns 400 with the offending
+        status name once a dealer has begun action (`under_review`, `offer_made`, …)
+        or the request is in a terminal state. Any change to make/class_name/model/
+        year/km/city or pricing fields triggers a recomputation of
+        `market_est_qar`, `equity_est_qar`, and `asking_delta_qar`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TradeInRequestUpdate"
+      responses:
+        "200":
+          description: Updated trade-in request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request:
+                    $ref: "#/components/schemas/TradeInRequest"
+        "400":
+          description: Validation error, request not in 'open' status, or trade-in not found
+        "401":
+          description: Authentication required, or caller is not the request owner
+  /trade-in/requests/{uid}/cancel:
+    post:
+      tags: [TradeIns]
+      summary: Cancel a trade-in request
+      description: >
+        Owner-only (admins may also cancel). Idempotent — calling on an already
+        cancelled request returns 200 with the existing record. Blocked once the
+        request is in a terminal state of `accepted`, `rejected`, or `expired`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Cancelled trade-in request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  request:
+                    $ref: "#/components/schemas/TradeInRequest"
+        "400":
+          description: Cannot cancel from current status, or trade-in not found
+        "401":
+          description: Authentication required, or caller is not the request owner
   /dealer/trade-ins:
     get:
       tags: [TradeIns]
@@ -2688,6 +2755,30 @@ components:
         contact_phone: { type: string }
         desired_vehicle: { type: string }
         target_budget_qar: { type: integer }
+    TradeInRequestUpdate:
+      type: object
+      description: >
+        Partial update payload. Send only fields you want changed. Empty strings
+        clear nullable text fields; numeric fields accept null or empty string to
+        clear. At least one field must be supplied. `make` and `class_name`, if
+        present, must be non-empty.
+      properties:
+        make: { type: string }
+        class_name: { type: string }
+        model: { type: string, nullable: true }
+        year: { type: integer }
+        km: { type: integer }
+        color: { type: string, nullable: true }
+        condition: { type: string, enum: [excellent, good, fair, poor] }
+        city: { type: string }
+        description: { type: string, nullable: true }
+        photo_urls_json: { type: string, nullable: true }
+        asking_price_qar: { type: integer, nullable: true }
+        outstanding_finance_qar: { type: integer, nullable: true }
+        contact_name: { type: string, nullable: true }
+        contact_phone: { type: string, nullable: true }
+        desired_vehicle: { type: string, nullable: true }
+        target_budget_qar: { type: integer, nullable: true }
     BuyRequest:
       type: object
       properties:

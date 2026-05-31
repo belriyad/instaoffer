@@ -1243,9 +1243,39 @@ export async function getTradeInDetail(uid: string, token: string): Promise<Trad
   return apiFetch<TradeInRequest>(`/trade-in/requests/${uid}`, {}, token);
 }
 
-export async function cancelTradeInRequest(uid: string, token: string): Promise<{ ok: boolean }> {
-  return apiFetch<{ ok: boolean }>(`/trade-in/requests/${uid}/cancel`, {
+export async function cancelTradeInRequest(uid: string, token: string): Promise<{ ok: boolean; request: TradeInRequest }> {
+  return apiFetch<{ ok: boolean; request: TradeInRequest }>(`/trade-in/requests/${uid}/cancel`, {
     method: 'POST',
+  }, token);
+}
+
+export interface TradeInRequestUpdate {
+  make?: string;
+  class_name?: string;
+  model?: string | null;
+  year?: number;
+  km?: number;
+  color?: string | null;
+  condition?: string;
+  city?: string;
+  description?: string | null;
+  photo_urls_json?: string | null;
+  asking_price_qar?: number | null;
+  outstanding_finance_qar?: number | null;
+  contact_name?: string | null;
+  contact_phone?: string | null;
+  desired_vehicle?: string | null;
+  target_budget_qar?: number | null;
+}
+
+export async function updateTradeInRequest(
+  uid: string,
+  payload: TradeInRequestUpdate,
+  token: string
+): Promise<{ request: TradeInRequest }> {
+  return apiFetch<{ request: TradeInRequest }>(`/trade-in/requests/${uid}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
   }, token);
 }
 

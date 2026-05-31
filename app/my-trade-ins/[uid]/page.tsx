@@ -63,8 +63,8 @@ export default function MyTradeInDetailPage() {
     setCancelling(true);
     setCancelError(null);
     try {
-      await cancelTradeInRequest(uid, token);
-      setReq(prev => prev ? { ...prev, status: 'cancelled' } : prev);
+      const { request: updated } = await cancelTradeInRequest(uid, token);
+      setReq(updated);
     } catch {
       setCancelError('Could not cancel. Please contact support if the issue persists.');
     } finally {

@@ -125,9 +125,9 @@ function MyOffersContent() {
     setCancellingUid(uid);
     setCancelError(null);
     try {
-      await cancelTradeInRequest(uid, token);
+      const { request: updated } = await cancelTradeInRequest(uid, token);
       setTradeIns(prev => prev.map(r =>
-        (r.uid ?? r.trade_in_uid) === uid ? { ...r, status: 'cancelled' } : r
+        (r.uid ?? r.trade_in_uid) === uid ? updated : r
       ));
     } catch {
       setCancelError('Could not cancel. Please try again or contact support.');
