@@ -202,6 +202,9 @@ export default function Navbar() {
                       <Link href="/my-offers" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
                         <FileText size={14} className="text-[#003087]" /> My Offers
                       </Link>
+                      <Link href="/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
+                        <User size={14} className="text-[#003087]" /> My Profile
+                      </Link>
                       <hr className="my-1.5 border-gray-100" />
                       <button onClick={handleSignOut} className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 w-full text-left rounded-b-2xl">
                         <LogOut size={14} /> Sign Out

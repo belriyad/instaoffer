@@ -509,6 +509,99 @@ export async function getMe(token: string): Promise<User> {
   return apiFetch<User>('/me', {}, token);
 }
 
+// ─── Profile ──────────────────────────────────────────────────────────────────
+
+export interface UserProfile {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  preferred_language: string | null;
+  timezone: string | null;
+  city: string | null;
+}
+
+export async function getProfile(token: string): Promise<UserProfile> {
+  return apiFetch<UserProfile>('/me/profile', {}, token);
+}
+
+export async function patchProfile(
+  data: Partial<Omit<UserProfile, 'user_id'>>,
+  token: string
+): Promise<UserProfile> {
+  return apiFetch<UserProfile>('/me/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }, token);
+}
+
+// Swagger: POST /auth/change-password returns new AuthTokens (200)
+export async function changePassword(
+  data: { current_password: string; new_password: string },
+  token: string
+): Promise<AuthTokens> {
+  return apiFetch<AuthTokens>('/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+}
+
+// ─── Listings ─────────────────────────────────────────────────────────────────
+
+export interface ListingCreate {
+  // Required (swagger: required: [title, price_qar, make, class_name])
+  title: string;
+  price_qar: number;
+  make: string;
+  class_name: string;
+  // Optional top-level fields matching swagger ListingCreate schema
+  model?: string;
+  manufacture_year?: number;
+  km?: number;
+  warranty_status?: string;
+  cylinder_count?: number;
+  seller_name?: string;
+  seller_phone?: string;
+  seller_whatsapp?: string;
+  seller_type?: string;
+  city?: string;
+  description?: string;
+  main_image_url?: string;
+  image_urls_json?: string;
+  all_image_urls_json?: string;
+  // Extra vehicle attributes (trim, color, car_type, etc.) packed here
+  properties_json?: string;
+}
+
+export interface Listing {
+  product_id: string;
+  title: string;
+  price_qar: number;
+  make: string;
+  class_name: string;
+  model: string | null;
+  manufacture_year: number | null;
+  km: number | null;
+  city: string | null;
+  description: string | null;
+  seller_name: string | null;
+  seller_phone: string | null;
+  seller_type: string | null;
+  warranty_status: string | null;
+  main_image_url: string | null;
+  created_at: string;
+}
+
+// Swagger does not define the 201 response body shape for POST /listings.
+export async function createListing(
+  data: ListingCreate,
+  token: string
+): Promise<{ listing?: Listing } & Partial<Listing>> {
+  return apiFetch('/listings', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+}
+
 export async function getUsers(token: string): Promise<{ rows: User[] }> {
   return apiFetch('/users', {}, token);
 }
