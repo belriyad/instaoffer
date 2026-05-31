@@ -94,6 +94,25 @@ function TradeInContent() {
 
   // auth guard is now rendered inline — no redirect needed
 
+  // Auto-advance to final step when returning from login with all params filled
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) return;
+    // Only auto-advance if we're still on step 0 (fresh mount after redirect)
+    if (step !== 0) return;
+    // Check that the essential fields are already populated from URL params
+    const makeOk  = Boolean(curMake);
+    const modelOk = Boolean(curModel);
+    const yearOk  = Boolean(curYear);
+    const kmOk    = curKm !== null;
+    // For "has target" flow: step 0 → step 1 (timeline). For no-target: step 0 → step 1 (desired) → step 2 (timeline).
+    // We skip straight to the submit step only in the hasTarget case where no extra step is needed.
+    if (makeOk && modelOk && yearOk && kmOk && hasTarget) {
+      setStep(TIMELINE_STEP);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, authLoading]);
+
   // Timeline + notes
   const [timeline, setTimeline] = useState<Timeline>('');
   const [notes,    setNotes]    = useState('');
