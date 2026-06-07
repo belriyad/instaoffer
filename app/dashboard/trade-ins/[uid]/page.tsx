@@ -11,7 +11,7 @@ import {
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getDealerTradeInDetail, submitTradeInProposal, TradeInRequest } from '@/lib/api';
+import { getDealerTradeInDetail, submitTradeInProposal, getMLEstimate, TradeInRequest } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
@@ -58,6 +58,7 @@ export default function TradeInDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [proposalSent, setProposalSent] = useState(false);
   const [proposalError, setProposalError] = useState<string | null>(null);
+  const [mlEstimate, setMlEstimate] = useState<number | null>(null);
 
   // Auto-open proposal form if navigated here via #proposal hash (from list "Send Proposal" button)
   useEffect(() => {
@@ -79,6 +80,21 @@ export default function TradeInDetailPage() {
       .finally(() => setFetching(false));
   }, [token, uid]);
 
+  // The dealer trade-in feed doesn't include market_est_qar, so compute it from
+  // the ML model when missing — otherwise the valuation section shows "—".
+  useEffect(() => {
+    if (!token || !req || req.market_est_qar || !req.make || !req.class_name || !req.year || !req.km) return;
+    getMLEstimate({
+      make: req.make,
+      class_name: req.class_name,
+      manufacture_year: req.year,
+      km: req.km,
+      city: req.city || undefined,
+    }, token)
+      .then(est => setMlEstimate(Math.round(est.estimated_price_qar)))
+      .catch(() => { /* leave as — */ });
+  }, [token, req]);
+
   async function handleSendProposal() {
     if (!token || !req) return;
     const offerNum     = parseFloat(tradeInOffer.replace(/[^0-9.]/g, ''));
@@ -89,7 +105,7 @@ export default function TradeInDetailPage() {
     try {
       // Build transparent breakdown message
       const packagePrice = Math.max(0, newCarNum - offerNum);
-      const mktMid = req.market_est_qar ?? null;
+      const mktMid = req.market_est_qar ?? mlEstimate;
       const mktPackage = mktMid ? Math.max(0, newCarNum - mktMid) : null;
       const lines = [
         `📦 Package Deal Proposal`,
@@ -153,9 +169,10 @@ export default function TradeInDetailPage() {
   const tradeInRequired = req.notes?.includes('REQUIRED') ?? false;
   const tradeInOptional = req.notes?.includes('Optional') ?? false;
 
-  const diffLow = req.target_price_qar && req.market_est_qar
-    ? Math.max(0, req.target_price_qar - req.market_est_qar) : null;
-  const diffHigh = diffLow;
+  // Use the record's estimate, falling back to the ML-computed one.
+  const marketEst = req.market_est_qar ?? mlEstimate;
+  const diffLow = req.target_price_qar && marketEst
+    ? Math.max(0, req.target_price_qar - marketEst) : null;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
@@ -226,7 +243,7 @@ export default function TradeInDetailPage() {
             <div className="bg-blue-50 rounded-xl p-4">
               <p className="text-xs text-blue-600 font-bold uppercase tracking-wide mb-1">Est. Trade-in Value</p>
               <p className="text-lg font-black text-gray-900">
-                {req.market_est_qar ? formatQAR(req.market_est_qar) : '—'}
+                {marketEst ? formatQAR(marketEst) : '—'}
               </p>
             </div>
             <div className="bg-orange-50 rounded-xl p-4">
@@ -342,7 +359,7 @@ export default function TradeInDetailPage() {
               const offerNum   = parseFloat(tradeInOffer.replace(/[^0-9.]/g, '')) || 0;
               const newCarNum  = parseFloat(newCarPrice.replace(/[^0-9.]/g, ''))  || req.target_price_qar || 0;
               const pkgPrice   = offerNum > 0 && newCarNum > 0 ? Math.max(0, newCarNum - offerNum) : null;
-              const mktMid     = req.market_est_qar ?? null;
+              const mktMid     = req.market_est_qar ?? mlEstimate;
               const mktPkg     = mktMid && newCarNum > 0 ? Math.max(0, newCarNum - mktMid) : null;
               const saving     = pkgPrice != null && mktPkg != null ? mktPkg - pkgPrice : null;
 

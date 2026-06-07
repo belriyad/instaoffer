@@ -38,15 +38,22 @@ function AlertCard({ alert }: { alert: DealerAlert }) {
             )}
           </div>
 
-          {alert.score_explanation.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {alert.score_explanation.map((e, i) => (
-                <span key={i} className="text-xs bg-gray-50 border border-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                  {e}
-                </span>
-              ))}
-            </div>
-          )}
+          {(() => {
+            // Hide the stale "market estimate unavailable / asking price missing"
+            // chip when the alert actually carries a market estimate.
+            const explanations = alert.score_explanation.filter(
+              e => !(alert.market_est_qar && /unavailable|missing/i.test(e))
+            );
+            return explanations.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {explanations.map((e, i) => (
+                  <span key={i} className="text-xs bg-gray-50 border border-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                    {e}
+                  </span>
+                ))}
+              </div>
+            ) : null;
+          })()}
         </div>
 
         <div className="flex flex-col items-end gap-2 shrink-0">

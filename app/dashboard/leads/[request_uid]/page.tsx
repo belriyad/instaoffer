@@ -238,15 +238,22 @@ export default function DealerLeadDetailPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide opacity-70">Opportunity Score</p>
               <p className="text-4xl font-black mt-1">{req.opportunity_score}<span className="text-lg font-semibold opacity-70">/100</span></p>
-              {req.score_explanation && req.score_explanation.length > 0 && (
-                <ul className="mt-2 space-y-0.5">
-                  {req.score_explanation.map((e, i) => (
-                    <li key={i} className="text-xs opacity-80 flex items-start gap-1.5">
-                      <Star size={10} className="mt-0.5 shrink-0 opacity-60" /> {e}
-                    </li>
-                  ))}
-                </ul>
-              )}
+              {(() => {
+                // Drop the stale "market estimate unavailable / asking price missing"
+                // note when we actually have a market estimate (backend leaves it in).
+                const explanations = (req.score_explanation ?? []).filter(
+                  e => !(req.market_est_qar && /unavailable|missing/i.test(e))
+                );
+                return explanations.length > 0 ? (
+                  <ul className="mt-2 space-y-0.5">
+                    {explanations.map((e, i) => (
+                      <li key={i} className="text-xs opacity-80 flex items-start gap-1.5">
+                        <Star size={10} className="mt-0.5 shrink-0 opacity-60" /> {e}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null;
+              })()}
             </div>
             {req.potential_margin_qar && (
               <div className="text-right">
