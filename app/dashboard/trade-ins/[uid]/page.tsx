@@ -5,13 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ChevronLeft, RefreshCw, Car, Clock, AlertCircle,
-  MapPin, Gauge, Phone, FileText, Send, CheckCircle2, X,
+  MapPin, Gauge, Phone, FileText, Send, CheckCircle2,
   TrendingDown, TrendingUp, Package, Info, ArrowRight,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getDealerTradeInDetail, submitTradeInProposal, declineTradeIn, TradeInRequest } from '@/lib/api';
+import { getDealerTradeInDetail, submitTradeInProposal, TradeInRequest } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
@@ -58,7 +58,6 @@ export default function TradeInDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [proposalSent, setProposalSent] = useState(false);
   const [proposalError, setProposalError] = useState<string | null>(null);
-  const [declining, setDeclining] = useState(false);
 
   // Auto-open proposal form if navigated here via #proposal hash (from list "Send Proposal" button)
   useEffect(() => {
@@ -101,24 +100,13 @@ export default function TradeInDetailPage() {
         mktPackage != null ? `• At market rate, you'd pay: ~QAR ${mktPackage.toLocaleString()}` : null,
         proposalNote ? `\nMessage: ${proposalNote}` : null,
       ].filter(Boolean).join('\n');
-      await submitTradeInProposal(uid, { offer_qar: offerNum, message: lines }, token);
+      await submitTradeInProposal(uid, { offered_value_qar: offerNum, message: lines }, token);
       setProposalSent(true);
       setProposalOpen(false);
     } catch (err) {
       setProposalError(err instanceof Error ? err.message : 'Failed to send proposal');
     } finally {
       setSubmitting(false);
-    }
-  }
-
-  async function handleDecline() {
-    if (!token || !req) return;
-    setDeclining(true);
-    try {
-      await declineTradeIn(uid, token);
-      router.push('/dashboard/trade-ins');
-    } catch {
-      setDeclining(false);
     }
   }
 
@@ -343,20 +331,10 @@ export default function TradeInDetailPage() {
                     // Pre-fill new car price from request target
                     if (req.target_price_qar && !newCarPrice) setNewCarPrice(String(req.target_price_qar));
                   }}
-                  disabled={['accepted', 'rejected', 'closed'].includes(req.status)}
+                  disabled={['offer_made', 'accepted', 'rejected', 'closed'].includes(req.status)}
                   className="flex items-center gap-2 bg-[#003087] hover:bg-[#002070] text-white font-bold px-5 py-3 rounded-xl text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Send size={15} /> Send Proposal
-                </button>
-                <button
-                  onClick={handleDecline}
-                  disabled={['rejected', 'closed'].includes(req.status) || declining}
-                  className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold px-5 py-3 rounded-xl text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {declining
-                    ? <span className="w-4 h-4 border-2 border-red-400/40 border-t-red-500 rounded-full animate-spin" />
-                    : <X size={15} />}
-                  Decline
+                  <Send size={15} /> {req.status === 'offer_made' ? 'Proposal Sent' : 'Send Proposal'}
                 </button>
               </div>
             ) : (() => {

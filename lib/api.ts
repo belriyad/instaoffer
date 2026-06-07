@@ -38,8 +38,17 @@ async function apiFetch<T>(
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: 'Unknown error' }));
-    // API returns { error: "..." } — but also handle FastAPI 422 { detail: [...] }
+    // Read once as text — the body may be JSON ({error}/{message}/FastAPI detail)
+    // or a non-JSON error page (e.g. an HTML 404/502). Don't let a parse failure
+    // collapse into a meaningless "Unknown error".
+    const raw = await res.text().catch(() => '');
+    let body: { error?: string; message?: string; detail?: unknown } = {};
+    try {
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      body = {};
+    }
+    // FastAPI 422 { detail: [...] }
     const detail = body.detail;
     if (Array.isArray(detail) && detail.length > 0) {
       const msg = detail
@@ -48,7 +57,10 @@ async function apiFetch<T>(
         .join(', ');
       throw new Error(msg || `HTTP ${res.status}`);
     }
-    throw new Error(body.error || body.message || body.detail || `HTTP ${res.status}`);
+    const detailStr = typeof detail === 'string' ? detail : undefined;
+    throw new Error(
+      body.error || body.message || detailStr || `Request failed (HTTP ${res.status})`
+    );
   }
 
   if (res.status === 204) return {} as T;
@@ -1312,19 +1324,47 @@ export async function updateTradeInRequest(
   }, token);
 }
 
+export interface TradeInOffer {
+  id?: number;
+  offer_uid: string;
+  trade_in_id?: number;
+  dealer_id?: string;
+  offered_value_qar: number;
+  message?: string | null;
+  valid_until?: string | null;
+  status: 'pending' | 'accepted' | 'declined' | 'withdrawn' | 'expired';
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Dealer proposes a trade-in value. Creates a pending offer and moves the
+// trade-in to status `offer_made`.
 export async function submitTradeInProposal(
   uid: string,
-  data: { offer_qar: number; message?: string },
+  data: { offered_value_qar: number; message?: string; valid_until?: string },
   token: string
-): Promise<{ ok: boolean }> {
-  return apiFetch<{ ok: boolean }>(`/dealer/trade-ins/${uid}/proposal`, {
+): Promise<{ offer: TradeInOffer }> {
+  return apiFetch<{ offer: TradeInOffer }>(`/dealer/trade-ins/${uid}/offer`, {
     method: 'POST',
     body: JSON.stringify(data),
   }, token);
 }
 
-export async function declineTradeIn(uid: string, token: string): Promise<{ ok: boolean }> {
-  return apiFetch<{ ok: boolean }>(`/dealer/trade-ins/${uid}/decline`, {
+// List offers on a trade-in (dealer sees only their own; owner/admin see all).
+export async function getTradeInOffers(
+  uid: string,
+  token: string
+): Promise<{ total: number; offers: TradeInOffer[] }> {
+  return apiFetch<{ total: number; offers: TradeInOffer[] }>(
+    `/trade-in/requests/${uid}/offers`,
+    {},
+    token
+  );
+}
+
+// Dealer withdraws their own pending offer.
+export async function withdrawTradeInOffer(offerUid: string, token: string): Promise<{ ok: boolean }> {
+  return apiFetch<{ ok: boolean }>(`/trade-in/offers/${offerUid}/withdraw`, {
     method: 'POST',
   }, token);
 }

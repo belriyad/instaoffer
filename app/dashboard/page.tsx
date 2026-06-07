@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Calculator, RefreshCw, Car, Clock, MapPin, Gauge, ChevronRight,
-  Send, X, Package, TrendingDown, TrendingUp, Info, AlertCircle,
+  Send, Package, Info, AlertCircle,
   CheckCircle2, Filter, Inbox,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
 import {
-  getMLEstimate, getDealerTradeIns, declineTradeIn,
+  getMLEstimate, getDealerTradeIns,
   TradeInRequest, MLEstimate,
 } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
@@ -178,12 +178,8 @@ function EstimatorTab() {
 // ─── Request Card ─────────────────────────────────────────────────────────────
 function RequestCard({
   req,
-  onDecline,
-  declining,
 }: {
   req: TradeInRequest;
-  onDecline: (uid: string) => void;
-  declining: boolean;
 }) {
   const uid = req.trade_in_uid ?? req.uid ?? String(req.id ?? '');
   const st  = REQUEST_STATUS_CONFIG[req.status] ?? { label: req.status, badgeClass: 'bg-gray-100 text-gray-500', dot: 'bg-gray-300' };
@@ -285,18 +281,6 @@ function RequestCard({
               <Send size={14} /> Send Proposal
             </Link>
           )}
-          {canAct && (
-            <button
-              onClick={() => onDecline(uid)}
-              disabled={declining}
-              className="flex items-center gap-1.5 text-sm font-bold text-red-500 border border-red-200 hover:border-red-300 hover:bg-red-50 px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
-            >
-              {declining
-                ? <span className="w-4 h-4 border border-red-400 border-t-transparent rounded-full animate-spin" />
-                : <X size={14} />}
-              Decline
-            </button>
-          )}
           {req.status === 'offer_made' && (
             <span className="flex items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-50 px-3 py-2 rounded-xl">
               <Package size={13} /> Proposal sent — awaiting buyer
@@ -319,8 +303,6 @@ function RequestsTab({ token }: { token: string }) {
   const [fetching,    setFetching]    = useState(true);
   const [fetchError,  setFetchError]  = useState('');
   const [statusFilter,setStatusFilter]= useState('open');
-  const [decliningUid,setDecliningUid]= useState<string | null>(null);
-  const [declineError,setDeclineError]= useState('');
 
   const load = useCallback(async (status: string) => {
     setFetching(true); setFetchError('');
@@ -335,21 +317,6 @@ function RequestsTab({ token }: { token: string }) {
   }, [token]);
 
   useEffect(() => { load(statusFilter); }, [load, statusFilter]);
-
-  async function handleDecline(uid: string) {
-    if (!confirm('Decline this trade-in request? The customer will be notified.')) return;
-    setDecliningUid(uid); setDeclineError('');
-    try {
-      await declineTradeIn(uid, token);
-      setRequests(prev => prev.map(r =>
-        (r.trade_in_uid ?? r.uid ?? String(r.id)) === uid ? { ...r, status: 'rejected' } : r
-      ));
-    } catch (e) {
-      setDeclineError(e instanceof Error ? e.message : 'Failed to decline');
-    } finally {
-      setDecliningUid(null);
-    }
-  }
 
   // Status counts for filter pills
   const counts = requests.reduce<Record<string, number>>((acc, r) => {
@@ -377,11 +344,6 @@ function RequestsTab({ token }: { token: string }) {
         </button>
       </div>
 
-      {declineError && (
-        <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2 flex items-center gap-1">
-          <AlertCircle size={12} /> {declineError}
-        </p>
-      )}
 
       {fetching ? (
         <div className="flex items-center justify-center py-20">
@@ -410,8 +372,6 @@ function RequestsTab({ token }: { token: string }) {
               <RequestCard
                 key={uid}
                 req={req}
-                onDecline={handleDecline}
-                declining={decliningUid === uid}
               />
             );
           })}
