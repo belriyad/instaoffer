@@ -11,7 +11,7 @@ import {
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getDealerTradeInDetail, submitTradeInProposal, getMLEstimate, TradeInRequest } from '@/lib/api';
+import { getDealerTradeInDetail, submitTradeInProposal, getMLEstimate, getMLForecast, MLForecast, TradeInRequest } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
@@ -59,6 +59,7 @@ export default function TradeInDetailPage() {
   const [proposalSent, setProposalSent] = useState(false);
   const [proposalError, setProposalError] = useState<string | null>(null);
   const [mlEstimate, setMlEstimate] = useState<number | null>(null);
+  const [forecast, setForecast] = useState<MLForecast | null>(null);
 
   // Auto-open proposal form if navigated here via #proposal hash (from list "Send Proposal" button)
   useEffect(() => {
@@ -80,19 +81,25 @@ export default function TradeInDetailPage() {
       .finally(() => setFetching(false));
   }, [token, uid]);
 
-  // The dealer trade-in feed doesn't include market_est_qar, so compute it from
-  // the ML model when missing — otherwise the valuation section shows "—".
+  // The dealer trade-in feed doesn't include market_est_qar or a forward value, so
+  // compute both from the ML model — otherwise the valuation tiles show "—".
   useEffect(() => {
-    if (!token || !req || req.market_est_qar || !req.make || !req.class_name || !req.year || !req.km) return;
-    getMLEstimate({
+    if (!token || !req || !req.make || !req.class_name || !req.year || !req.km) return;
+    const params = {
       make: req.make,
       class_name: req.class_name,
       manufacture_year: req.year,
       km: req.km,
       city: req.city || undefined,
-    }, token)
-      .then(est => setMlEstimate(Math.round(est.estimated_price_qar)))
-      .catch(() => { /* leave as — */ });
+    };
+    if (!req.market_est_qar) {
+      getMLEstimate(params, token)
+        .then(est => setMlEstimate(Math.round(est.estimated_price_qar)))
+        .catch(() => { /* leave as — */ });
+    }
+    getMLForecast(params, token)
+      .then(setForecast)
+      .catch(() => { /* forecast optional */ });
   }, [token, req]);
 
   async function handleSendProposal() {
@@ -173,6 +180,8 @@ export default function TradeInDetailPage() {
   const marketEst = req.market_est_qar ?? mlEstimate;
   const diffLow = req.target_price_qar && marketEst
     ? Math.max(0, req.target_price_qar - marketEst) : null;
+  // Forward-looking value (12-month) — shown when there's no target vehicle to gap against.
+  const fc12 = forecast?.forecast?.find(f => f.horizon === '12m') ?? null;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
@@ -246,12 +255,25 @@ export default function TradeInDetailPage() {
                 {marketEst ? formatQAR(marketEst) : '—'}
               </p>
             </div>
-            <div className="bg-orange-50 rounded-xl p-4">
-              <p className="text-xs text-orange-600 font-bold uppercase tracking-wide mb-1">Est. Gap to Target</p>
-              <p className="text-lg font-black text-gray-900">
-                {diffLow != null ? formatQAR(diffLow) : '—'}
-              </p>
-            </div>
+            {diffLow != null ? (
+              <div className="bg-orange-50 rounded-xl p-4">
+                <p className="text-xs text-orange-600 font-bold uppercase tracking-wide mb-1">Est. Gap to Target</p>
+                <p className="text-lg font-black text-gray-900">{formatQAR(diffLow)}</p>
+              </div>
+            ) : fc12 ? (
+              <div className="bg-orange-50 rounded-xl p-4">
+                <p className="text-xs text-orange-600 font-bold uppercase tracking-wide mb-1">Projected Value (12mo)</p>
+                <p className="text-lg font-black text-gray-900">{formatQAR(Math.round(fc12.estimated_price_qar))}</p>
+                <p className={`text-xs font-semibold mt-0.5 ${fc12.change_pct >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                  {fc12.change_pct >= 0 ? '+' : ''}{fc12.change_pct}% vs today
+                </p>
+              </div>
+            ) : (
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wide mb-1">Gap to Target</p>
+                <p className="text-sm text-gray-400">No target vehicle selected</p>
+              </div>
+            )}
           </div>
           <p className="text-xs text-gray-400 mt-3 flex items-center gap-1">
             * Estimates are indicative. Final offer depends on vehicle inspection.
