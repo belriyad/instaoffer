@@ -162,33 +162,6 @@ export async function getMLEstimate(params: ValuationParams, token?: string): Pr
   return apiFetch<MLEstimate>(`/ml/estimate?${qs}`, {}, token);
 }
 
-export interface ForecastPoint {
-  horizon: string;
-  months: number;
-  estimated_price_qar: number;
-  change_pct: number;
-}
-
-export interface MLForecast {
-  current: { estimated_price_qar: number; confidence_range: [number, number]; segment: string };
-  forecast: ForecastPoint[];
-  market_trend_annual_pct: number;
-  annual_km_assumption: number;
-  model_version: string;
-  segment: string;
-  r2: number;
-  mape: number;
-}
-
-export async function getMLForecast(params: ValuationParams, token?: string): Promise<MLForecast> {
-  const qs = new URLSearchParams(
-    Object.entries(params)
-      .filter(([, v]) => v !== undefined && v !== '')
-      .map(([k, v]) => [k, String(v)])
-  ).toString();
-  return apiFetch<MLForecast>(`/ml/forecast?${qs}`, {}, token);
-}
-
 // ─── Market Comps ─────────────────────────────────────────────────────────────
 
 export interface OfferComps {

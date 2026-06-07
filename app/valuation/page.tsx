@@ -16,7 +16,7 @@ import {
   YearTiles, KmBucketPicker, kmLabel,
   ConditionPicker, CityPicker, PillGroupPicker, CylinderPicker,
 } from '@/lib/form-controls';
-import { getMLEstimate, getMLForecast, getMarketComps, getMLTimeToSell, MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
+import { getMLEstimate, getMarketComps, getMLTimeToSell, MLEstimate, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import EstimateResult from './EstimateResult';
 
@@ -341,10 +341,6 @@ function ValuationContent() {
     if (typeof window === 'undefined') return null;
     try { const s = sessionStorage.getItem(SESSION_KEY); return s ? JSON.parse(s).estimate ?? null : null; } catch { return null; }
   });
-  const [forecast, setForecast]     = useState<MLForecast | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try { const s = sessionStorage.getItem(SESSION_KEY); return s ? JSON.parse(s).forecast ?? null : null; } catch { return null; }
-  });
   const [comps, setComps]           = useState<OfferComps | null>(() => {
     if (typeof window === 'undefined') return null;
     try { const s = sessionStorage.getItem(SESSION_KEY); return s ? JSON.parse(s).comps ?? null : null; } catch { return null; }
@@ -357,9 +353,9 @@ function ValuationContent() {
   // Persist state to sessionStorage whenever it changes
   useEffect(() => {
     try {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ screen, data, estimate, forecast, comps, timeToSell }));
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ screen, data, estimate, comps, timeToSell }));
     } catch { /* ignore */ }
-  }, [screen, data, estimate, forecast, comps, timeToSell]);
+  }, [screen, data, estimate, comps, timeToSell]);
 
   // If make+model pre-filled from query params, skip to screen 2
   useEffect(() => {
@@ -392,14 +388,16 @@ function ValuationContent() {
         warranty_status:  data.warranty_status || undefined,
         seller_type:      'private' as const,
       };
-      const [est, fc, comp, tts] = await Promise.all([
+      const [est, comp] = await Promise.all([
         getMLEstimate(params, authToken),
-        getMLForecast(params, authToken).catch(() => null),
         getMarketComps({ make: data.make, class_name: data.class_name, year: data.year!, km: data.km! }, authToken).catch(() => null),
-        getMLTimeToSell(params, authToken).catch(() => null),
       ]);
+      // time-to-sell requires a price; use the ML estimate as the listing price.
+      const tts = await getMLTimeToSell(
+        { ...params, price_qar: est.estimated_price_qar },
+        authToken
+      ).catch(() => null);
       setEstimate(est);
-      setForecast(fc);
       setComps(comp);
       setTimeToSell(tts);
     } catch {
@@ -450,7 +448,7 @@ function ValuationContent() {
                   condition: '', city: 'Doha', trim: '',
                   cylinder_count: null, warranty_status: 'Under Warranty',
                 });
-                setEstimate(null); setForecast(null); setComps(null); setTimeToSell(null);
+                setEstimate(null); setComps(null); setTimeToSell(null);
                 setScreen(1);
                 setShowReuse(false);
               }}
@@ -475,7 +473,7 @@ function ValuationContent() {
             Running Qatar market data, depreciation model, and time-to-sell estimate
           </p>
           <div className="mt-8 flex flex-col gap-2 w-full max-w-xs">
-            {['Fetching market comparables…', 'Running ML valuation model…', 'Calculating price forecast…'].map((step, i) => (
+            {['Fetching market comparables…', 'Running ML valuation model…', 'Estimating time to sell…'].map((step, i) => (
               <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
                 <span className="w-4 h-4 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin flex-shrink-0" style={{ animationDelay: `${i * 0.2}s` }} />
                 {step}
@@ -488,7 +486,7 @@ function ValuationContent() {
   }
 
   if (estimate) {
-    return <EstimateResult estimate={estimate} forecast={forecast} comps={comps} timeToSell={timeToSell} data={data} />;
+    return <EstimateResult estimate={estimate} comps={comps} timeToSell={timeToSell} data={data} />;
   }
 
   return (

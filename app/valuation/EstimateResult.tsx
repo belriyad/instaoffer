@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronDown, TrendingUp, Shield, ArrowRight, Clock, Zap, RefreshCw, Bookmark } from 'lucide-react';
-import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
+import { MLEstimate, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
 import { ValuationData } from './page';
 import Navbar from '@/components/Navbar';
@@ -12,7 +12,6 @@ import Footer from '@/components/Footer';
 
 interface Props {
   estimate: MLEstimate;
-  forecast: MLForecast | null;
   comps: OfferComps | null;
   timeToSell: MLTimeToSellEstimate | null;
   data: ValuationData;
@@ -45,7 +44,7 @@ function computePriceBands(estimate: MLEstimate) {
   };
 }
 
-export default function EstimateResult({ estimate, forecast, comps, timeToSell, data }: Props) {
+export default function EstimateResult({ estimate, comps, timeToSell, data }: Props) {
   const bands = computePriceBands(estimate);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -251,7 +250,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
         </motion.div>
 
         {/* ── Analytics accordion ──────────────────────────────────────────────── */}
-        {(timeToSell || forecast) && (
+        {timeToSell && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-6">
             <button
               onClick={() => setShowAnalytics(v => !v)}
@@ -259,7 +258,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
             >
               <span className="flex items-center gap-2">
                 <TrendingUp size={16} className="text-[#003087]" />
-                Market analytics &amp; price forecast
+                Market analytics &amp; time to sell
               </span>
               <ChevronDown size={16} className={`transition-transform text-gray-400 ${showAnalytics ? 'rotate-180' : ''}`} />
             </button>
@@ -316,38 +315,6 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
                         </div>
                         <p className="text-xs text-gray-400 mt-4">
                           Probability of listing clearing within each horizon, based on Qatar market data.
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Price forecast */}
-                    {forecast && (
-                      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                            <TrendingUp size={18} className="text-[#003087]" />
-                            Price Forecast
-                          </h3>
-                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${forecast.market_trend_annual_pct >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                            Market {forecast.market_trend_annual_pct >= 0 ? '↑' : '↓'} {Math.abs(forecast.market_trend_annual_pct)}%/yr
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          {forecast.forecast.filter(f => f.horizon !== '12m').map((f) => {
-                            const isPos = f.change_pct >= 0;
-                            return (
-                              <div key={f.horizon} className="text-center p-3 bg-gray-50 rounded-xl">
-                                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">{f.horizon}</div>
-                                <div className="font-bold text-gray-900 text-sm">{formatQAR(Math.round(f.estimated_price_qar))}</div>
-                                <div className={`text-xs font-semibold mt-0.5 ${isPos ? 'text-green-600' : 'text-red-500'}`}>
-                                  {isPos ? '+' : ''}{f.change_pct}%
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <p className="text-xs text-gray-400 mt-3">
-                          Combines depreciation + Qatar market trend. Assumes {forecast.annual_km_assumption.toLocaleString()} km/year.
                         </p>
                       </div>
                     )}
