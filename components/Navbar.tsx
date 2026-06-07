@@ -124,11 +124,6 @@ export default function Navbar() {
           </span>
           <span className="flex items-center gap-4">
             <span>🇶🇦 Built for Qatar</span>
-            {process.env.NEXT_PUBLIC_DEPLOY_TIME && (
-              <span className="text-white/40 font-mono text-[10px]">
-                v {process.env.NEXT_PUBLIC_DEPLOY_TIME}
-              </span>
-            )}
           </span>
         </div>
       </div>

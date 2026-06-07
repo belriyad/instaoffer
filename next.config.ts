@@ -7,9 +7,6 @@ const BACKEND_API = process.env.API_BASE_URL || "http://174.165.78.29:8090/api";
 const BACKEND_ROOT = BACKEND_API.replace(/\/api\/?$/, "");
 
 const nextConfig: NextConfig = {
-  env: {
-    NEXT_PUBLIC_DEPLOY_TIME: new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC",
-  },
   async rewrites() {
     return [
       { source: "/uploads/:path*", destination: `${BACKEND_ROOT}/uploads/:path*` },

@@ -92,7 +92,6 @@ function UrgentSaleContent() {
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [dealerCount] = useState(Math.floor(Math.random() * 8) + 10);
 
   // Evidence state — per-category files + accident count
   const [categoryFiles, setCategoryFiles] = useState<Partial<Record<EvidenceCategory, File>>>({});
@@ -221,7 +220,7 @@ function UrgentSaleContent() {
             </div>
             <h2 className="text-2xl font-black text-gray-900 mb-2">You&apos;re in the queue! 🚀</h2>
             <p className="text-gray-600 mb-4">
-              Your request was sent to <span className="font-bold text-[#003087]">{dealerCount} verified dealers</span>.
+              Your request was sent to <span className="font-bold text-[#003087]">30+ verified dealers</span>.
               They&apos;ll compete to give you the best offer fast.
             </p>
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 text-sm text-orange-800">

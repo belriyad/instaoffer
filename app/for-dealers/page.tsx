@@ -14,9 +14,9 @@ const fadeUp = {
 const stagger = { visible: { transition: { staggerChildren: 0.1 } } };
 
 const FEATURES = [
-  { icon: Users, title: 'Unlimited Leads', desc: 'Access all seller requests with no cap on how many you can view or respond to.' },
+  { icon: Users, title: 'Unlimited Seller Requests', desc: 'Access all active seller requests with no cap on how many you can view or respond to.' },
   { icon: MessageSquare, title: 'Direct Messaging', desc: 'Communicate directly with sellers through our secure in-platform messaging system.' },
-  { icon: Filter, title: 'Smart Filters', desc: 'Save filters by make, year, mileage, city, and condition. See matching lead counts in real-time.' },
+  { icon: Filter, title: 'Smart Filters', desc: 'Save filters by make, year, mileage, city, and condition. See matching request counts in real-time.' },
   { icon: Bell, title: 'Lead Notifications', desc: 'Get notified via push or WhatsApp when a new listing matches your saved filter preferences.' },
   { icon: Star, title: 'Offer Pipeline', desc: 'Track all your bids, accepted deals, and ongoing negotiations in one place.' },
   { icon: TrendingUp, title: 'Market Insights', desc: 'See market comparables for each lead to help you make competitive, data-driven offers.' },
@@ -49,7 +49,7 @@ const PLANS = [
     href: '/dealer-signup',
     highlight: true,
     features: [
-      'Unlimited leads',
+      'Unlimited seller requests',
       'Unlimited offers',
       'Direct messaging',
       'Advanced filters',
@@ -109,7 +109,7 @@ export default function ForDealersPage() {
               Access Motivated Sellers.<br />Grow Your Business.
             </motion.h1>
             <motion.p variants={fadeUp} className="text-blue-200 text-lg max-w-xl mx-auto mb-8">
-              Connect with people actively trying to sell their cars. Unlimited leads, direct messaging, and smart tools — start free for 30 days.
+              Connect with people actively trying to sell their cars. Unlimited seller requests, direct messaging, and smart tools — start free for 30 days.
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/dealer-signup" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
@@ -129,7 +129,7 @@ export default function ForDealersPage() {
         <div className="max-w-5xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
             <motion.h2 variants={fadeUp} className="text-3xl font-black text-gray-900 mb-3">Simple, Transparent Pricing</motion.h2>
-            <motion.p variants={fadeUp} className="text-gray-500 text-lg">Start free — upgrade when you're ready.</motion.p>
+            <motion.p variants={fadeUp} className="text-gray-500 text-lg">Start free — upgrade when you&apos;re ready.</motion.p>
           </motion.div>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {PLANS.map(plan => (

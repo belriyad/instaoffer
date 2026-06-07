@@ -44,8 +44,19 @@ function computePriceBands(estimate: MLEstimate) {
   };
 }
 
+// Confidence from how tight the model's range is relative to its midpoint.
+function rangeConfidence(estimate: MLEstimate): { label: string; cls: string } {
+  const [low, high] = estimate.confidence_range;
+  const mid = (low + high) / 2;
+  const spread = mid > 0 ? (high - low) / mid : 1;
+  if (spread <= 0.15) return { label: 'High confidence', cls: 'bg-green-50 text-green-700 border-green-200' };
+  if (spread <= 0.30) return { label: 'Medium confidence', cls: 'bg-amber-50 text-amber-700 border-amber-200' };
+  return { label: 'Indicative range', cls: 'bg-gray-50 text-gray-500 border-gray-200' };
+}
+
 export default function EstimateResult({ estimate, comps, timeToSell, data }: Props) {
   const bands = computePriceBands(estimate);
+  const confidence = rangeConfidence(estimate);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -138,6 +149,12 @@ export default function EstimateResult({ estimate, comps, timeToSell, data }: Pr
           className="mb-2"
         >
           <h2 className="text-center text-lg font-black text-gray-900 mb-1">What is your car worth to you?</h2>
+          <div className="flex justify-center mb-2">
+            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${confidence.cls}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+              {confidence.label}
+            </span>
+          </div>
           <p className="text-center text-xs text-gray-400 mb-5">Price depends on how fast you want to sell and how much effort you want to put in.</p>
 
           <div className="space-y-4">
