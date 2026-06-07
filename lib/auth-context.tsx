@@ -7,9 +7,9 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  signIn: (loginVal: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
-  signUpDealer: (email: string, password: string, fullName: string) => Promise<void>;
+  signIn: (loginVal: string, password: string) => Promise<User>;
+  signUp: (email: string, password: string, fullName: string) => Promise<User>;
+  signUpDealer: (email: string, password: string, fullName: string) => Promise<User>;
   signOut: () => Promise<void>;
   ensureGuestToken: () => Promise<string>;
 }
@@ -140,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     persist(tokens);
     const me = await getMe(tokens.access_token);
     setUser(me);
+    return me;
   }
 
   async function signUp(email: string, password: string, fullName: string) {
@@ -147,6 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     persist(tokens);
     const me = await getMe(tokens.access_token);
     setUser(me);
+    return me;
   }
 
   async function signUpDealer(email: string, password: string, fullName: string) {
@@ -154,6 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     persist(tokens);
     const me = await getMe(tokens.access_token);
     setUser(me);
+    return me;
   }
 
   async function signOut() {

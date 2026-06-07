@@ -24,7 +24,11 @@ function LoginContent() {
   const [error, setError]       = useState('');
   const [success, setSuccess]   = useState('');
 
-  const redirect = searchParams.get('redirect') || '/my-offers';
+  const redirectParam = searchParams.get('redirect');
+  // Send dealers to their dashboard, sellers to my-offers — unless an explicit
+  // ?redirect= target was provided (e.g. returning to a gated page).
+  const destFor = (role: string) =>
+    redirectParam || (role === 'dealer' || role === 'admin' ? '/dashboard' : '/my-offers');
 
   function switchMode(m: 'login' | 'register') {
     setMode(m);
@@ -59,11 +63,11 @@ function LoginContent() {
     setLoading(true);
     try {
       if (mode === 'login') {
-        await signIn(email, password);
-        router.push(redirect);
+        const me = await signIn(email, password);
+        router.push(destFor(me.role));
       } else {
-        await signUp(email, password, fullName.trim());
-        router.push(redirect);
+        const me = await signUp(email, password, fullName.trim());
+        router.push(destFor(me.role));
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
