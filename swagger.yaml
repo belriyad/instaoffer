@@ -1455,6 +1455,93 @@ paths:
           description: Validation error, request not in 'open' status, or trade-in not found
         "401":
           description: Authentication required, or caller is not the request owner
+  /trade-in/requests/{uid}/offers:
+    get:
+      tags: [TradeIn]
+      summary: List offers on a trade-in (owner/admin see all; dealer sees own)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: uid, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Offers on this trade-in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total: { type: integer }
+                  offers:
+                    type: array
+                    items: { $ref: "#/components/schemas/TradeInOffer" }
+        "400": { description: Trade-in not found }
+        "401": { description: Not authorised }
+  /dealer/trade-ins/{uid}/offer:
+    post:
+      tags: [TradeIn]
+      summary: Dealer proposes a trade-in value (dealer role required)
+      description: >
+        Creates a pending offer and moves the trade-in to status `offer_made`.
+        Targeted trade-ins only accept offers from the targeted dealer.
+        One pending offer per dealer per trade-in — withdraw before re-offering.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: uid, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [offered_value_qar]
+              properties:
+                offered_value_qar: { type: integer, minimum: 1 }
+                message: { type: string }
+                valid_until: { type: string, description: ISO timestamp after which the offer expires }
+      responses:
+        "201":
+          description: Offer created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offer: { $ref: "#/components/schemas/TradeInOffer" }
+        "400": { description: Validation error, trade-in closed/not found, or duplicate pending offer }
+        "401": { description: Dealer role required }
+  /trade-in/offers/{offer_uid}/accept:
+    post:
+      tags: [TradeIn]
+      summary: Customer accepts an offer (auto-declines all other pending offers)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: offer_uid, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Offer accepted; trade-in status becomes accepted }
+        "400": { description: Offer not found, not pending, or expired }
+        "401": { description: Not the trade-in owner }
+  /trade-in/offers/{offer_uid}/decline:
+    post:
+      tags: [TradeIn]
+      summary: Customer declines an offer (trade-in reopens if nothing else pending)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: offer_uid, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Offer declined }
+        "400": { description: Offer not found or not pending }
+        "401": { description: Not the trade-in owner }
+  /trade-in/offers/{offer_uid}/withdraw:
+    post:
+      tags: [TradeIn]
+      summary: Dealer withdraws their own pending offer
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: offer_uid, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Offer withdrawn }
+        "400": { description: Offer not found or not pending }
+        "401": { description: Not the offering dealer }
   /trade-in/requests/{uid}/cancel:
     post:
       tags: [TradeIns]
@@ -1936,6 +2023,42 @@ paths:
       responses:
         "200":
           description: Preferences saved
+  /admin/wakalat-credentials:
+    get:
+      tags: [Admin]
+      summary: Admin — list wakalat dealer accounts with bootstrap credentials
+      description: >
+        Returns the seeded wakalat (authorized new-car) dealer accounts with
+        their display-only bootstrap passwords, catalog model counts and brands.
+        Surfaced on the ops dashboard. Admin role required.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Wakalat dealer credential rows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total: { type: integer }
+                  rows:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, example: wakalat_kia-qatar }
+                        email: { type: string, example: kia-qatar@wakalat.mzad.qa }
+                        full_name: { type: string }
+                        bootstrap_password: { type: string, description: Display-only plaintext seeded password }
+                        wakalat_dealer_name: { type: string }
+                        created_at: { type: string }
+                        last_seen: { type: string, nullable: true }
+                        catalog_models: { type: integer }
+                        brand_count: { type: integer }
+                        brands: { type: string, description: Comma-separated brand list }
+        "401":
+          description: Missing/invalid token or not an admin
   /admin/instant-offers/requests:
     get:
       tags: [InstantOffers]
@@ -2735,6 +2858,19 @@ components:
         asking_delta_qar: { type: integer, nullable: true }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    TradeInOffer:
+      type: object
+      properties:
+        id: { type: integer }
+        offer_uid: { type: string, example: tio_a1b2c3d4e5f6a7b8c9d0e1f2 }
+        trade_in_id: { type: integer }
+        dealer_id: { type: string }
+        offered_value_qar: { type: integer }
+        message: { type: string, nullable: true }
+        valid_until: { type: string, nullable: true }
+        status: { type: string, enum: [pending, accepted, declined, withdrawn, expired] }
+        created_at: { type: string }
+        updated_at: { type: string }
     TradeInRequestCreate:
       type: object
       required: [make, class_name, year, km, condition, city]
@@ -2755,6 +2891,17 @@ components:
         contact_phone: { type: string }
         desired_vehicle: { type: string }
         target_budget_qar: { type: integer }
+        target_dealer_id:
+          type: string
+          description: >
+            Optional wakalat dealer user id (e.g. wakalat_kia-qatar). When set,
+            only that dealer (and admins) can see this trade-in; when omitted the
+            request stays in the open pool visible to all dealers. Must reference
+            an active dealer account.
+        target_car_id: { type: string, description: Optional wakalat_cars id the customer is trading toward }
+        target_car_make: { type: string }
+        target_car_model: { type: string }
+        target_car_year: { type: integer }
     TradeInRequestUpdate:
       type: object
       description: >
@@ -2779,6 +2926,14 @@ components:
         contact_phone: { type: string, nullable: true }
         desired_vehicle: { type: string, nullable: true }
         target_budget_qar: { type: integer, nullable: true }
+        target_dealer_id:
+          type: string
+          nullable: true
+          description: Re-target to a wakalat dealer, or empty string to return the request to the open pool.
+        target_car_id: { type: string, nullable: true }
+        target_car_make: { type: string, nullable: true }
+        target_car_model: { type: string, nullable: true }
+        target_car_year: { type: integer, nullable: true }
     BuyRequest:
       type: object
       properties:
