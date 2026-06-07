@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,6 +23,13 @@ function LoginContent() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
   const [success, setSuccess]   = useState('');
+
+  // Dealers reaching /login?role=dealer get the dedicated, branded dealer login
+  // (also gives them a fresh form rather than reusing the seller form's state).
+  const isDealerRole = searchParams.get('role') === 'dealer';
+  useEffect(() => {
+    if (isDealerRole) router.replace('/login/dealer');
+  }, [isDealerRole, router]);
 
   const redirectParam = searchParams.get('redirect');
   // Send dealers to their dashboard, sellers to my-offers — unless an explicit
@@ -86,6 +93,9 @@ function LoginContent() {
   }
 
   const inputCls = 'w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-base focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/20 transition-colors';
+
+  // While redirecting dealers to /login/dealer, don't flash the seller form.
+  if (isDealerRole) return <div className="min-h-screen bg-[#f5f7fa]" />;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
