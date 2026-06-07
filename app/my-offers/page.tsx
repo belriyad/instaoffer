@@ -90,6 +90,41 @@ function UnauthenticatedState() {
   );
 }
 
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+function MyOffersSkeleton() {
+  return (
+    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <Navbar />
+      <div className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-black text-gray-900">My Requests</h1>
+            <p className="text-gray-500 mt-1">Track your offer and trade-in requests</p>
+          </div>
+        </div>
+        {/* Tab placeholder */}
+        <div className="h-12 bg-white rounded-xl border border-gray-100 mb-6 animate-pulse" />
+        {/* Card placeholders */}
+        <div className="space-y-4">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm animate-pulse">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 space-y-2.5">
+                  <div className="h-5 bg-gray-100 rounded w-2/5" />
+                  <div className="h-3.5 bg-gray-100 rounded w-3/5" />
+                  <div className="h-3 bg-gray-100 rounded w-1/4" />
+                </div>
+                <div className="h-9 w-20 bg-gray-100 rounded-xl shrink-0" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+}
+
 // ─── Authenticated view ───────────────────────────────────────────────────────
 function MyOffersContent() {
   const { token } = useAuth();
@@ -137,14 +172,7 @@ function MyOffersContent() {
   }
 
   if (fetching) {
-    return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
-        </div>
-      </div>
-    );
+    return <MyOffersSkeleton />;
   }
 
   return (
@@ -376,16 +404,7 @@ export default function MyOffersPage() {
 
 function MyOffersRouter() {
   const { user, loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <MyOffersSkeleton />;
   if (!user) return <UnauthenticatedState />;
   return <MyOffersContent />;
 }

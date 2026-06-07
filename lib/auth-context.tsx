@@ -113,9 +113,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setToken(null);
           }
         })
-        .finally(async () => {
-          await initGuestToken();
+        .finally(() => {
+          // Unblock the UI as soon as the user is resolved; the guest token is
+          // only needed for unauthenticated flows, so initialise it in the
+          // background instead of blocking first paint behind another request.
           setLoading(false);
+          void initGuestToken();
         });
     } else {
       initGuestToken().finally(() => setLoading(false));
