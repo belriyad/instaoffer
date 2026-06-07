@@ -410,7 +410,22 @@ export async function rejectBid(
   }, token);
 }
 
-export async function getMessages(requestUid: string, token: string) {
+export interface OfferMessage {
+  id?: number | string;
+  message_uid?: string;
+  uid?: string;
+  sender_id?: string;
+  sender_role?: string;
+  recipient_id?: string;
+  body?: string;
+  content?: string;
+  created_at?: string;
+}
+
+export async function getMessages(
+  requestUid: string,
+  token: string
+): Promise<{ rows?: OfferMessage[]; messages?: OfferMessage[]; total?: number } | OfferMessage[]> {
   return apiFetch(`/instant-offers/requests/${requestUid}/messages`, {}, token);
 }
 

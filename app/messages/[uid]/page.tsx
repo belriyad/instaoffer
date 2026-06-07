@@ -8,7 +8,7 @@ import { ChevronLeft, Send, MessageSquare, AlertCircle, Clock } from 'lucide-rea
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getMessages, sendMessage } from '@/lib/api';
+import { getMessages, sendMessage, OfferMessage } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 
 interface Message {
@@ -17,6 +17,19 @@ interface Message {
   sender_role: string;
   content: string;
   created_at: string;
+}
+
+type RawMessage = OfferMessage;
+
+// The backend stores the text under `body`; tolerate `content` and varied id keys.
+function normalizeMessage(r: RawMessage): Message {
+  return {
+    id: String(r.id ?? r.message_uid ?? r.uid ?? `${r.sender_id ?? ''}-${r.created_at ?? ''}`),
+    sender_id: r.sender_id ?? '',
+    sender_role: r.sender_role ?? '',
+    content: r.content ?? r.body ?? '',
+    created_at: r.created_at ?? '',
+  };
 }
 
 export default function MessagesPage({ params }: { params: Promise<{ uid: string }> }) {
@@ -52,9 +65,12 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
   const loadMessages = async () => {
     if (!token || !uid) return;
     try {
-      const data = await getMessages(uid, token) as { messages?: Message[] } | Message[];
-      const msgs = Array.isArray(data) ? data : (data as { messages?: Message[] }).messages ?? [];
-      setMessages(msgs);
+      const data = await getMessages(uid, token);
+      // The API returns { rows, total }; tolerate { messages } / a bare array too.
+      const raw: RawMessage[] = Array.isArray(data)
+        ? data
+        : (data?.rows ?? data?.messages ?? []);
+      setMessages(raw.map(normalizeMessage));
       setFetchError(null);
     } catch (err) {
       setFetchError(err instanceof Error ? err.message : 'Failed to load messages');
