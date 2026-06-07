@@ -497,8 +497,24 @@ export async function getDealerAlerts(token: string, params?: {
   return apiFetch(`/instant-offers/dealer-alerts${qs}`, {}, token);
 }
 
-export async function getDealerPreferences(token: string) {
-  return apiFetch('/instant-offers/preferences', {}, token);
+export interface DealerPreferencesResponse {
+  preferences: {
+    id?: number;
+    dealer_id?: string;
+    makes_json?: string;
+    cities_json?: string;
+    min_year?: number;
+    max_year?: number;
+    max_km?: number;
+    min_score_for_alert?: number;
+    notify_push?: number | boolean;
+    notify_whatsapp?: number | boolean;
+    active?: number | boolean;
+  } | null;
+}
+
+export async function getDealerPreferences(token: string): Promise<DealerPreferencesResponse> {
+  return apiFetch<DealerPreferencesResponse>('/instant-offers/preferences', {}, token);
 }
 
 export async function setDealerPreferences(

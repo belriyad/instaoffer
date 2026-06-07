@@ -9,6 +9,7 @@ import {
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
+import { getDealerPreferences, setDealerPreferences } from '@/lib/api';
 import { SearchableMakeSelect, SearchableModelSelect } from '@/lib/form-controls';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -153,24 +154,79 @@ function PreferenceCard({
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
+// Reconstruct editable rules from the backend's single aggregate preference
+// object (one rule per saved make). Used when no richer local copy exists.
+function rulesFromBackend(p: {
+  makes_json?: string; min_year?: number; max_year?: number;
+  min_score_for_alert?: number; active?: number | boolean;
+}): AlertPreference[] {
+  let makes: string[] = [];
+  try { makes = p.makes_json ? JSON.parse(p.makes_json) : []; } catch { makes = []; }
+  if (makes.length === 0) return [];
+  const enabled = p.active === undefined ? true : Boolean(p.active);
+  return makes.map(make => ({
+    ...blankPref(make),
+    year_min: p.min_year ? String(p.min_year) : '',
+    year_max: p.max_year ? String(p.max_year) : '',
+    min_score: p.min_score_for_alert != null ? String(p.min_score_for_alert) : '50',
+    enabled,
+  }));
+}
+
+// Collapse the editable rule list into the backend's single aggregate object.
+function rulesToBackend(prefs: AlertPreference[]) {
+  const enabled = prefs.filter(p => p.enabled && p.make);
+  const makes = Array.from(new Set(enabled.map(p => p.make)));
+  const years = enabled.map(p => parseInt(p.year_min, 10)).filter(n => !isNaN(n));
+  const yearsMax = enabled.map(p => parseInt(p.year_max, 10)).filter(n => !isNaN(n));
+  const scores = enabled.map(p => parseInt(p.min_score, 10)).filter(n => !isNaN(n));
+  return {
+    makes,
+    min_year: years.length ? Math.min(...years) : undefined,
+    max_year: yearsMax.length ? Math.max(...yearsMax) : undefined,
+    // Lowest threshold across rules = most inclusive, so any rule can fire.
+    min_score_for_alert: scores.length ? Math.min(...scores) : undefined,
+    notify_whatsapp: true,
+    active: makes.length > 0,
+  };
+}
+
 export default function AlertPreferencesPage() {
-  const { user, loading } = useAuth();
+  const { user, token, loading } = useAuth();
   const router = useRouter();
 
   const [prefs, setPrefs] = useState<AlertPreference[]>([]);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!loading && !user) router.push('/login/dealer');
   }, [user, loading, router]);
 
+  // Load order: local copy (full fidelity) wins; otherwise hydrate from backend.
   useEffect(() => {
+    let cancelled = false;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setPrefs(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setPrefs(parsed);
+          return;
+        }
+      }
     } catch { /* ignore */ }
-  }, []);
+
+    if (!token) return;
+    getDealerPreferences(token)
+      .then(res => {
+        if (cancelled || !res?.preferences) return;
+        setPrefs(rulesFromBackend(res.preferences));
+      })
+      .catch(() => { /* leave empty state */ });
+    return () => { cancelled = true; };
+  }, [token]);
 
   function addPref(make = '') { setPrefs(prev => [...prev, blankPref(make)]); }
   function updatePref(id: string, updated: AlertPreference) {
@@ -180,20 +236,26 @@ export default function AlertPreferencesPage() {
     setPrefs(prev => prev.filter(p => p.id !== id));
   }
 
-  function save() {
+  async function save() {
     const incomplete = prefs.filter(p => p.enabled && !p.make);
     if (incomplete.length > 0) {
       setError('Each active alert rule needs at least a Make selected.');
       return;
     }
+    if (!token) { setError('You need to be signed in to save preferences.'); return; }
+    setSaving(true);
+    setError('');
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
-      // TODO: POST /dealer/alert-preferences when BE endpoint is live (BE-040)
+      // Persist server-side so alerts actually fire, and keep a full-fidelity
+      // local copy (the backend stores only one aggregate rule set).
+      await setDealerPreferences(rulesToBackend(prefs), token);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch { /* ignore */ }
       setSaved(true);
-      setError('');
       setTimeout(() => setSaved(false), 3000);
-    } catch {
-      setError('Could not save preferences.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not save preferences.');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -301,9 +363,12 @@ export default function AlertPreferencesPage() {
               className="flex items-center gap-2 border-2 border-dashed border-gray-300 text-gray-500 font-semibold px-4 py-3 rounded-xl text-sm hover:border-[#003087] hover:text-[#003087] transition-colors">
               <Plus size={15} /> Add rule
             </button>
-            <button type="button" onClick={save}
-              className="flex-1 flex items-center justify-center gap-2 bg-[#003087] hover:bg-[#002070] text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-sm">
-              <Save size={15} /> Save Preferences
+            <button type="button" onClick={save} disabled={saving}
+              className="flex-1 flex items-center justify-center gap-2 bg-[#003087] hover:bg-[#002070] text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              {saving
+                ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                : <Save size={15} />}
+              {saving ? 'Saving…' : 'Save Preferences'}
             </button>
           </div>
         )}
