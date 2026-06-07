@@ -4,12 +4,13 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Fuel, Zap, ChevronLeft as Prev, ChevronRight as Next, CreditCard, Calculator, RefreshCw, MessageSquare } from 'lucide-react';
+import { ChevronLeft, Fuel, Zap, ChevronLeft as Prev, ChevronRight as Next, CreditCard, Calculator, RefreshCw, MessageSquare, BarChart2, CheckSquare, Square } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getWakalatCar, WakalatCarDetail, wakalatImageUrl, createOfferRequest } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { formatQAR } from '@/lib/utils';
+import { COMPARE_KEY, MAX_COMPARE } from '../compare/page';
 
 function calcMonthlyPayment(price: number, downPayment: number, annualRate: number, termMonths: number): number {
   const principal = price - downPayment;
@@ -31,6 +32,33 @@ export default function CarDetailPage() {
   const [downPayment, setDownPayment] = useState('');
   const [loanTerm, setLoanTerm] = useState('60');
   const [interestRate, setInterestRate] = useState('4.5');
+
+  // Compare state
+  const [compareList, setCompareList] = useState<string[]>([]);
+  const isCompared = slug ? compareList.includes(slug) : false;
+  const compareDisabled = compareList.length >= MAX_COMPARE && !isCompared;
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(COMPARE_KEY);
+      if (saved) setCompareList(saved.split(',').filter(Boolean).slice(0, MAX_COMPARE));
+    } catch { /* ok */ }
+  }, []);
+
+  function toggleCompare() {
+    if (!slug) return;
+    setCompareList(prev => {
+      let next: string[];
+      if (prev.includes(slug)) {
+        next = prev.filter(s => s !== slug);
+      } else {
+        if (prev.length >= MAX_COMPARE) return prev;
+        next = [...prev, slug];
+      }
+      try { localStorage.setItem(COMPARE_KEY, next.join(',')); } catch { /* ok */ }
+      return next;
+    });
+  }
 
   // Contact Dealer — fire-and-forget dealer_inquiry, then open WhatsApp
   const handleContactDealer = useCallback(async () => {
@@ -221,6 +249,36 @@ export default function CarDetailPage() {
                 <span className="text-xs font-normal opacity-75">Use my car toward this</span>
               </Link>
             </div>
+
+            {/* Compare button */}
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                onClick={toggleCompare}
+                disabled={compareDisabled}
+                className={`flex-1 flex items-center justify-center gap-2 text-sm font-bold py-2.5 rounded-2xl border transition-all ${
+                  isCompared
+                    ? 'bg-[#003087] text-white border-[#003087]'
+                    : compareDisabled
+                      ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50'
+                      : 'border-[#003087] text-[#003087] hover:bg-[#e8f0fd]'
+                }`}
+              >
+                {isCompared ? <><CheckSquare size={16} /> Remove from Compare</> : <><Square size={16} /> Add to Compare</>}
+              </button>
+              {compareList.length >= 1 && (
+                <Link
+                  href={`/cars/compare?slugs=${compareList.join(',')}`}
+                  className="flex items-center gap-1.5 text-sm font-bold text-white bg-[#ff6600] hover:bg-[#e65c00] px-4 py-2.5 rounded-2xl transition-colors whitespace-nowrap"
+                >
+                  <BarChart2 size={15} />
+                  Compare {compareList.length}
+                </Link>
+              )}
+            </div>
+            {compareDisabled && (
+              <p className="text-xs text-orange-500 text-center mt-1">Max {MAX_COMPARE} cars — remove one to add this</p>
+            )}
+
             <p className="text-xs text-gray-400 mt-2 text-center">
               Trade-in: get an estimated value for your car and send one combined request to this dealer.
             </p>
