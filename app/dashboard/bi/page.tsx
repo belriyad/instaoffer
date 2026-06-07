@@ -4,18 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, Brain, Clock, DollarSign, BarChart2,
+  ArrowLeft, Brain, TrendingUp, Clock, DollarSign, BarChart2,
   ChevronRight, Sparkles, AlertCircle, Car, RefreshCw, Lock,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
 import {
-  getMLEstimate, getMLTimeToSell,
+  getMLEstimate, getMLForecast, getMLTimeToSell,
   getDealerMarginCalc, getMarketComps,
-  MLEstimate, MLTimeToSellEstimate, MarginCalcResult, OfferComps,
+  MLEstimate, MLForecast, MLTimeToSellEstimate, MarginCalcResult, OfferComps,
 } from '@/lib/api';
-import { formatQAR, MODEL_DEFAULTS, WARRANTY_STATUSES, SELLER_TYPES } from '@/lib/utils';
+import { formatQAR, formatKM, MODEL_DEFAULTS, WARRANTY_STATUSES, SELLER_TYPES } from '@/lib/utils';
 import {
   MakeSelect, ModelSelect, TrimSelect,
   YearTiles, KmBucketPicker, kmLabel,
@@ -27,6 +27,7 @@ import { FUEL_TYPES, GEAR_TYPES, CAR_TYPES } from '@/lib/utils';
 
 interface BIResults {
   estimate: MLEstimate | null;
+  forecast: MLForecast | null;
   timeToSell: MLTimeToSellEstimate | null;
   margin: MarginCalcResult | null;
   comps: OfferComps | null;
@@ -149,7 +150,8 @@ export default function BIPage() {
       const estimate = await getMLEstimate(params, token ?? undefined).catch(() => null);
       const priceForTts = buyPrice ?? estimate?.estimated_price_qar;
 
-      const [timeToSell, margin, comps] = await Promise.allSettled([
+      const [forecast, timeToSell, margin, comps] = await Promise.allSettled([
+        getMLForecast(params, token ?? undefined),
         priceForTts
           ? getMLTimeToSell({ ...params, price_qar: priceForTts }, token ?? undefined)
           : Promise.resolve(null),
@@ -164,6 +166,7 @@ export default function BIPage() {
 
       setResults({
         estimate,
+        forecast: forecast.status === 'fulfilled' ? forecast.value : null,
         timeToSell: timeToSell.status === 'fulfilled' ? timeToSell.value : null,
         margin: margin.status === 'fulfilled' ? margin.value : null,
         comps: comps.status === 'fulfilled' ? comps.value : null,
@@ -438,6 +441,40 @@ export default function BIPage() {
                       </span>
                     </div>
                   </div>
+                </ResultCard>
+              )}
+
+              {/* ── Price Forecast ── */}
+              {results.forecast && (
+                <ResultCard>
+                  <SectionHeader icon={<TrendingUp size={16} />} title="Price Forecast" />
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className={`text-sm font-bold ${results.forecast.market_trend_annual_pct >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                      {results.forecast.market_trend_annual_pct >= 0 ? '▲' : '▼'} {Math.abs(results.forecast.market_trend_annual_pct).toFixed(1)}% annual market trend
+                    </span>
+                    <span className="text-xs text-gray-400">· {results.forecast.segment}</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <div className="flex gap-3 min-w-0">
+                      {/* Current */}
+                      <div className="flex-1 min-w-[90px] bg-gray-50 rounded-xl p-3 text-center">
+                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Now</div>
+                        <div className="text-sm font-black text-gray-900">{formatQAR(results.forecast.current.estimated_price_qar)}</div>
+                      </div>
+                      {results.forecast.forecast.map(pt => (
+                        <div key={pt.horizon} className="flex-1 min-w-[90px] bg-gray-50 rounded-xl p-3 text-center">
+                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">{pt.horizon}</div>
+                          <div className="text-sm font-black text-gray-900">{formatQAR(pt.estimated_price_qar)}</div>
+                          <div className={`text-[10px] font-bold mt-0.5 ${pt.change_pct >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                            {pt.change_pct >= 0 ? '+' : ''}{pt.change_pct.toFixed(1)}%
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-3">
+                    Assumes {formatKM(results.forecast.annual_km_assumption)} km added per year.
+                  </p>
                 </ResultCard>
               )}
 

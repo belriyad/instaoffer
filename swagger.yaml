@@ -1055,6 +1055,64 @@ paths:
                   ok: { type: boolean }
                   listing:
                     $ref: "#/components/schemas/Listing"
+  /ml/forecast:
+    get:
+      tags: [ML]
+      summary: Forward-looking value projection ("where is this car's value heading?")
+      description: >
+        Projects the car's value at 3/6/12/24-month horizons by aging it through
+        the v8 comps-anchored model (effective age, odometer at 20,000 km/yr, and
+        listing season advanced; today's market anchor held constant). Cars with
+        no comparables fall back to a flat segment-typical depreciation curve
+        (method=fallback_curve). change_pct is relative to the current estimate
+        (negative = depreciation).
+      parameters:
+        - { in: query, name: make, required: true, schema: { type: string } }
+        - { in: query, name: class_name, required: true, schema: { type: string } }
+        - { in: query, name: manufacture_year, required: true, schema: { type: integer } }
+        - { in: query, name: km, schema: { type: integer } }
+        - { in: query, name: trim, schema: { type: string } }
+        - { in: query, name: cylinder_count, schema: { type: integer } }
+        - { in: query, name: fuel_type, schema: { type: string } }
+        - { in: query, name: gear_type, schema: { type: string } }
+        - { in: query, name: car_type, schema: { type: string } }
+        - { in: query, name: city, schema: { type: string } }
+        - { in: query, name: warranty_status, schema: { type: string } }
+        - { in: query, name: seller_type, schema: { type: string } }
+      responses:
+        "200":
+          description: Current estimate plus projection points
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current:
+                    type: object
+                    properties:
+                      estimated_price_qar: { type: number }
+                      confidence_range:
+                        type: array
+                        items: { type: number }
+                      segment: { type: string }
+                  forecast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        horizon: { type: string, example: 12m }
+                        months: { type: integer }
+                        estimated_price_qar: { type: number }
+                        change_pct: { type: number, example: -8.4 }
+                  market_trend_annual_pct: { type: number }
+                  annual_km_assumption: { type: integer, example: 20000 }
+                  model_version: { type: string }
+                  segment: { type: string }
+                  r2: { type: number, nullable: true }
+                  mape: { type: number, nullable: true }
+                  method: { type: string, enum: [model_aging, fallback_curve] }
+                  comps_cnt: { type: integer, nullable: true }
+        "400": { description: make and manufacture_year are required }
   /ml/estimate:
     get:
       tags: [MLValuation]
