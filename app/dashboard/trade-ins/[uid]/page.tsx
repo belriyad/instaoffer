@@ -180,8 +180,10 @@ export default function TradeInDetailPage() {
   const marketEst = req.market_est_qar ?? mlEstimate;
   const diffLow = req.target_price_qar && marketEst
     ? Math.max(0, req.target_price_qar - marketEst) : null;
-  // Forward-looking value (12-month) — shown when there's no target vehicle to gap against.
-  const fc12 = forecast?.forecast?.find(f => f.horizon === '12m') ?? null;
+  // Forward-looking value — shown when there's no target vehicle to gap against.
+  // Prefer the 12-month point; fall back to the longest horizon the model returned.
+  const fcPoints = forecast?.forecast ?? [];
+  const fcProjection = fcPoints.find(f => f.horizon === '12m') ?? fcPoints[fcPoints.length - 1] ?? null;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
@@ -260,12 +262,12 @@ export default function TradeInDetailPage() {
                 <p className="text-xs text-orange-600 font-bold uppercase tracking-wide mb-1">Est. Gap to Target</p>
                 <p className="text-lg font-black text-gray-900">{formatQAR(diffLow)}</p>
               </div>
-            ) : fc12 ? (
+            ) : fcProjection ? (
               <div className="bg-orange-50 rounded-xl p-4">
-                <p className="text-xs text-orange-600 font-bold uppercase tracking-wide mb-1">Projected Value (12mo)</p>
-                <p className="text-lg font-black text-gray-900">{formatQAR(Math.round(fc12.estimated_price_qar))}</p>
-                <p className={`text-xs font-semibold mt-0.5 ${fc12.change_pct >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                  {fc12.change_pct >= 0 ? '+' : ''}{fc12.change_pct}% vs today
+                <p className="text-xs text-orange-600 font-bold uppercase tracking-wide mb-1">Projected Value ({fcProjection.horizon})</p>
+                <p className="text-lg font-black text-gray-900">{formatQAR(Math.round(fcProjection.estimated_price_qar))}</p>
+                <p className={`text-xs font-semibold mt-0.5 ${fcProjection.change_pct >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                  {fcProjection.change_pct >= 0 ? '+' : ''}{fcProjection.change_pct}% vs today
                 </p>
               </div>
             ) : (
