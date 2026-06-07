@@ -1115,12 +1115,64 @@ export async function getDealerMarginCalc(
   params: { make: string; class_name: string; trim?: string; year: number; km: number; buy_price?: number },
   token: string
 ): Promise<MarginCalcResult> {
-  const qs = '?' + new URLSearchParams(
-    Object.entries(params)
-      .filter(([, v]) => v !== undefined)
-      .map(([k, v]) => [k, String(v)])
-  ).toString();
-  return apiFetch(`/dealer/margin-calc${qs}`, {}, token);
+  // There is no backend margin endpoint — derive margin from the ML market
+  // estimate (which is available) so the calculator and BI page still work.
+  let est: MLEstimate;
+  try {
+    est = await getMLEstimate({
+      make: params.make,
+      class_name: params.class_name,
+      trim: params.trim,
+      manufacture_year: params.year,
+      km: params.km,
+    }, token);
+  } catch {
+    return { ok: false, reason: 'no_market_data' };
+  }
+
+  const market = Math.round(est.estimated_price_qar);
+  if (!market || market <= 0) return { ok: false, reason: 'no_market_data' };
+
+  const [low, high] = est.confidence_range ?? [market, market];
+  const spread = market > 0 ? (high - low) / market : 1;
+  const confidence = spread <= 0.15 ? 'high' : spread <= 0.30 ? 'medium' : 'low';
+  // Assumed reconditioning + holding cost (no backend figure available).
+  const fixedCosts = Math.round(market * 0.03);
+  const round500 = (n: number) => Math.round(n / 500) * 500;
+  const pct1 = (n: number) => Math.round(n * 1000) / 10;
+
+  const makeTier = (offer: number): MarginTier => {
+    const gross = market - offer - fixedCosts;
+    return {
+      offer_qar: offer,
+      gross_qar: gross,
+      gross_pct: market > 0 ? pct1(gross / market) : 0,
+      roi_pct: offer > 0 ? pct1(gross / offer) : 0,
+    };
+  };
+
+  const result: MarginCalcResult = {
+    ok: true,
+    market_est_qar: market,
+    market_low_qar: Math.round(low),
+    market_high_qar: Math.round(high),
+    confidence,
+    segment: est.segment,
+    model_mape_pct: est.mape != null ? Math.round(est.mape * (est.mape < 1 ? 1000 : 10)) / 10 : undefined,
+    fixed_costs_qar: fixedCosts,
+    tiers: {
+      // Dealer buys below market; lower offer = safer margin.
+      conservative: makeTier(round500(market * 0.82)),
+      target:       makeTier(round500(market * 0.88)),
+      aggressive:   makeTier(round500(market * 0.93)),
+    },
+  };
+
+  if (params.buy_price && params.buy_price > 0) {
+    result.your_price = makeTier(Math.round(params.buy_price));
+  }
+
+  return result;
 }
 
 export async function getDealerLeads(
