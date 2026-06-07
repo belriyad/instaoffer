@@ -374,6 +374,24 @@ export async function getOfferRequestDetail(
   return { ...res.request, bids: res.bids ?? [], market_comps: res.market_comps };
 }
 
+// Dealer-side lead detail. The per-ID GET (/instant-offers/requests/{uid}) is
+// owner-only — dealers get "Access denied". Resolve from the dealer feed
+// (/instant-offers/requests) instead, finding the row by request_uid.
+// Bids are not exposed on the feed rows, so they come back empty here.
+export async function getDealerLeadDetail(
+  uid: string,
+  token: string
+): Promise<OfferRequest & { bids: OfferBid[]; market_comps?: unknown }> {
+  const res = await apiFetch<{ rows: OfferRequest[]; total: number }>(
+    '/instant-offers/requests?limit=200',
+    {},
+    token
+  );
+  const found = (res.rows ?? []).find(r => r.request_uid === uid || String(r.id) === uid);
+  if (!found) throw new Error('Lead not found or no longer available');
+  return { ...found, bids: [] };
+}
+
 export async function placeBid(
   requestUid: string,
   data: { amount_qar: number; message?: string; expires_at?: string },
@@ -1240,9 +1258,20 @@ export async function getDealerTradeIns(
 }
 
 export async function getTradeInDetail(uid: string, token: string): Promise<TradeInRequest> {
-  // No single-item GET endpoint — fetch the list and find by uid
+  // No single-item GET endpoint — fetch the list and find by uid.
+  // This reads the CURRENT USER's own trade-in requests (seller side).
   const { rows } = await apiFetch<{ rows: TradeInRequest[]; total: number }>('/trade-in/requests?limit=200', {}, token);
   const found = rows.find(r => (r.trade_in_uid ?? r.uid) === uid || String(r.id) === uid);
+  if (!found) throw new Error('Trade-in request not found');
+  return found;
+}
+
+// Dealer-side trade-in detail. There is no per-ID GET endpoint, and the seller
+// endpoint (/trade-in/requests) only returns the caller's OWN submissions — not
+// the dealer queue. So resolve from the dealer queue (/dealer/trade-ins) instead.
+export async function getDealerTradeInDetail(uid: string, token: string): Promise<TradeInRequest> {
+  const { rows } = await getDealerTradeIns({ limit: 200 }, token);
+  const found = rows.find(r => (r.uid ?? r.trade_in_uid) === uid || String(r.id) === uid);
   if (!found) throw new Error('Trade-in request not found');
   return found;
 }

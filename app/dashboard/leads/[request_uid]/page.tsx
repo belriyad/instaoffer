@@ -10,7 +10,7 @@ import {
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getOfferRequestDetail, placeBid, OfferRequest, OfferBid } from '@/lib/api';
+import { getDealerLeadDetail, placeBid, OfferRequest, OfferBid } from '@/lib/api';
 import { formatQAR, formatDate, formatKM } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
@@ -83,7 +83,7 @@ export default function DealerLeadDetailPage() {
   useEffect(() => {
     if (!token || !request_uid) return;
     setFetching(true);
-    getOfferRequestDetail(request_uid, token)
+    getDealerLeadDetail(request_uid, token)
       .then(setReq)
       .catch(err => setFetchError(err instanceof Error ? err.message : 'Failed to load'))
       .finally(() => setFetching(false));
@@ -100,7 +100,7 @@ export default function DealerLeadDetailPage() {
       setBidSent(true);
       setBidOpen(false);
       // Reload to show updated bid in list
-      const updated = await getOfferRequestDetail(request_uid, token);
+      const updated = await getDealerLeadDetail(request_uid, token);
       setReq(updated);
     } catch (err) {
       setBidError(err instanceof Error ? err.message : 'Failed to place bid');

@@ -11,7 +11,7 @@ import {
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getTradeInDetail, submitTradeInProposal, declineTradeIn, TradeInRequest } from '@/lib/api';
+import { getDealerTradeInDetail, submitTradeInProposal, declineTradeIn, TradeInRequest } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
@@ -74,7 +74,7 @@ export default function TradeInDetailPage() {
   useEffect(() => {
     if (!token || !uid) return;
     setFetching(true);
-    getTradeInDetail(uid, token)
+    getDealerTradeInDetail(uid, token)
       .then(setReq)
       .catch(err => setFetchError(err instanceof Error ? err.message : 'Failed to load'))
       .finally(() => setFetching(false));
