@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, SlidersHorizontal, X, ChevronLeft, ChevronRight,
   Fuel, Zap, Car, Calculator, CreditCard, Banknote, ChevronDown, ChevronUp,
-  BarChart2, CheckSquare, Square,
+  BarChart2,
 } from 'lucide-react';
 import { COMPARE_KEY, MAX_COMPARE } from './compare/page';
 import Navbar from '@/components/Navbar';
@@ -66,26 +66,38 @@ export default function CarsPage() {
   const perPage = 24;
 
   // ── Compare state ──
-  const [compareList, setCompareList] = useState<string[]>([]);
+  type CompareCar = { slug: string; name: string; thumbnail: string | null; price: number | null };
+  const [compareItems, setCompareItems] = useState<CompareCar[]>([]);
+  const compareList = compareItems.map(c => c.slug);
 
   // Load compare list from localStorage on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(COMPARE_KEY);
-      if (saved) setCompareList(saved.split(',').filter(Boolean).slice(0, MAX_COMPARE));
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed[0]?.slug) {
+          setCompareItems(parsed.slice(0, MAX_COMPARE));
+        }
+      }
     } catch { /* ok */ }
   }, []);
 
-  // Persist compare list to localStorage whenever it changes
+  // Persist to localStorage whenever it changes
   useEffect(() => {
-    try { localStorage.setItem(COMPARE_KEY, compareList.join(',')); } catch { /* ok */ }
-  }, [compareList]);
+    try { localStorage.setItem(COMPARE_KEY, JSON.stringify(compareItems)); } catch { /* ok */ }
+  }, [compareItems]);
 
-  function toggleCompare(slug: string) {
-    setCompareList(prev => {
-      if (prev.includes(slug)) return prev.filter(s => s !== slug);
-      if (prev.length >= MAX_COMPARE) return prev; // already at max
-      return [...prev, slug];
+  function toggleCompare(car: WakalatCarSummary) {
+    setCompareItems(prev => {
+      if (prev.some(c => c.slug === car.slug)) return prev.filter(c => c.slug !== car.slug);
+      if (prev.length >= MAX_COMPARE) return prev;
+      return [...prev, {
+        slug: car.slug,
+        name: `${car.year} ${car.make} ${car.model}`,
+        thumbnail: car.thumbnail,
+        price: car.base_price_qar,
+      }];
     });
   }
 
@@ -472,7 +484,7 @@ export default function CarsPage() {
                 interestRate={Number(interestRate)}
                 isCompared={compareList.includes(car.slug)}
                 compareDisabled={compareList.length >= MAX_COMPARE && !compareList.includes(car.slug)}
-                onToggleCompare={toggleCompare}
+                onToggleCompare={() => toggleCompare(car)}
               />
             ))}
           </div>
@@ -502,50 +514,79 @@ export default function CarsPage() {
         )}
       </div>
 
-      {/* ── Compare floating bar ── */}
+      {/* ── Compare tray (shopping-cart style) ── */}
       <AnimatePresence>
-        {compareList.length >= 1 && (
+        {compareItems.length >= 1 && (
           <motion.div
-            initial={{ y: 80, opacity: 0 }}
+            initial={{ y: 120, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-4 bg-[#003087] text-white px-4 py-3 shadow-2xl"
+            exit={{ y: 120, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+            className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl"
           >
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <BarChart2 size={16} className="shrink-0" />
-                <span className="text-sm font-bold">{compareList.length} / {MAX_COMPARE} cars selected</span>
+            <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4 flex-wrap sm:flex-nowrap">
+
+              {/* Slots */}
+              <div className="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto pb-1">
+                {Array.from({ length: MAX_COMPARE }).map((_, i) => {
+                  const item = compareItems[i];
+                  return item ? (
+                    <div key={item.slug} className="relative flex-shrink-0 w-28 bg-[#003087]/5 border border-[#003087]/20 rounded-xl overflow-hidden group">
+                      {/* Thumbnail */}
+                      {item.thumbnail ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={wakalatImageUrl(item.thumbnail)} alt="" className="w-full h-16 object-cover" />
+                      ) : (
+                        <div className="w-full h-16 bg-gray-100 flex items-center justify-center text-2xl">🚗</div>
+                      )}
+                      {/* Remove */}
+                      <button
+                        onClick={() => setCompareItems(prev => prev.filter(c => c.slug !== item.slug))}
+                        className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full shadow flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      >
+                        <X size={10} />
+                      </button>
+                      {/* Name */}
+                      <div className="px-2 py-1.5">
+                        <p className="text-xs font-bold text-gray-800 leading-tight truncate">{item.name}</p>
+                        {item.price && <p className="text-xs text-[#003087] font-black mt-0.5">{formatQAR(item.price)}</p>}
+                      </div>
+                    </div>
+                  ) : (
+                    <div key={`empty-${i}`} className="flex-shrink-0 w-28 h-[94px] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-1 text-gray-300">
+                      <Car size={18} />
+                      <span className="text-xs font-medium">Add car</span>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                {compareList.map(slug => (
-                  <span key={slug} className="flex items-center gap-1 bg-white/20 text-xs font-semibold px-2.5 py-1 rounded-full">
-                    {slug.replace(/-/g, ' ')}
-                    <button onClick={() => toggleCompare(slug)} className="hover:text-red-300 ml-0.5">
-                      <X size={10} />
-                    </button>
-                  </span>
-                ))}
+
+              {/* Actions */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setCompareItems([])}
+                  className="text-xs text-gray-400 hover:text-gray-700 font-semibold px-2 py-1.5 transition-colors"
+                >
+                  Clear all
+                </button>
+                <button
+                  disabled={compareItems.length < 2}
+                  onClick={() => router.push(`/cars/compare?slugs=${compareList.join(',')}`)}
+                  className="flex items-center gap-2 text-sm font-black bg-[#ff6600] hover:bg-[#e65c00] disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap"
+                >
+                  <BarChart2 size={16} />
+                  {compareItems.length < 2
+                    ? `Compare (need ${2 - compareItems.length} more)`
+                    : `Compare ${compareItems.length} Cars →`}
+                </button>
               </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => setCompareList([])}
-                className="text-xs text-white/60 hover:text-white font-medium px-2 py-1.5"
-              >
-                Clear
-              </button>
-              <button
-                disabled={compareList.length < 2}
-                onClick={() => router.push(`/cars/compare?slugs=${compareList.join(',')}`)}
-                className="flex items-center gap-1.5 text-sm font-bold bg-[#ff6600] hover:bg-[#e65c00] disabled:opacity-40 disabled:cursor-not-allowed px-5 py-2 rounded-xl transition-colors"
-              >
-                <BarChart2 size={15} />
-                Compare {compareList.length < 2 ? '(min 2)' : `${compareList.length} Cars`}
-              </button>
+
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Spacer so footer isn't hidden behind tray */}
+      {compareItems.length >= 1 && <div className="h-36" />}
       <Footer />
     </div>
   );
@@ -564,7 +605,7 @@ function CarCard({
   interestRate: number;
   isCompared?: boolean;
   compareDisabled?: boolean;
-  onToggleCompare?: (slug: string) => void;
+  onToggleCompare?: () => void;
 }) {
   const monthly = car.base_price_qar
     ? calcMonthlyPayment(car.base_price_qar, downPayment, interestRate, loanTerm)
@@ -580,9 +621,10 @@ function CarCard({
       className="flex flex-col"
     >
       <div className={`group flex flex-col bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-all h-full ${isCompared ? 'border-[#003087] ring-2 ring-[#003087]/20' : 'border-gray-100 hover:border-[#003087]/30'}`}>
-        {/* Image — links to detail */}
-        <Link href={`/cars/${car.slug}`} className="block">
-          <div className="relative h-44 bg-gray-50 overflow-hidden">
+
+        {/* Image with checkbox overlay */}
+        <div className="relative h-44 bg-gray-50 overflow-hidden flex-shrink-0">
+          <Link href={`/cars/${car.slug}`} className="block w-full h-full">
             {imgSrc ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -595,70 +637,80 @@ function CarCard({
                 <Car size={48} className="text-gray-200" />
               </div>
             )}
-            {/* Fuel badge */}
-            {car.fuel_type && (
-              <span className={`absolute top-2 right-2 flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
-                car.fuel_type === 'Electric' ? 'bg-green-500 text-white' :
-                car.fuel_type === 'Hybrid' ? 'bg-teal-500 text-white' :
-                'bg-black/60 text-white'
-              }`}>
-                {FUEL_ICONS[car.fuel_type] ?? <Fuel size={11} />}
-                {car.fuel_type}
-              </span>
+          </Link>
+
+          {/* Fuel badge */}
+          {car.fuel_type && (
+            <span className={`absolute top-2 right-2 flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full pointer-events-none ${
+              car.fuel_type === 'Electric' ? 'bg-green-500 text-white' :
+              car.fuel_type === 'Hybrid' ? 'bg-teal-500 text-white' :
+              'bg-black/60 text-white'
+            }`}>
+              {FUEL_ICONS[car.fuel_type] ?? <Fuel size={11} />}
+              {car.fuel_type}
+            </span>
+          )}
+
+          {/* Checkbox — top-left */}
+          <button
+            onClick={e => { e.preventDefault(); if (!compareDisabled || isCompared) onToggleCompare?.(); }}
+            title={isCompared ? 'Remove from compare' : compareDisabled ? `Max ${MAX_COMPARE} cars` : 'Add to compare'}
+            className={`absolute top-2 left-2 w-7 h-7 rounded-lg flex items-center justify-center transition-all shadow-md z-10 ${
+              isCompared
+                ? 'bg-[#003087] border-2 border-[#003087]'
+                : compareDisabled
+                  ? 'bg-white/60 border-2 border-gray-200 cursor-not-allowed'
+                  : 'bg-white/90 border-2 border-gray-200 hover:border-[#003087] hover:bg-white'
+            }`}
+          >
+            {isCompared ? (
+              // Checked — white checkmark
+              <svg viewBox="0 0 12 12" width="12" height="12" fill="none">
+                <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : (
+              <div className={`w-3 h-3 rounded-sm ${compareDisabled ? 'bg-gray-200' : 'bg-transparent'}`} />
             )}
+          </button>
+
+          {/* "Comparing" label strip */}
+          {isCompared && (
+            <div className="absolute bottom-0 left-0 right-0 bg-[#003087]/90 text-white text-xs font-bold py-1 text-center tracking-wide pointer-events-none">
+              ✓ Added to compare
+            </div>
+          )}
+        </div>
+
+        {/* Info — links to detail */}
+        <Link href={`/cars/${car.slug}`} className="flex flex-col flex-1 p-4">
+          <p className="text-xs text-gray-400 font-medium mb-0.5">{car.dealer}</p>
+          <h3 className="font-bold text-gray-900 text-sm leading-snug group-hover:text-[#003087] transition-colors">
+            {car.year} {car.make} {car.model}
+          </h3>
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {car.body_type && <Tag>{car.body_type.replace(' Cars', '')}</Tag>}
+            {car.transmission && <Tag>{car.transmission}</Tag>}
+            {car.engine && <Tag>{car.engine}</Tag>}
           </div>
 
-          {/* Info */}
-          <div className="p-4">
-            <p className="text-xs text-gray-400 font-medium mb-0.5">{car.dealer}</p>
-            <h3 className="font-bold text-gray-900 text-sm leading-snug group-hover:text-[#003087] transition-colors">
-              {car.year} {car.make} {car.model}
-            </h3>
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {car.body_type && <Tag>{car.body_type.replace(' Cars', '')}</Tag>}
-              {car.transmission && <Tag>{car.transmission}</Tag>}
-              {car.engine && <Tag>{car.engine}</Tag>}
-            </div>
-
-            {/* Price */}
-            <div className="mt-3 pt-3 border-t border-gray-50">
-              {car.base_price_qar ? (
-                <>
-                  <div className="text-lg font-black text-[#003087]">{formatQAR(car.base_price_qar)}</div>
-                  {financeMode && monthly > 0 && (
-                    <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                      <CreditCard size={11} />
-                      ~{formatQAR(Math.round(monthly))}/mo
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-sm text-gray-400 font-medium">Price on request</div>
-              )}
-            </div>
+          {/* Price */}
+          <div className="mt-3 pt-3 border-t border-gray-50">
+            {car.base_price_qar ? (
+              <>
+                <div className="text-lg font-black text-[#003087]">{formatQAR(car.base_price_qar)}</div>
+                {financeMode && monthly > 0 && (
+                  <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                    <CreditCard size={11} />
+                    ~{formatQAR(Math.round(monthly))}/mo
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-sm text-gray-400 font-medium">Price on request</div>
+            )}
           </div>
         </Link>
 
-        {/* Compare toggle — outside nav link */}
-        {onToggleCompare && (
-          <div className="px-4 pb-3 pt-0 border-t border-gray-50 mt-auto">
-            <button
-              onClick={() => onToggleCompare(car.slug)}
-              disabled={compareDisabled}
-              className={`w-full flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-lg transition-all ${
-                isCompared
-                  ? 'bg-[#003087] text-white'
-                  : compareDisabled
-                    ? 'bg-gray-50 text-gray-300 cursor-not-allowed'
-                    : 'bg-gray-50 text-gray-500 hover:bg-[#e8f0fd] hover:text-[#003087]'
-              }`}
-            >
-              {isCompared
-                ? <><CheckSquare size={13} /> Comparing</>
-                : <><Square size={13} /> Compare</>}
-            </button>
-          </div>
-        )}
       </div>
     </motion.div>
   );

@@ -33,7 +33,7 @@ export default function CarDetailPage() {
   const [loanTerm, setLoanTerm] = useState('60');
   const [interestRate, setInterestRate] = useState('4.5');
 
-  // Compare state
+  // Compare state — mirrors listing page's CompareCar shape
   const [compareList, setCompareList] = useState<string[]>([]);
   const isCompared = slug ? compareList.includes(slug) : false;
   const compareDisabled = compareList.length >= MAX_COMPARE && !isCompared;
@@ -41,23 +41,47 @@ export default function CarDetailPage() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(COMPARE_KEY);
-      if (saved) setCompareList(saved.split(',').filter(Boolean).slice(0, MAX_COMPARE));
+      if (!saved) return;
+      // Support both old string format and new JSON array format
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed[0]?.slug) {
+          setCompareList(parsed.map((c: { slug: string }) => c.slug).slice(0, MAX_COMPARE));
+          return;
+        }
+      } catch { /* not JSON, fall through */ }
+      setCompareList(saved.split(',').filter(Boolean).slice(0, MAX_COMPARE));
     } catch { /* ok */ }
   }, []);
 
   function toggleCompare() {
-    if (!slug) return;
-    setCompareList(prev => {
-      let next: string[];
-      if (prev.includes(slug)) {
-        next = prev.filter(s => s !== slug);
-      } else {
-        if (prev.length >= MAX_COMPARE) return prev;
-        next = [...prev, slug];
+    if (!slug || !car) return;
+    const thumbnail = car.images?.find(i => i.type === 'card' || i.type === 'detail')?.url
+      ?? car.image_urls_json?.[0]
+      ?? null;
+    try {
+      const saved = localStorage.getItem(COMPARE_KEY);
+      let items: { slug: string; name: string; thumbnail: string | null; price: number | null }[] = [];
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed[0]?.slug) items = parsed;
+        } catch { /* ok */ }
       }
-      try { localStorage.setItem(COMPARE_KEY, next.join(',')); } catch { /* ok */ }
-      return next;
-    });
+      if (items.some(c => c.slug === slug)) {
+        items = items.filter(c => c.slug !== slug);
+      } else {
+        if (items.length >= MAX_COMPARE) return;
+        items = [...items, {
+          slug,
+          name: `${car.year} ${car.make} ${car.model}`,
+          thumbnail,
+          price: car.base_price_qar ?? null,
+        }];
+      }
+      localStorage.setItem(COMPARE_KEY, JSON.stringify(items));
+      setCompareList(items.map(c => c.slug));
+    } catch { /* ok */ }
   }
 
   // Contact Dealer — fire-and-forget dealer_inquiry, then open WhatsApp
