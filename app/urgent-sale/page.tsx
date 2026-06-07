@@ -91,7 +91,21 @@ function UrgentSaleContent() {
   });
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
+  const [errorField, setErrorField] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  // Scroll the offending field into view and surface an inline error on it.
+  function flagError(field: string, message: string) {
+    setError(message);
+    setErrorField(field);
+    requestAnimationFrame(() => {
+      document.querySelector(`[data-error-anchor="${field}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+  function clearError() {
+    if (error) { setError(''); setErrorField(''); }
+  }
 
   // Evidence state — per-category files + accident count
   const [categoryFiles, setCategoryFiles] = useState<Partial<Record<EvidenceCategory, File>>>({});
@@ -126,6 +140,7 @@ function UrgentSaleContent() {
     const file = e.target.files?.[0];
     if (file && activeCategory) {
       setCategoryFiles(prev => ({ ...prev, [activeCategory]: file }));
+      clearError();
     }
     e.target.value = '';
   }
@@ -135,32 +150,33 @@ function UrgentSaleContent() {
 
   function set(field: keyof FormState, value: string) {
     setForm(prev => ({ ...prev, [field]: value }));
+    clearError();
   }
 
-  function validateStep(): string {
+  function validateStep(): { field: string; message: string } | null {
     if (step === 0) {
-      if (!form.make || !form.class_name) return 'Please select make and model.';
-      if (!form.year) return 'Please select the year.';
-      if (!form.km)   return 'Please enter the mileage.';
+      if (!form.make || !form.class_name) return { field: 'make', message: 'Please select make and model.' };
+      if (!form.year) return { field: 'year', message: 'Please select the year.' };
+      if (!form.km)   return { field: 'km', message: 'Please enter the mileage.' };
     }
     if (step === 1) {
-      if (!form.urgency_reason) return 'Please select why you need to sell quickly.';
+      if (!form.urgency_reason) return { field: 'urgency_reason', message: 'Please select why you need to sell quickly.' };
     }
     if (step === 2) {
       if (requiredComplete < REQUIRED_CATEGORIES.length)
-        return `Please upload at least: Exterior, Interior, and Odometer photos (${requiredComplete}/${REQUIRED_CATEGORIES.length} done).`;
+        return { field: 'evidence', message: `Please upload at least: Exterior, Interior, and Odometer photos (${requiredComplete}/${REQUIRED_CATEGORIES.length} done).` };
     }
-    return '';
+    return null;
   }
 
   function goNext() {
     const err = validateStep();
-    if (err) { setError(err); return; }
-    setError('');
+    if (err) { flagError(err.field, err.message); return; }
+    setError(''); setErrorField('');
     setStep(s => s + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-  function goBack() { setError(''); setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function goBack() { setError(''); setErrorField(''); setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   async function handleSubmit() {
     setError('');
@@ -274,27 +290,34 @@ function UrgentSaleContent() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <h2 className="font-bold text-gray-900 mb-4 text-base">🚗 Your Car</h2>
               <div className="space-y-4">
-                <div>
+                <div data-error-anchor="make">
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Make *</label>
-                  <SearchableMakeSelect value={form.make} onChange={v => { set('make', v); set('class_name', ''); }} />
+                  <div className={errorField === 'make' ? 'rounded-lg ring-2 ring-red-400' : ''}>
+                    <SearchableMakeSelect value={form.make} onChange={v => { set('make', v); set('class_name', ''); }} />
+                  </div>
+                  {errorField === 'make' && <p className="text-xs text-red-600 mt-1">{error}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Model *</label>
                   <SearchableModelSelect make={form.make} value={form.class_name} onChange={v => set('class_name', v)} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
+                  <div data-error-anchor="year">
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Year *</label>
                     <select value={form.year} onChange={e => set('year', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+                      className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087] ${errorField === 'year' ? 'border-red-400 ring-2 ring-red-200' : 'border-gray-300'}`}>
                       <option value="">Year</option>
                       {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
+                    {errorField === 'year' && <p className="text-xs text-red-600 mt-1">{error}</p>}
                   </div>
                 </div>
-                <div>
+                <div data-error-anchor="km">
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
-                  <KmBucketPicker value={form.km} onChange={v => setForm(prev => ({ ...prev, km: v }))} />
+                  <div className={errorField === 'km' ? 'rounded-lg ring-2 ring-red-400' : ''}>
+                    <KmBucketPicker value={form.km} onChange={v => { setForm(prev => ({ ...prev, km: v })); clearError(); }} />
+                  </div>
+                  {errorField === 'km' && <p className="text-xs text-red-600 mt-1">{error}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -324,9 +347,9 @@ function UrgentSaleContent() {
         {/* STEP 1: Urgency */}
         {step === 1 && (
           <div className="space-y-5">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5" data-error-anchor="urgency_reason">
               <h2 className="font-bold text-gray-900 mb-4 text-base">⚡ Why are you selling quickly?</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 ${errorField === 'urgency_reason' ? 'rounded-xl ring-2 ring-red-300 p-2' : ''}`}>
                 {URGENCY_OPTIONS.map(opt => (
                   <button key={opt.value} type="button" onClick={() => set('urgency_reason', opt.value)}
                     className={`text-left p-4 rounded-xl border-2 transition-all ${form.urgency_reason === opt.value ? 'border-[#ff6600] bg-orange-50' : 'border-gray-200 hover:border-[#ff6600]/50'}`}>
@@ -335,6 +358,7 @@ function UrgentSaleContent() {
                   </button>
                 ))}
               </div>
+              {errorField === 'urgency_reason' && <p className="text-xs text-red-600 mt-2">{error}</p>}
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <h2 className="font-bold text-gray-900 mb-4 text-base">🎯 What matters most to you?</h2>
@@ -369,13 +393,16 @@ function UrgentSaleContent() {
             />
 
             {/* Header + progress */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5" data-error-anchor="evidence">
               <h2 className="font-bold text-gray-900 mb-1 text-base flex items-center gap-2">
                 <Camera size={18} className="text-[#003087]" /> Evidence Package
               </h2>
               <p className="text-xs text-gray-500 mb-4">
                 Dealers need photos to evaluate your car and place confident bids.
               </p>
+              {errorField === 'evidence' && (
+                <p className="text-xs text-red-600 mb-3 -mt-2">{error}</p>
+              )}
 
               {/* Progress bar */}
               <div className="mb-4">

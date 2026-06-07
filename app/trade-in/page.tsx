@@ -54,7 +54,21 @@ function TradeInContent() {
 
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
+  const [errorField, setErrorField] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  // Surface a validation error inline on the offending field and scroll to it.
+  function flagError(field: string, message: string) {
+    setError(message);
+    setErrorField(field);
+    requestAnimationFrame(() => {
+      document.querySelector(`[data-error-anchor="${field}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+  function clearError() {
+    if (error) { setError(''); setErrorField(''); }
+  }
   const [submitting, setSubmitting] = useState(false);
 
   // Step 0: current car — read from URL params so they survive the login redirect round-trip
@@ -156,6 +170,7 @@ function TradeInContent() {
     try {
       const { url } = await uploadFile(file, token);
       setPhotoSlots(prev => ({ ...prev, [key]: { ...prev[key], uploading: false, url } }));
+      clearError();
     } catch {
       setPhotoSlots(prev => ({ ...prev, [key]: { ...prev[key], uploading: false, error: 'Upload failed. Try again.' } }));
     }
@@ -165,32 +180,32 @@ function TradeInContent() {
     setPhotoSlots(prev => ({ ...prev, [key]: { ...prev[key], file: null, url: null, error: null } }));
   }
 
-  function validateStep(): string {
+  function validateStep(): { field: string; message: string } | null {
     if (step === 0) {
-      if (!curMake || !curModel) return 'Please select make and model of your current car.';
-      if (!curYear)  return 'Please select the year.';
-      if (!curKm)    return 'Please enter the mileage.';
+      if (!curMake || !curModel) return { field: 'make', message: 'Please select make and model of your current car.' };
+      if (!curYear)  return { field: 'year', message: 'Please select the year.' };
+      if (!curKm)    return { field: 'km', message: 'Please enter the mileage.' };
     }
     if (step === EVIDENCE_STEP) {
       const missing = PHOTO_SLOTS.filter(s => s.required && !photoSlots[s.key]?.url);
-      if (missing.length > 0) return `Please upload: ${missing.map(s => s.label).join(', ')}.`;
+      if (missing.length > 0) return { field: 'evidence', message: `Please upload: ${missing.map(s => s.label).join(', ')}.` };
     }
-    if (step === TIMELINE_STEP && !timeline) return 'Please select a timeline.';
-    return '';
+    if (step === TIMELINE_STEP && !timeline) return { field: 'timeline', message: 'Please select a timeline.' };
+    return null;
   }
 
   function goNext() {
     const err = validateStep();
-    if (err) { setError(err); return; }
-    setError('');
+    if (err) { flagError(err.field, err.message); return; }
+    setError(''); setErrorField('');
     setStep(s => s + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-  function goBack() { setError(''); setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function goBack() { setError(''); setErrorField(''); setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   async function handleSubmit() {
     const err = validateStep();
-    if (err) { setError(err); return; }
+    if (err) { flagError(err.field, err.message); return; }
     if (!token) {
       router.push(buildLoginRedirect('/login'));
       return;
@@ -328,25 +343,32 @@ function TradeInContent() {
                 <Car size={16} className="text-[#003087]" /> Your Current Vehicle
               </h2>
               <div className="space-y-4">
-                <div>
+                <div data-error-anchor="make">
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Make *</label>
-                  <SearchableMakeSelect value={curMake} onChange={v => { setCurMake(v); setCurModel(''); }} />
+                  <div className={errorField === 'make' ? 'rounded-lg ring-2 ring-red-400' : ''}>
+                    <SearchableMakeSelect value={curMake} onChange={v => { setCurMake(v); setCurModel(''); clearError(); }} />
+                  </div>
+                  {errorField === 'make' && <p className="text-xs text-red-600 mt-1">{error}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Model *</label>
-                  <SearchableModelSelect make={curMake} value={curModel} onChange={setCurModel} />
+                  <SearchableModelSelect make={curMake} value={curModel} onChange={v => { setCurModel(v); clearError(); }} />
                 </div>
-                <div>
+                <div data-error-anchor="year">
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Year *</label>
-                  <select value={curYear} onChange={e => setCurYear(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+                  <select value={curYear} onChange={e => { setCurYear(e.target.value); clearError(); }}
+                    className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087] ${errorField === 'year' ? 'border-red-400 ring-2 ring-red-200' : 'border-gray-300'}`}>
                     <option value="">Select year</option>
                     {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                   </select>
+                  {errorField === 'year' && <p className="text-xs text-red-600 mt-1">{error}</p>}
                 </div>
-                <div>
+                <div data-error-anchor="km">
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
-                  <KmBucketPicker value={curKm} onChange={setCurKm} />
+                  <div className={errorField === 'km' ? 'rounded-lg ring-2 ring-red-400' : ''}>
+                    <KmBucketPicker value={curKm} onChange={v => { setCurKm(v); clearError(); }} />
+                  </div>
+                  {errorField === 'km' && <p className="text-xs text-red-600 mt-1">{error}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">City</label>
@@ -403,7 +425,7 @@ function TradeInContent() {
 
         {/* ── STEP 1: Photos & Evidence ── */}
         {step === EVIDENCE_STEP && (
-          <div className="space-y-4">
+          <div className="space-y-4" data-error-anchor="evidence">
             <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex gap-3">
               <Camera size={18} className="text-blue-500 shrink-0 mt-0.5" />
               <div>
@@ -411,6 +433,9 @@ function TradeInContent() {
                 <p className="text-xs text-blue-600">Required photos help the dealer assess your trade-in remotely and give you a faster, more accurate offer.</p>
               </div>
             </div>
+            {errorField === 'evidence' && (
+              <p className="text-xs text-red-600">{error}</p>
+            )}
 
             <div className="grid grid-cols-1 gap-3">
               {PHOTO_SLOTS.map(slot => {
@@ -628,17 +653,18 @@ function TradeInContent() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5" data-error-anchor="timeline">
               <h2 className="font-bold text-gray-900 mb-4 text-base">⏱️ What&apos;s your timeline?</h2>
-              <div className="grid grid-cols-1 gap-3">
+              <div className={`grid grid-cols-1 gap-3 ${errorField === 'timeline' ? 'rounded-xl ring-2 ring-red-300 p-2' : ''}`}>
                 {TIMELINE_OPTIONS.map(opt => (
-                  <button key={opt.value} type="button" onClick={() => setTimeline(opt.value)}
+                  <button key={opt.value} type="button" onClick={() => { setTimeline(opt.value); clearError(); }}
                     className={`text-left p-4 rounded-xl border-2 transition-all ${timeline === opt.value ? opt.border : 'border-gray-200 hover:border-gray-300'}`}>
                     <div className="font-semibold text-sm text-gray-900">{opt.label}</div>
                     <div className="text-xs text-gray-500 mt-0.5">{opt.desc}</div>
                   </button>
                 ))}
               </div>
+              {errorField === 'timeline' && <p className="text-xs text-red-600 mt-2">{error}</p>}
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
