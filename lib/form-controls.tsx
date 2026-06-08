@@ -16,6 +16,7 @@ import {
   CYLINDER_OPTIONS,
 } from '@/lib/utils';
 import type { MLEstimate } from '@/lib/api';
+import { mlPriceBand } from '@/lib/api';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -566,8 +567,10 @@ export function PriceSlider({
 // ─── PriceBandDisplay ─────────────────────────────────────────────────────────
 /** Displays an MLEstimate price as a range band — the canonical price output UI */
 export function PriceBandDisplay({ estimate }: { estimate: MLEstimate }) {
-  const low  = Math.round(estimate.confidence_range[0]);
-  const high = Math.round(estimate.confidence_range[1]);
+  // Tight, accuracy-based band (estimate ± MAPE) instead of the wide confidence_range.
+  const band = mlPriceBand(estimate);
+  const low  = band.low;
+  const high = band.high;
   const mid  = Math.round(estimate.estimated_price_qar);
   const rangeWidth = high - low;
   const pct = rangeWidth > 0 ? (((mid - low) / rangeWidth) * 100).toFixed(0) : '50';

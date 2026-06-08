@@ -135,6 +135,20 @@ export interface MLEstimate {
   bucket_probability?: number;
 }
 
+// The taxonomy model's raw confidence_range is very wide (often ±50–60%). Present
+// a tight, accuracy-based band instead: the point estimate ± the model's own MAPE
+// (mean absolute % error). Falls back to ±10% when MAPE isn't reported.
+export function mlPriceBand(estimate: {
+  estimated_price_qar: number;
+  mape?: number | null;
+}): { low: number; high: number; mapePct: number } {
+  const mid = estimate.estimated_price_qar;
+  const mapePct = estimate.mape != null && estimate.mape > 0 ? estimate.mape : 10;
+  const half = mid * (mapePct / 100);
+  const round = (n: number) => Math.round(n / 1000) * 1000;
+  return { low: round(mid - half), high: round(mid + half), mapePct };
+}
+
 export interface ValuationParams {
   make: string;
   class_name: string;
@@ -1162,9 +1176,9 @@ export async function getDealerMarginCalc(
   const market = Math.round(est.estimated_price_qar);
   if (!market || market <= 0) return { ok: false, reason: 'no_market_data' };
 
-  const [low, high] = est.confidence_range ?? [market, market];
-  const spread = market > 0 ? (high - low) / market : 1;
-  const confidence = spread <= 0.15 ? 'high' : spread <= 0.30 ? 'medium' : 'low';
+  // Tight accuracy band (estimate ± MAPE) rather than the wide confidence_range.
+  const { low, high, mapePct } = mlPriceBand(est);
+  const confidence = mapePct <= 8 ? 'high' : mapePct <= 15 ? 'medium' : 'low';
   // Assumed reconditioning + holding cost (no backend figure available).
   const fixedCosts = Math.round(market * 0.03);
   const round500 = (n: number) => Math.round(n / 500) * 500;

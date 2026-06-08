@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronDown, TrendingUp, Shield, ArrowRight, Clock, Zap, RefreshCw, Bookmark } from 'lucide-react';
-import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate } from '@/lib/api';
+import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate, mlPriceBand } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
 import { ValuationData } from './page';
 import Navbar from '@/components/Navbar';
@@ -18,18 +18,19 @@ interface Props {
   data: ValuationData;
 }
 
-/** Compute the 3 intent-based price bands from the ML estimate */
+/** Compute the 3 intent-based price bands from the ML estimate.
+ *  Width = the model's own MAPE accuracy band (not the very wide confidence_range). */
 function computePriceBands(estimate: MLEstimate) {
-  const [low, high] = estimate.confidence_range;
-  const spread = (high - low) / 2;          // half-width from the model
-  const mid    = (low + high) / 2;          // model midpoint
+  const mid = estimate.estimated_price_qar;
+  const { mapePct } = mlPriceBand(estimate);
+  const spread = mid * (mapePct / 100);     // tight, accuracy-based half-width
 
   const band = (center: number) => ({
     low:  Math.round((center - spread) / 1000) * 1000,
     high: Math.round((center + spread) / 1000) * 1000,
   });
 
-  // Private party  — model centre, full confidence band
+  // Private party  — model centre, accuracy band
   const pp = band(mid);
 
   // Trade-in       — 8% below market (dealer needs margin)
@@ -45,13 +46,11 @@ function computePriceBands(estimate: MLEstimate) {
   };
 }
 
-// Confidence from how tight the model's range is relative to its midpoint.
+// Confidence from the model's MAPE: lower error → higher confidence.
 function rangeConfidence(estimate: MLEstimate): { label: string; cls: string } {
-  const [low, high] = estimate.confidence_range;
-  const mid = (low + high) / 2;
-  const spread = mid > 0 ? (high - low) / mid : 1;
-  if (spread <= 0.15) return { label: 'High confidence', cls: 'bg-green-50 text-green-700 border-green-200' };
-  if (spread <= 0.30) return { label: 'Medium confidence', cls: 'bg-amber-50 text-amber-700 border-amber-200' };
+  const { mapePct } = mlPriceBand(estimate);
+  if (mapePct <= 8)  return { label: 'High confidence', cls: 'bg-green-50 text-green-700 border-green-200' };
+  if (mapePct <= 15) return { label: 'Medium confidence', cls: 'bg-amber-50 text-amber-700 border-amber-200' };
   return { label: 'Indicative range', cls: 'bg-gray-50 text-gray-500 border-gray-200' };
 }
 
