@@ -117,20 +117,20 @@ export default function CarDetailPage() {
   }, [slug]);
 
   if (loading) return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
       </div>
     </div>
   );
 
   if (!car) return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <p className="text-gray-500 font-medium">Car not found</p>
-        <Link href="/listings" className="text-[#003087] font-semibold hover:underline flex items-center gap-1">
+        <Link href="/listings" className="text-[#002b5b] font-semibold hover:underline flex items-center gap-1">
           <ChevronLeft size={16} /> Browse Vehicles
         </Link>
       </div>
@@ -162,11 +162,11 @@ export default function CarDetailPage() {
   ].filter(s => s.value);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="max-w-5xl mx-auto w-full px-4 py-6 flex-1">
         {/* Back */}
-        <Link href="/listings" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] font-medium mb-5 transition-colors">
+        <Link href="/listings" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#002b5b] font-medium mb-5 transition-colors">
           <ChevronLeft size={16} /> Browse Vehicles
         </Link>
 
@@ -205,7 +205,7 @@ export default function CarDetailPage() {
                 {allImgUrls.slice(0, 8).map((url, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img key={i} src={url} alt="" onClick={() => setImgIndex(i)}
-                    className={`w-16 h-12 object-cover rounded-lg cursor-pointer border-2 flex-shrink-0 transition-all ${i === imgIndex ? 'border-[#003087]' : 'border-transparent opacity-60 hover:opacity-100'}`} />
+                    className={`w-16 h-12 object-cover rounded-lg cursor-pointer border-2 flex-shrink-0 transition-all ${i === imgIndex ? 'border-[#002b5b]' : 'border-transparent opacity-60 hover:opacity-100'}`} />
                 ))}
               </div>
             )}
@@ -237,7 +237,7 @@ export default function CarDetailPage() {
                 <div className="flex flex-wrap gap-2">
                   {car.trims.map((trim, i) => (
                     <button key={i} onClick={() => setSelectedTrim(i)}
-                      className={`px-3 py-1.5 rounded-xl text-sm font-semibold border transition-all ${selectedTrim === i ? 'bg-[#003087] text-white border-[#003087]' : 'bg-white text-gray-700 border-gray-200 hover:border-[#003087]'}`}>
+                      className={`px-3 py-1.5 rounded-xl text-sm font-semibold border transition-all ${selectedTrim === i ? 'bg-[#002b5b] text-white border-[#002b5b]' : 'bg-white text-gray-700 border-gray-200 hover:border-[#002b5b]'}`}>
                       {trim.name}
                       {trim.price_qar && <span className="ml-1.5 text-xs opacity-75">{formatQAR(trim.price_qar)}</span>}
                     </button>
@@ -247,8 +247,8 @@ export default function CarDetailPage() {
             )}
 
             {/* Price */}
-            <div className="mt-5 bg-[#003087]/5 rounded-2xl p-4">
-              <div className="text-3xl font-black text-[#003087]">
+            <div className="mt-5 bg-[#002b5b]/5 rounded-2xl p-4">
+              <div className="text-3xl font-black text-[#002b5b]">
                 {trimPrice ? formatQAR(trimPrice) : 'Price on request'}
               </div>
               {trimPrice && <p className="text-xs text-gray-500 mt-0.5">Starting price · VAT may apply</p>}
@@ -258,7 +258,7 @@ export default function CarDetailPage() {
             <div className="mt-4 grid grid-cols-2 gap-3">
               <button
                 onClick={handleContactDealer}
-                className="flex flex-col items-center gap-1.5 bg-[#003087] hover:bg-[#002070] text-white font-bold px-4 py-3.5 rounded-2xl text-sm transition-colors text-center"
+                className="flex flex-col items-center gap-1.5 bg-[#002b5b] hover:bg-[#001a3d] text-white font-bold px-4 py-3.5 rounded-2xl text-sm transition-colors text-center"
               >
                 <MessageSquare size={18} />
                 <span>Contact Dealer</span>
@@ -281,10 +281,10 @@ export default function CarDetailPage() {
                 disabled={compareDisabled}
                 className={`flex-1 flex items-center justify-center gap-2 text-sm font-bold py-2.5 rounded-2xl border transition-all ${
                   isCompared
-                    ? 'bg-[#003087] text-white border-[#003087]'
+                    ? 'bg-[#002b5b] text-white border-[#002b5b]'
                     : compareDisabled
                       ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50'
-                      : 'border-[#003087] text-[#003087] hover:bg-[#e8f0fd]'
+                      : 'border-[#002b5b] text-[#002b5b] hover:bg-[#ebf5ff]'
                 }`}
               >
                 {isCompared ? <><CheckSquare size={16} /> Remove from Compare</> : <><Square size={16} /> Add to Compare</>}
@@ -292,7 +292,7 @@ export default function CarDetailPage() {
               {compareList.length >= 1 && (
                 <Link
                   href={`/cars/compare?slugs=${compareList.join(',')}`}
-                  className="flex items-center gap-1.5 text-sm font-bold text-white bg-[#ff6600] hover:bg-[#e65c00] px-4 py-2.5 rounded-2xl transition-colors whitespace-nowrap"
+                  className="flex items-center gap-1.5 text-sm font-bold text-white bg-[#005ca9] hover:bg-[#004a87] px-4 py-2.5 rounded-2xl transition-colors whitespace-nowrap"
                 >
                   <BarChart2 size={15} />
                   Compare {compareList.length}
@@ -309,33 +309,33 @@ export default function CarDetailPage() {
             {trimPrice && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 bg-white rounded-2xl border border-gray-100 p-4">
                 <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2 mb-3">
-                  <Calculator size={15} className="text-[#003087]" /> Finance Calculator
+                  <Calculator size={15} className="text-[#002b5b]" /> Finance Calculator
                 </h3>
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
                     <label className="text-gray-400 font-medium block mb-1">Down Payment</label>
                     <input type="number" value={downPayment} onChange={e => setDownPayment(e.target.value)}
                       placeholder="QAR 0"
-                      className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#003087]" />
+                      className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#002b5b]" />
                   </div>
                   <div>
                     <label className="text-gray-400 font-medium block mb-1">Term</label>
                     <select value={loanTerm} onChange={e => setLoanTerm(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#003087]">
+                      className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#002b5b]">
                       {[12,24,36,48,60,72,84].map(m => <option key={m} value={m}>{m}mo</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-gray-400 font-medium block mb-1">Rate %</label>
                     <input type="number" step="0.1" value={interestRate} onChange={e => setInterestRate(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#003087]" />
+                      className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#002b5b]" />
                   </div>
                 </div>
                 {monthly > 0 && (
                   <div className="mt-3 pt-3 border-t border-gray-50 flex items-center gap-2">
-                    <CreditCard size={15} className="text-[#003087]" />
+                    <CreditCard size={15} className="text-[#002b5b]" />
                     <span className="text-sm text-gray-600">Est. monthly payment:</span>
-                    <span className="text-lg font-black text-[#003087]">{formatQAR(Math.round(monthly))}/mo</span>
+                    <span className="text-lg font-black text-[#002b5b]">{formatQAR(Math.round(monthly))}/mo</span>
                   </div>
                 )}
               </motion.div>
@@ -365,7 +365,7 @@ export default function CarDetailPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {car.features_json.map((f, i) => (
                 <div key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="text-[#003087] mt-0.5 flex-shrink-0">✓</span>
+                  <span className="text-[#002b5b] mt-0.5 flex-shrink-0">✓</span>
                   {f}
                 </div>
               ))}
@@ -380,7 +380,7 @@ export default function CarDetailPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {car.trims[selectedTrim].features.map((f, i) => (
                 <div key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="text-[#ff6600] mt-0.5 flex-shrink-0">✓</span>
+                  <span className="text-[#005ca9] mt-0.5 flex-shrink-0">✓</span>
                   {f}
                 </div>
               ))}

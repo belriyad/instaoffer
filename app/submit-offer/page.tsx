@@ -112,7 +112,7 @@ function SubmitOfferContent() {
   if (loading) return null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -124,9 +124,9 @@ function SubmitOfferContent() {
           </p>
 
           {/* Privacy notice */}
-          <div className="bg-[#e8f0fd] border border-[#003087]/20 rounded-2xl p-4 mb-6 flex items-start gap-3">
-            <Shield size={20} className="text-[#003087] mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-[#003087]/90">
+          <div className="bg-[#ebf5ff] border border-[#002b5b]/20 rounded-2xl p-4 mb-6 flex items-start gap-3">
+            <Shield size={20} className="text-[#002b5b] mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-[#002b5b]/90">
               <strong>Your phone number stays private.</strong> Dealers can only see it after you approve.
               All offers are non-binding and subject to inspection.
             </p>
@@ -139,12 +139,12 @@ function SubmitOfferContent() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <Car size={18} className="text-[#003087]" /> Your Car
+                    <Car size={18} className="text-[#002b5b]" /> Your Car
                   </h2>
                   <button
                     type="button"
                     onClick={() => router.push('/valuation')}
-                    className="flex items-center gap-1.5 text-sm text-[#003087] hover:underline"
+                    className="flex items-center gap-1.5 text-sm text-[#002b5b] hover:underline"
                   >
                     <Edit2 size={14} /> Edit valuation
                   </button>
@@ -180,7 +180,7 @@ function SubmitOfferContent() {
                         onClick={() => setOverride('condition', c.value)}
                         className={`py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${
                           overrides.condition === c.value
-                            ? 'border-[#003087] bg-[#e8f0fd] text-[#003087]'
+                            ? 'border-[#002b5b] bg-[#ebf5ff] text-[#002b5b]'
                             : 'border-gray-200 text-gray-700 hover:border-gray-400'
                         }`}
                       >
@@ -264,7 +264,7 @@ function SubmitOfferContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Color</label>
-                  <input type="text" value={extras.color} onChange={e => setExtra('color', e.target.value)} placeholder="e.g. White" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]" />
+                  <input type="text" value={extras.color} onChange={e => setExtra('color', e.target.value)} placeholder="e.g. White" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b]" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -282,7 +282,7 @@ function SubmitOfferContent() {
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Notes for Dealers</label>
-                  <textarea value={extras.description} onChange={e => setExtra('description', e.target.value)} rows={3} placeholder="Service history, accident history, modifications, recent repairs, etc." className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] resize-none" />
+                  <textarea value={extras.description} onChange={e => setExtra('description', e.target.value)} rows={3} placeholder="Service history, accident history, modifications, recent repairs, etc." className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b] resize-none" />
                 </div>
                 <div>
                   <PhoneInput
@@ -296,7 +296,7 @@ function SubmitOfferContent() {
                   <button
                     type="button"
                     onClick={() => setExtra('has_inspection', !extras.has_inspection)}
-                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${extras.has_inspection ? 'bg-[#003087]' : 'bg-gray-300'}`}
+                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${extras.has_inspection ? 'bg-[#002b5b]' : 'bg-gray-300'}`}
                   >
                     <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${extras.has_inspection ? 'translate-x-5' : 'translate-x-0'}`} />
                   </button>
@@ -349,7 +349,7 @@ function SubmitOfferContent() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold py-4 rounded-xl text-lg transition-all disabled:opacity-60 shadow-md"
+              className="w-full flex items-center justify-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-bold py-4 rounded-xl text-lg transition-all disabled:opacity-60 shadow-md"
             >
               {submitting
                 ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -369,7 +369,7 @@ function SubmitOfferContent() {
 
 export default function SubmitOfferPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f5f7fa]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#f8fafc]" />}>
       <SubmitOfferContent />
     </Suspense>
   );

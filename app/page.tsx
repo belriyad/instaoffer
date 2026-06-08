@@ -37,8 +37,8 @@ export default function Home() {
   const { t, isRTL } = useLocale();
 
   const INTENT_CARDS_T = [
-    { icon: '💡', key: 'value',  href: '/valuation',   accent: 'border-blue-200 hover:border-[#003087]',                                textAccent: 'text-[#003087]' },
-    { icon: '⚡', key: 'urgent', href: '/urgent-sale',  accent: 'border-orange-300 hover:border-[#ff6600] bg-gradient-to-br from-orange-50 to-white', textAccent: 'text-[#ff6600]', highlight: true },
+    { icon: '💡', key: 'value',  href: '/valuation',   accent: 'border-blue-200 hover:border-[#002b5b]',                                textAccent: 'text-[#002b5b]' },
+    { icon: '⚡', key: 'urgent', href: '/urgent-sale',  accent: 'border-orange-300 hover:border-[#005ca9] bg-gradient-to-br from-orange-50 to-white', textAccent: 'text-[#005ca9]', highlight: true },
     { icon: '🔄', key: 'trade',  href: '/trade-in',    accent: 'border-green-200 hover:border-green-500',                               textAccent: 'text-green-700' },
     { icon: '🔍', key: 'buy',    href: '/buy-request', accent: 'border-purple-200 hover:border-purple-500',                             textAccent: 'text-purple-700' },
   ] as const;
@@ -50,7 +50,7 @@ export default function Home() {
       <Navbar />
 
       {/* ── HERO ── */}
-      <section className="bg-gradient-to-br from-[#003087] via-[#00308f] to-[#001a52] text-white">
+      <section className="bg-gradient-to-br from-[#002b5b] via-[#00308f] to-[#001a3d] text-white">
         <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
           <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center mb-12">
             <motion.div variants={fadeUp}>
@@ -69,7 +69,7 @@ export default function Home() {
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
               <Link
                 href="/urgent-sale"
-                className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-black px-8 py-4 rounded-xl text-lg shadow-lg transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-black px-8 py-4 rounded-xl text-lg shadow-lg transition-all hover:scale-105"
               >
                 <Zap size={20} /> {t.hero.ctaSell}
               </Link>
@@ -96,13 +96,13 @@ export default function Home() {
                 <motion.div key={card.href} variants={fadeUp}>
                   <Link
                     href={card.href}
-                    className={`flex flex-col h-full bg-white rounded-2xl border-2 p-6 shadow-sm hover:shadow-lg transition-all group ${card.accent} ${'highlight' in card && card.highlight ? 'ring-2 ring-[#ff6600]/40' : ''}`}
+                    className={`flex flex-col h-full bg-white rounded-2xl border-2 p-6 shadow-sm hover:shadow-lg transition-all group ${card.accent} ${'highlight' in card && card.highlight ? 'ring-2 ring-[#005ca9]/40' : ''}`}
                   >
                     <span className="text-4xl mb-3">{card.icon}</span>
                     <h2 className={`font-black text-lg mb-2 transition-colors ${'highlight' in card && card.highlight ? card.textAccent : 'text-gray-900'}`}>
                       {item.label}
                       {'badge' in item && item.badge && (
-                        <span className="ms-2 text-xs font-bold bg-[#ff6600] text-white px-2 py-0.5 rounded-full align-middle">{item.badge}</span>
+                        <span className="ms-2 text-xs font-bold bg-[#005ca9] text-white px-2 py-0.5 rounded-full align-middle">{item.badge}</span>
                       )}
                     </h2>
                     <p className="text-sm text-gray-500 flex-1 leading-relaxed">{item.desc}</p>
@@ -126,13 +126,13 @@ export default function Home() {
         </div>
         <div className="w-full overflow-hidden leading-none">
           <svg viewBox="0 0 1440 48" className="block w-full" preserveAspectRatio="none">
-            <path d="M0,48 L0,20 C360,50 1080,-10 1440,20 L1440,48 Z" fill="#f5f7fa" />
+            <path d="M0,48 L0,20 C360,50 1080,-10 1440,20 L1440,48 Z" fill="#f8fafc" />
           </svg>
         </div>
       </section>
 
       {/* ── SOCIAL PROOF ── */}
-      <section className="bg-[#f5f7fa] py-8">
+      <section className="bg-[#f8fafc] py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
             {[
@@ -142,7 +142,7 @@ export default function Home() {
               { value: '100%', label: t.proof.free },
             ].map((s) => (
               <div key={s.label} className="text-center">
-                <div className="text-3xl font-black text-[#003087]">{s.value}</div>
+                <div className="text-3xl font-black text-[#002b5b]">{s.value}</div>
                 <div className="text-sm text-gray-500 font-medium">{s.label}</div>
               </div>
             ))}
@@ -156,7 +156,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
             <motion.div variants={fadeUp}>
-              <span className="text-[#003087] font-bold text-sm uppercase tracking-widest">{t.how.eyebrow}</span>
+              <span className="text-[#002b5b] font-bold text-sm uppercase tracking-widest">{t.how.eyebrow}</span>
             </motion.div>
             <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-black text-gray-900 mt-2">{t.how.h2}</motion.h2>
             <motion.p variants={fadeUp} className="text-gray-500 mt-3 text-lg max-w-xl mx-auto">{t.how.sub}</motion.p>
@@ -166,10 +166,10 @@ export default function Home() {
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 md:grid-cols-5 gap-6 relative z-10">
               {STEPS.map((step, i) => (
                 <motion.div key={step.num} variants={fadeUp} className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 bg-[#003087] text-white rounded-full flex items-center justify-center text-2xl mb-4 font-black shadow-md">
+                  <div className="w-16 h-16 bg-[#002b5b] text-white rounded-full flex items-center justify-center text-2xl mb-4 font-black shadow-md">
                     {step.icon}
                   </div>
-                  <span className="text-xs font-bold text-[#ff6600] uppercase tracking-wide mb-1">{t.how.step} {step.num}</span>
+                  <span className="text-xs font-bold text-[#005ca9] uppercase tracking-wide mb-1">{t.how.step} {step.num}</span>
                   <h3 className="font-bold text-gray-900 mb-2">{t.how.steps[i].title}</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">{t.how.steps[i].desc}</p>
                 </motion.div>
@@ -177,7 +177,7 @@ export default function Home() {
             </motion.div>
           </div>
           <div className="text-center mt-10">
-            <Link href="/valuation" className="inline-flex items-center gap-2 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-8 py-4 rounded-lg text-lg transition-colors">
+            <Link href="/valuation" className="inline-flex items-center gap-2 bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold px-8 py-4 rounded-lg text-lg transition-colors">
               Start Now — It&apos;s Free <ChevronRight size={20} />
             </Link>
           </div>
@@ -185,11 +185,11 @@ export default function Home() {
       </section>
 
       {/* ── TRUST ── */}
-      <section className="py-16 md:py-20 bg-[#f5f7fa]">
+      <section className="py-16 md:py-20 bg-[#f8fafc]">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
             <motion.div variants={fadeUp} className="text-center mb-12">
-              <span className="text-[#003087] font-bold text-sm uppercase tracking-widest">{t.trustSection.eyebrow}</span>
+              <span className="text-[#002b5b] font-bold text-sm uppercase tracking-widest">{t.trustSection.eyebrow}</span>
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mt-2">{t.trustSection.h2}</h2>
               <p className="text-gray-500 mt-3 text-lg max-w-xl mx-auto">{t.trustSection.sub}</p>
             </motion.div>
@@ -198,8 +198,8 @@ export default function Home() {
                 const Icon = TRUST_ICONS[i];
                 return (
                   <motion.div key={item.title} variants={fadeUp} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-12 h-12 bg-[#e8f0fd] rounded-xl flex items-center justify-center mb-4">
-                      <Icon size={24} className="text-[#003087]" />
+                    <div className="w-12 h-12 bg-[#ebf5ff] rounded-xl flex items-center justify-center mb-4">
+                      <Icon size={24} className="text-[#002b5b]" />
                     </div>
                     <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
                     <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
@@ -220,7 +220,7 @@ export default function Home() {
           </div>
           <div className="flex flex-wrap justify-center gap-3">
             {MAKES.map((make) => (
-              <Link key={make} href={`/valuation?make=${make}`} className="px-5 py-2.5 border border-gray-200 rounded-full text-sm font-semibold text-gray-700 hover:border-[#003087] hover:text-[#003087] hover:bg-[#e8f0fd] transition-all">
+              <Link key={make} href={`/valuation?make=${make}`} className="px-5 py-2.5 border border-gray-200 rounded-full text-sm font-semibold text-gray-700 hover:border-[#002b5b] hover:text-[#002b5b] hover:bg-[#ebf5ff] transition-all">
                 {make}
               </Link>
             ))}
@@ -229,11 +229,11 @@ export default function Home() {
       </section>
 
       {/* ── FOR DEALERS ── */}
-      <section className="py-16 bg-[#003087] text-white">
+      <section className="py-16 bg-[#002b5b] text-white">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
             <motion.div variants={fadeUp} className="text-center mb-10">
-              <Star size={32} className="text-[#ff6600] mx-auto mb-4" />
+              <Star size={32} className="text-[#005ca9] mx-auto mb-4" />
               <h2 className="text-3xl md:text-4xl font-black mb-3">Acquire profitable inventory faster than competitors</h2>
               <p className="text-blue-200 text-lg max-w-2xl mx-auto">
                 InstaOffer is a dealer acquisition intelligence system — not a lead-gen platform. From <strong className="text-white">499 QAR / month</strong>. First 30 days free.
@@ -242,14 +242,14 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
               {DEALER_POINTS.map((pt) => (
                 <motion.div key={pt.title} variants={fadeUp} className="bg-white/10 border border-white/10 rounded-2xl p-5 hover:bg-white/15 transition-colors">
-                  <pt.icon size={24} className="text-[#ff6600] mb-3" />
+                  <pt.icon size={24} className="text-[#005ca9] mb-3" />
                   <h3 className="font-bold text-white mb-1.5 text-sm">{pt.title}</h3>
                   <p className="text-blue-200 text-xs leading-relaxed">{pt.desc}</p>
                 </motion.div>
               ))}
             </div>
             <motion.div variants={fadeUp} className="text-center">
-              <Link href="/for-dealers" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-lg text-lg transition-all">
+              <Link href="/for-dealers" className="inline-flex items-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-bold px-8 py-4 rounded-lg text-lg transition-all">
                 Start Acquiring Smarter <ChevronRight size={20} />
               </Link>
             </motion.div>
@@ -259,7 +259,7 @@ export default function Home() {
               <p className="text-center text-xs text-blue-300 uppercase tracking-widest font-bold mb-3">Example dealer alert</p>
               <div className="bg-white/10 border border-white/20 rounded-2xl p-5 text-left">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="bg-[#ff6600] text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">⚡ Urgent</span>
+                  <span className="bg-[#005ca9] text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">⚡ Urgent</span>
                   <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">🔥 Score 87</span>
                   <span className="text-xs text-blue-300 ml-auto">2 min ago</span>
                 </div>
@@ -272,7 +272,7 @@ export default function Home() {
                   </div>
                   <div className="bg-white/10 rounded-xl py-2 px-1">
                     <p className="text-[10px] text-blue-300 uppercase tracking-wide">Asking</p>
-                    <p className="text-[#ff6600] font-black text-sm">295k QAR</p>
+                    <p className="text-[#005ca9] font-black text-sm">295k QAR</p>
                   </div>
                   <div className="bg-green-400/20 border border-green-400/30 rounded-xl py-2 px-1">
                     <p className="text-[10px] text-green-300 uppercase tracking-wide">Margin</p>
@@ -280,7 +280,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <div className="flex-1 bg-[#ff6600] text-white text-center text-xs font-bold py-2 rounded-xl cursor-default">
+                  <div className="flex-1 bg-[#005ca9] text-white text-center text-xs font-bold py-2 rounded-xl cursor-default">
                     Place Bid
                   </div>
                   <div className="flex-1 bg-white/10 text-white text-center text-xs font-semibold py-2 rounded-xl cursor-default">
@@ -297,10 +297,10 @@ export default function Home() {
       {/* ── FINAL CTA ── */}
       <section className="py-16 bg-white">
         <div className="max-w-xl mx-auto px-4 text-center">
-          <Clock size={40} className="text-[#003087] mx-auto mb-4" />
+          <Clock size={40} className="text-[#002b5b] mx-auto mb-4" />
           <h2 className="text-3xl font-black text-gray-900 mb-3">{t.hero.finalCtaH2}</h2>
           <p className="text-gray-500 mb-8">{t.hero.finalCtaSub}</p>
-          <Link href="/valuation" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-10 py-4 rounded-lg text-lg transition-all shadow-lg shadow-orange-100">
+          <Link href="/valuation" className="inline-flex items-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-bold px-10 py-4 rounded-lg text-lg transition-all shadow-lg shadow-orange-100">
             {t.hero.finalCtaBtn} <ChevronRight size={20} />
           </Link>
           <div className="mt-4 flex justify-center gap-6">

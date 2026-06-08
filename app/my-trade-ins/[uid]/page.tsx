@@ -84,10 +84,10 @@ export default function MyTradeInDetailPage() {
 
   if (fetching || loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -96,13 +96,13 @@ export default function MyTradeInDetailPage() {
 
   if (fetchError || !req) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl p-10 text-center max-w-md w-full shadow-sm border border-gray-100">
             <AlertCircle size={36} className="text-red-400 mx-auto mb-4" />
             <p className="text-gray-500 mb-6">{fetchError ?? 'Request not found.'}</p>
-            <Link href="/my-offers" className="inline-flex items-center gap-2 bg-[#003087] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#002070] transition-colors">
+            <Link href="/my-offers" className="inline-flex items-center gap-2 bg-[#002b5b] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#001a3d] transition-colors">
               <ChevronLeft size={16} /> Back to My Requests
             </Link>
           </div>
@@ -134,11 +134,11 @@ export default function MyTradeInDetailPage() {
   const hasProposal     = req.status === 'offer_made' && proposalLines.length > 0;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="max-w-2xl mx-auto w-full px-4 py-8 flex-1">
 
-        <Link href="/my-offers" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#003087] mb-6 transition-colors font-medium">
+        <Link href="/my-offers" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#002b5b] mb-6 transition-colors font-medium">
           <ChevronLeft size={16} /> My Requests
         </Link>
 
@@ -210,11 +210,11 @@ export default function MyTradeInDetailPage() {
         {req.target_car_name && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4">
             <SectionHeader icon={Tag} title="Target Vehicle" />
-            <div className="bg-[#003087]/5 rounded-xl p-4">
+            <div className="bg-[#002b5b]/5 rounded-xl p-4">
               <p className="font-black text-gray-900 text-lg leading-tight">{req.target_car_name}</p>
               {req.target_dealer && <p className="text-sm text-gray-500 mt-1">Dealer: {req.target_dealer}</p>}
               {req.target_price_qar != null && (
-                <p className="text-xl font-black text-[#003087] mt-2">{formatQAR(req.target_price_qar)}</p>
+                <p className="text-xl font-black text-[#002b5b] mt-2">{formatQAR(req.target_price_qar)}</p>
               )}
             </div>
           </div>
@@ -244,9 +244,9 @@ export default function MyTradeInDetailPage() {
               </div>
             )}
             {req.target_price_qar != null && req.market_est_qar < req.target_price_qar && (
-              <div className="mt-3 bg-[#f0f4ff] rounded-xl px-4 py-3">
-                <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-1">Estimated top-up needed</p>
-                <p className="text-xl font-black text-[#003087]">
+              <div className="mt-3 bg-[#ebf5ff] rounded-xl px-4 py-3">
+                <p className="text-xs font-bold text-[#002b5b] uppercase tracking-wide mb-1">Estimated top-up needed</p>
+                <p className="text-xl font-black text-[#002b5b]">
                   {formatQAR(Math.max(0, req.target_price_qar - req.market_est_qar))}
                 </p>
                 <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
@@ -302,7 +302,7 @@ export default function MyTradeInDetailPage() {
             <div className="grid grid-cols-3 gap-2">
               {photoUrls.map((url, i) => (
                 <button key={i} onClick={() => setLightboxUrl(url)}
-                  className="aspect-square rounded-xl overflow-hidden border border-gray-100 hover:border-[#003087] transition-colors focus:outline-none">
+                  className="aspect-square rounded-xl overflow-hidden border border-gray-100 hover:border-[#002b5b] transition-colors focus:outline-none">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
                 </button>
@@ -319,7 +319,7 @@ export default function MyTradeInDetailPage() {
           {canCancel && req.target_car_name && (
             <Link
               href={`/trade-in?target_car_id=${req.target_car_id ?? ''}&target_name=${encodeURIComponent(req.target_car_name)}&target_price=${req.target_price_qar ?? ''}&target_dealer=${encodeURIComponent(req.target_dealer ?? '')}&cur_make=${encodeURIComponent(req.make)}&cur_model=${encodeURIComponent(req.class_name)}&cur_year=${req.year}&cur_km=${req.km}&cur_city=${encodeURIComponent(req.city)}&cur_condition=${req.condition ?? ''}`}
-              className="flex items-center justify-center gap-2 text-sm font-bold text-[#003087] bg-[#e8f0fd] hover:bg-[#d0e0fb] px-4 py-3 rounded-xl transition-colors"
+              className="flex items-center justify-center gap-2 text-sm font-bold text-[#002b5b] bg-[#ebf5ff] hover:bg-[#d6eeff] px-4 py-3 rounded-xl transition-colors"
             >
               ✏️ Edit &amp; Resubmit
             </Link>

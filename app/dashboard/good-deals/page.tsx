@@ -66,7 +66,7 @@ function DealCard({ row }: { row: GoodDealRow }) {
           href={row.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="shrink-0 flex items-center gap-1 text-xs text-[#003087] hover:underline font-semibold"
+          className="shrink-0 flex items-center gap-1 text-xs text-[#002b5b] hover:underline font-semibold"
         >
           View <ExternalLink size={12} />
         </Link>
@@ -115,12 +115,12 @@ export default function GoodDealsPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="max-w-4xl mx-auto w-full px-4 py-8 flex-1">
         <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
           <div>
-            <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] transition-colors mb-3">
+            <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#002b5b] transition-colors mb-3">
               <ArrowLeft size={15} /> Back to Dashboard
             </Link>
             <h1 className="text-3xl font-black text-gray-900">Good Deal Feed</h1>
@@ -134,8 +134,8 @@ export default function GoodDealsPage() {
                 onClick={() => { setSortBy(opt.value); setPage(0); }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
                   sortBy === opt.value
-                    ? 'bg-[#003087] border-[#003087] text-white'
-                    : 'border-gray-200 text-gray-600 bg-white hover:border-[#003087] hover:text-[#003087]'
+                    ? 'bg-[#002b5b] border-[#002b5b] text-white'
+                    : 'border-gray-200 text-gray-600 bg-white hover:border-[#002b5b] hover:text-[#002b5b]'
                 }`}
               >
                 {opt.label}
@@ -150,8 +150,8 @@ export default function GoodDealsPage() {
                 onClick={() => { setMinDiscount(v); setPage(0); }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
                   minDiscount === v
-                    ? 'bg-[#003087] border-[#003087] text-white'
-                    : 'border-gray-200 text-gray-600 bg-white hover:border-[#003087] hover:text-[#003087]'
+                    ? 'bg-[#002b5b] border-[#002b5b] text-white'
+                    : 'border-gray-200 text-gray-600 bg-white hover:border-[#002b5b] hover:text-[#002b5b]'
                 }`}
               >
                 {v}%+
@@ -162,7 +162,7 @@ export default function GoodDealsPage() {
 
         {fetching && (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
           </div>
         )}
 
@@ -185,7 +185,7 @@ export default function GoodDealsPage() {
                 <button
                   disabled={page === 0}
                   onClick={() => setPage(p => p - 1)}
-                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#003087] transition-colors"
+                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#002b5b] transition-colors"
                 >
                   <ChevronLeft size={16} /> Previous
                 </button>
@@ -193,7 +193,7 @@ export default function GoodDealsPage() {
                 <button
                   disabled={(page + 1) * LIMIT >= data.total}
                   onClick={() => setPage(p => p + 1)}
-                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#003087] transition-colors"
+                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#002b5b] transition-colors"
                 >
                   Next <ChevronRight size={16} />
                 </button>

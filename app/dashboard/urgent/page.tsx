@@ -152,7 +152,7 @@ export default function UrgentSellersPage() {
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
 
@@ -169,7 +169,7 @@ export default function UrgentSellersPage() {
           <button
             onClick={load}
             disabled={fetching}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#003087] transition-colors"
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#002b5b] transition-colors"
           >
             <RefreshCw size={13} className={fetching ? 'animate-spin' : ''} /> Refresh
           </button>
@@ -183,7 +183,7 @@ export default function UrgentSellersPage() {
               onClick={() => { setStatus(tab.value); setPage(0); }}
               className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors ${
                 status === tab.value
-                  ? 'bg-[#003087] text-white'
+                  ? 'bg-[#002b5b] text-white'
                   : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
               }`}
             >

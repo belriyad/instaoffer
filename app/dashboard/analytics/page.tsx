@@ -32,7 +32,7 @@ interface BidRecord {
 function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
     <div className="flex items-center gap-2 mb-4">
-      <div className="w-8 h-8 rounded-xl bg-[#003087]/10 flex items-center justify-center text-[#003087] flex-shrink-0">
+      <div className="w-8 h-8 rounded-xl bg-[#002b5b]/10 flex items-center justify-center text-[#002b5b] flex-shrink-0">
         {icon}
       </div>
       <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wide">{title}</h2>
@@ -41,7 +41,7 @@ function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }
 }
 
 function StatCard({
-  label, value, sub, color = 'text-[#003087]', icon,
+  label, value, sub, color = 'text-[#002b5b]', icon,
 }: {
   label: string; value: string | number; sub?: string; color?: string; icon?: React.ReactNode;
 }) {
@@ -105,10 +105,10 @@ export default function AnalyticsPage() {
 
   if (loading || fetching) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -144,13 +144,13 @@ export default function AnalyticsPage() {
   const hasAnyData = totalBids > 0 || stats !== null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="max-w-4xl mx-auto w-full px-4 py-8 flex-1">
 
         {/* Header */}
         <div className="mb-6">
-          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] transition-colors mb-3">
+          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#002b5b] transition-colors mb-3">
             <ArrowLeft size={15} /> Back to Dashboard
           </Link>
           <h1 className="text-3xl font-black text-gray-900">Analytics</h1>
@@ -171,7 +171,7 @@ export default function AnalyticsPage() {
             <BarChart2 size={40} className="text-gray-200 mx-auto mb-3" />
             <p className="text-gray-500 font-semibold">No activity yet</p>
             <p className="text-sm text-gray-400 mt-1">Place your first offer from the Leads tab to start seeing analytics here.</p>
-            <Link href="/dashboard" className="inline-flex items-center gap-1.5 mt-5 bg-[#003087] text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-[#0057b8] transition-colors">
+            <Link href="/dashboard" className="inline-flex items-center gap-1.5 mt-5 bg-[#002b5b] text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-[#1a7fd4] transition-colors">
               Go to Leads
             </Link>
           </div>
@@ -217,7 +217,7 @@ export default function AnalyticsPage() {
                 <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
                   <p className="text-sm font-bold text-gray-700 mb-4">Offer Status Breakdown</p>
                   <div className="space-y-3">
-                    <MiniBar label="Pending"   count={pendingBids}   total={totalBids} color="bg-[#003087]" />
+                    <MiniBar label="Pending"   count={pendingBids}   total={totalBids} color="bg-[#002b5b]" />
                     <MiniBar label="Accepted"  count={acceptedBids}  total={totalBids} color="bg-green-500" />
                     <MiniBar label="Rejected"  count={rejectedBids}  total={totalBids} color="bg-red-400" />
                     <MiniBar label="Withdrawn" count={withdrawnBids} total={totalBids} color="bg-gray-400" />
@@ -245,7 +245,7 @@ export default function AnalyticsPage() {
                 <SectionHeader icon={<BarChart2 size={16} />} title="Most Bid Makes" />
                 <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-3">
                   {topMakes.map(([make, count]) => (
-                    <MiniBar key={make} label={make} count={count} total={totalBids} color="bg-[#003087]" />
+                    <MiniBar key={make} label={make} count={count} total={totalBids} color="bg-[#002b5b]" />
                   ))}
                 </div>
               </div>
@@ -281,7 +281,7 @@ export default function AnalyticsPage() {
             {totalBids > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: 'Pending',   count: pendingBids,   icon: <Clock size={20} />,       bg: 'bg-blue-50',  text: 'text-[#003087]' },
+                  { label: 'Pending',   count: pendingBids,   icon: <Clock size={20} />,       bg: 'bg-blue-50',  text: 'text-[#002b5b]' },
                   { label: 'Accepted',  count: acceptedBids,  icon: <CheckCircle size={20} />,  bg: 'bg-green-50', text: 'text-green-600' },
                   { label: 'Rejected',  count: rejectedBids,  icon: <XCircle size={20} />,      bg: 'bg-red-50',   text: 'text-red-500' },
                   { label: 'Withdrawn', count: withdrawnBids, icon: <AlertCircle size={20} />,  bg: 'bg-gray-50',  text: 'text-gray-500' },
@@ -298,7 +298,7 @@ export default function AnalyticsPage() {
             )}
 
             {/* ── AI BI CTA ── */}
-            <div className="bg-[#003087] rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="bg-[#002b5b] rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
                 <Brain size={22} className="text-white" />
               </div>
@@ -306,7 +306,7 @@ export default function AnalyticsPage() {
                 <p className="font-bold text-white">Want deeper insights on a specific vehicle?</p>
                 <p className="text-sm text-white/70 mt-0.5">Run valuation, price forecast, time-to-sell and margin analysis instantly.</p>
               </div>
-              <Link href="/dashboard/bi" className="flex-shrink-0 bg-white text-[#003087] font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors whitespace-nowrap">
+              <Link href="/dashboard/bi" className="flex-shrink-0 bg-white text-[#002b5b] font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors whitespace-nowrap">
                 Open AI BI →
               </Link>
             </div>

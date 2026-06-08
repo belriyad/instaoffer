@@ -138,7 +138,7 @@ export default function NewListingPage() {
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-2 border-[#003087] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b] border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -156,7 +156,7 @@ export default function NewListingPage() {
           <p className="text-gray-500 mb-8">Your car has been listed successfully. It will be reviewed and published shortly.</p>
           <div className="flex gap-3 justify-center flex-wrap">
             <button onClick={() => router.push('/')}
-              className="px-6 py-2.5 bg-[#003087] text-white text-sm font-semibold rounded-xl hover:bg-[#002570] transition-colors">
+              className="px-6 py-2.5 bg-[#002b5b] text-white text-sm font-semibold rounded-xl hover:bg-[#001a3d] transition-colors">
               Back to Home
             </button>
             <button onClick={() => { setSuccess(false); setMake(''); setClassName(''); setTitle(''); setPriceQar(''); setPhotos([]); }}
@@ -170,7 +170,7 @@ export default function NewListingPage() {
     );
   }
 
-  const selectCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] appearance-none bg-white';
+  const selectCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b] appearance-none bg-white';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -180,7 +180,7 @@ export default function NewListingPage() {
         {/* Breadcrumb + header */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-            <span className="cursor-pointer hover:text-[#003087]" onClick={() => router.push('/')}>Home</span>
+            <span className="cursor-pointer hover:text-[#002b5b]" onClick={() => router.push('/')}>Home</span>
             <ChevronRight size={14} />
             <span className="text-gray-900 font-medium">New Listing</span>
           </div>
@@ -194,7 +194,7 @@ export default function NewListingPage() {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <Car size={18} className="text-[#003087]" /> Vehicle Details
+              <Car size={18} className="text-[#002b5b]" /> Vehicle Details
             </h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -211,7 +211,7 @@ export default function NewListingPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Variant</label>
                   <input type="text" value={model} onChange={e => setModel(e.target.value)} placeholder="e.g. Sport, Platinum"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]" />
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b]" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Trim</label>
@@ -278,13 +278,13 @@ export default function NewListingPage() {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <DollarSign size={18} className="text-[#003087]" /> Listing Details
+              <DollarSign size={18} className="text-[#002b5b]" /> Listing Details
             </h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Listing Title *</label>
                 <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. 2022 Toyota Land Cruiser GXR" required
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]" />
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b]" />
                 <p className="text-xs text-gray-400 mt-1 flex items-center gap-1"><Info size={11} /> Auto-filled from vehicle details — you can edit it</p>
               </div>
               <div>
@@ -292,16 +292,16 @@ export default function NewListingPage() {
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500">QAR</span>
                   <input type="number" value={priceQar} onChange={e => setPriceQar(e.target.value)} placeholder="e.g. 120000" required min={1000}
-                    className="w-full pl-14 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]" />
+                    className="w-full pl-14 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b]" />
                 </div>
-                {priceQar && Number(priceQar) >= 1000 && <p className="text-xs text-[#003087] mt-1 font-medium">{formatQAR(Number(priceQar))}</p>}
+                {priceQar && Number(priceQar) >= 1000 && <p className="text-xs text-[#002b5b] mt-1 font-medium">{formatQAR(Number(priceQar))}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">City</label>
                 <div className="relative">
                   <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <select value={city} onChange={e => setCity(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] appearance-none bg-white">
+                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b] appearance-none bg-white">
                     {QATAR_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
@@ -310,7 +310,7 @@ export default function NewListingPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
                 <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4}
                   placeholder="Describe your car — service history, condition, extras, reason for selling…"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] resize-none" />
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b] resize-none" />
               </div>
             </div>
           </motion.div>
@@ -319,7 +319,7 @@ export default function NewListingPage() {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <Upload size={18} className="text-[#003087]" /> Photos
+              <Upload size={18} className="text-[#002b5b]" /> Photos
             </h2>
             <p className="text-xs text-gray-400 mb-4">Up to {MAX_PHOTOS} photos. First photo is the cover image.</p>
             <div className="grid grid-cols-3 gap-3">
@@ -332,7 +332,7 @@ export default function NewListingPage() {
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
-                  {i === 0 && <span className="absolute top-1.5 left-1.5 bg-[#003087] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">Cover</span>}
+                  {i === 0 && <span className="absolute top-1.5 left-1.5 bg-[#002b5b] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">Cover</span>}
                   <button type="button" onClick={() => removePhoto(i)}
                     className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors">
                     <X size={12} className="text-white" />
@@ -340,7 +340,7 @@ export default function NewListingPage() {
                 </div>
               ))}
               {photos.length < MAX_PHOTOS && (
-                <label className="aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-[#003087] hover:bg-blue-50/30 transition-colors">
+                <label className="aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-[#002b5b] hover:bg-blue-50/30 transition-colors">
                   <Upload size={20} className="text-gray-400 mb-1" />
                   <span className="text-xs text-gray-400">Add Photo</span>
                   <input type="file" accept="image/*" multiple onChange={handlePhotoChange} className="hidden" />
@@ -353,7 +353,7 @@ export default function NewListingPage() {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <User size={18} className="text-[#003087]" /> Seller Info
+              <User size={18} className="text-[#002b5b]" /> Seller Info
             </h2>
             <div className="space-y-4">
               <div>
@@ -361,7 +361,7 @@ export default function NewListingPage() {
                 <div className="flex gap-2">
                   {SELLER_TYPES.map(st => (
                     <button key={st.value} type="button" onClick={() => setSellerType(st.value as 'private' | 'dealer')}
-                      className={`flex-1 py-2.5 text-sm font-semibold rounded-xl border transition-colors ${sellerType === st.value ? 'bg-[#003087] text-white border-[#003087]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#003087]'}`}>
+                      className={`flex-1 py-2.5 text-sm font-semibold rounded-xl border transition-colors ${sellerType === st.value ? 'bg-[#002b5b] text-white border-[#002b5b]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#002b5b]'}`}>
                       {st.label}
                     </button>
                   ))}
@@ -372,7 +372,7 @@ export default function NewListingPage() {
                 <div className="relative">
                   <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input type="text" value={sellerName} onChange={e => setSellerName(e.target.value)} placeholder="Contact name"
-                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]" />
+                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b]" />
                 </div>
               </div>
               <div>
@@ -380,7 +380,7 @@ export default function NewListingPage() {
                 <div className="relative">
                   <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input type="tel" value={sellerPhone} onChange={e => setSellerPhone(e.target.value)} placeholder="+974 XXXX XXXX"
-                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]" />
+                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b]" />
                 </div>
               </div>
             </div>
@@ -393,7 +393,7 @@ export default function NewListingPage() {
           )}
 
           <motion.button type="submit" disabled={submitting} whileTap={{ scale: 0.98 }}
-            className="w-full py-3.5 bg-[#003087] text-white font-bold text-sm rounded-2xl hover:bg-[#002570] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 shadow-md">
+            className="w-full py-3.5 bg-[#002b5b] text-white font-bold text-sm rounded-2xl hover:bg-[#001a3d] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 shadow-md">
             {submitting ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -406,7 +406,7 @@ export default function NewListingPage() {
 
           <p className="text-xs text-gray-400 text-center">
             By publishing, you agree to our{' '}
-            <span className="text-[#003087] cursor-pointer hover:underline" onClick={() => router.push('/terms')}>Terms of Service</span>.
+            <span className="text-[#002b5b] cursor-pointer hover:underline" onClick={() => router.push('/terms')}>Terms of Service</span>.
           </p>
         </form>
       </div>

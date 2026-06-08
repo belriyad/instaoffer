@@ -1,25 +1,58 @@
 @import "tailwindcss";
 
+/* ── KBB design-system fonts → Tailwind v4 font utilities ──
+   next/font sets --ff-display / --ff-body / --ff-mono on <html>. */
+@theme {
+  --font-sans: var(--ff-body), "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: var(--ff-display), "Sora", sans-serif;
+  --font-mono: var(--ff-mono), "DM Mono", ui-monospace, monospace;
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-  --kbb-blue: #003087;
-  --kbb-blue-mid: #0057b8;
-  --kbb-blue-light: #e8f0fd;
-  --kbb-orange: #ff6600;
-  --kbb-orange-light: #fff3eb;
-  --kbb-green: #00873c;
-  --kbb-green-light: #e8f5ee;
-  --kbb-border: #e0e0e0;
-  --kbb-text: #1a1a1a;
-  --kbb-text-muted: #666;
+  --foreground: #1e293b;
+
+  /* ── KBB brand (new palette) ── */
+  --kbb-navy:     #002b5b;
+  --kbb-blue:     #005ca9;
+  --kbb-mid:      #1a7fd4;
+  --kbb-light:    #3fa0f0;
+  --kbb-sky:      #d6eeff;
+  --kbb-sky-pale: #ebf5ff;
+
+  /* Back-compat aliases (old var names → remapped values) */
+  --kbb-blue-mid:    #1a7fd4;
+  --kbb-blue-light:  #ebf5ff;
+  --kbb-orange:      #005ca9;
+  --kbb-orange-light:#ebf5ff;
+  --kbb-green:       #0a7e45;
+  --kbb-green-light: #e6f7ee;
+  --kbb-border:      #e2e8f0;
+  --kbb-text:        #1e293b;
+  --kbb-text-muted:  #64748b;
+
+  /* ── Semantic ── */
+  --success: #0a7e45; --success-bg: #e6f7ee;
+  --warning: #b45309; --warning-bg: #fef3c7;
+  --danger:  #b91c1c; --danger-bg:  #fee2e2;
+  --info:    #0369a1; --info-bg:    #e0f2fe;
+
+  /* ── Neutrals ── */
+  --n900: #0f172a; --n800: #1e293b; --n700: #334155; --n600: #475569;
+  --n500: #64748b; --n400: #94a3b8; --n300: #cbd5e1; --n200: #e2e8f0;
+  --n100: #f1f5f9; --n050: #f8fafc;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--ff-body), "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Display font for all headings (KBB uses Sora for display type) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--ff-display), "Sora", sans-serif;
 }
 
 * { box-sizing: border-box; }

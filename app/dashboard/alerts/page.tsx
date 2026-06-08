@@ -60,7 +60,7 @@ function AlertCard({ alert }: { alert: DealerAlert }) {
           <span className="text-xs text-gray-400">{formatDate(alert.sent_at)}</span>
           <Link
             href={`/my-offers/${alert.request_uid}`}
-            className="flex items-center gap-1 text-xs text-[#003087] hover:underline font-semibold"
+            className="flex items-center gap-1 text-xs text-[#002b5b] hover:underline font-semibold"
           >
             View Listing <ExternalLink size={11} />
           </Link>
@@ -113,7 +113,7 @@ export default function AlertsPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
 
       <div className="max-w-4xl mx-auto w-full px-4 py-8 flex-1">
@@ -121,14 +121,14 @@ export default function AlertsPage() {
         <div className="mb-6">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] transition-colors mb-3"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#002b5b] transition-colors mb-3"
           >
             <ArrowLeft size={15} /> Back to Dashboard
           </Link>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <h1 className="text-3xl font-black text-gray-900 flex items-center gap-2">
-                <Bell className="text-[#003087]" size={26} />
+                <Bell className="text-[#002b5b]" size={26} />
                 Alert History
               </h1>
               <p className="text-gray-500 mt-1 text-sm">
@@ -137,7 +137,7 @@ export default function AlertsPage() {
             </div>
             <Link
               href="/dashboard/alerts/preferences"
-              className="text-sm font-semibold text-[#003087] hover:underline"
+              className="text-sm font-semibold text-[#002b5b] hover:underline"
             >
               ⚙️ Manage alert preferences
             </Link>
@@ -152,7 +152,7 @@ export default function AlertsPage() {
               onClick={() => { setActiveTab(tab); setPage(0); }}
               className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-colors whitespace-nowrap ${
                 activeTab === tab
-                  ? 'bg-[#003087] text-white'
+                  ? 'bg-[#002b5b] text-white'
                   : 'text-gray-500 hover:text-gray-800'
               }`}
             >
@@ -164,7 +164,7 @@ export default function AlertsPage() {
         {/* Content */}
         {fetching && (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
           </div>
         )}
 
@@ -178,7 +178,7 @@ export default function AlertsPage() {
                 <p className="text-gray-500 font-medium">No alerts yet.</p>
                 <p className="text-sm text-gray-400 mt-1">
                   Alerts appear here when listings match your{' '}
-                  <Link href="/dashboard/alerts/preferences" className="text-[#003087] hover:underline">
+                  <Link href="/dashboard/alerts/preferences" className="text-[#002b5b] hover:underline">
                     preferences
                   </Link>
                   .
@@ -197,7 +197,7 @@ export default function AlertsPage() {
                 <button
                   disabled={page === 0}
                   onClick={() => setPage(p => p - 1)}
-                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#003087] transition-colors"
+                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#002b5b] transition-colors"
                 >
                   <ChevronLeft size={16} /> Previous
                 </button>
@@ -207,7 +207,7 @@ export default function AlertsPage() {
                 <button
                   disabled={(page + 1) * LIMIT >= data.total}
                   onClick={() => setPage(p => p + 1)}
-                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#003087] transition-colors"
+                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#002b5b] transition-colors"
                 >
                   Next <ChevronRight size={16} />
                 </button>

@@ -38,7 +38,7 @@ interface BIResults {
 function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
     <div className="flex items-center gap-2 mb-4">
-      <div className="w-8 h-8 rounded-xl bg-[#003087]/10 flex items-center justify-center text-[#003087]">
+      <div className="w-8 h-8 rounded-xl bg-[#002b5b]/10 flex items-center justify-center text-[#002b5b]">
         {icon}
       </div>
       <h2 className="text-base font-bold text-gray-800">{title}</h2>
@@ -55,7 +55,7 @@ function ResultCard({ children, className = '' }: { children: React.ReactNode; c
 }
 
 function ProbBar({ label, pct }: { label: string; pct: number }) {
-  const color = pct >= 70 ? 'bg-green-500' : pct >= 40 ? 'bg-[#003087]' : 'bg-orange-400';
+  const color = pct >= 70 ? 'bg-green-500' : pct >= 40 ? 'bg-[#002b5b]' : 'bg-orange-400';
   return (
     <div>
       <div className="flex justify-between text-xs mb-1">
@@ -75,10 +75,10 @@ function TierRow({ label, tier, highlight = false }: {
   highlight?: boolean;
 }) {
   return (
-    <div className={`rounded-xl p-3 ${highlight ? 'bg-[#003087]/5 border border-[#003087]/20' : 'bg-gray-50'}`}>
+    <div className={`rounded-xl p-3 ${highlight ? 'bg-[#002b5b]/5 border border-[#002b5b]/20' : 'bg-gray-50'}`}>
       <div className="flex items-center justify-between mb-1">
-        <span className={`text-xs font-bold uppercase tracking-wide ${highlight ? 'text-[#003087]' : 'text-gray-500'}`}>{label}</span>
-        {highlight && <span className="text-[10px] font-bold text-[#003087] bg-[#003087]/10 px-1.5 py-0.5 rounded-full">Recommended</span>}
+        <span className={`text-xs font-bold uppercase tracking-wide ${highlight ? 'text-[#002b5b]' : 'text-gray-500'}`}>{label}</span>
+        {highlight && <span className="text-[10px] font-bold text-[#002b5b] bg-[#002b5b]/10 px-1.5 py-0.5 rounded-full">Recommended</span>}
       </div>
       <div className="text-lg font-black text-gray-900">{formatQAR(tier.offer_qar)}</div>
       <div className="flex gap-3 mt-1 text-xs text-gray-500">
@@ -180,17 +180,17 @@ export default function BIPage() {
 
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="max-w-3xl mx-auto w-full px-4 py-8 flex-1">
 
         {/* Header */}
         <div className="mb-6">
-          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] transition-colors mb-3">
+          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#002b5b] transition-colors mb-3">
             <ArrowLeft size={15} /> Back to Dashboard
           </Link>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#003087] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-[#002b5b] flex items-center justify-center">
               <Brain size={20} className="text-white" />
             </div>
             <div>
@@ -203,7 +203,7 @@ export default function BIPage() {
         {/* Vehicle Form */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-6">
           <h2 className="font-bold text-gray-800 mb-1 flex items-center gap-2">
-            <Car size={16} className="text-[#003087]" /> Vehicle Details
+            <Car size={16} className="text-[#002b5b]" /> Vehicle Details
           </h2>
           <p className="text-xs text-gray-400 mb-4">
             More fields = more accurate estimate. The AI uses the same model as the seller valuation wizard.
@@ -283,9 +283,9 @@ export default function BIPage() {
                   <div className="mb-3 flex flex-wrap gap-2 items-center">
                     <Lock size={12} className="text-gray-400" />
                     <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mr-1">Auto-detected</span>
-                    {d.fuel_type  && <span className="inline-flex items-center gap-1 bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-3 py-1 rounded-full">{d.fuel_type}</span>}
-                    {d.gear_type  && <span className="inline-flex items-center gap-1 bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-3 py-1 rounded-full">{d.gear_type}</span>}
-                    {d.car_type   && <span className="inline-flex items-center gap-1 bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-3 py-1 rounded-full">{d.car_type}</span>}
+                    {d.fuel_type  && <span className="inline-flex items-center gap-1 bg-[#ebf5ff] text-[#002b5b] text-xs font-semibold px-3 py-1 rounded-full">{d.fuel_type}</span>}
+                    {d.gear_type  && <span className="inline-flex items-center gap-1 bg-[#ebf5ff] text-[#002b5b] text-xs font-semibold px-3 py-1 rounded-full">{d.gear_type}</span>}
+                    {d.car_type   && <span className="inline-flex items-center gap-1 bg-[#ebf5ff] text-[#002b5b] text-xs font-semibold px-3 py-1 rounded-full">{d.car_type}</span>}
                   </div>
                 )}
                 {/* Only show pickers for fields NOT auto-detected */}
@@ -355,8 +355,8 @@ export default function BIPage() {
                   onClick={() => setSellerType(s)}
                   className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-bold capitalize transition-all ${
                     sellerType === s
-                      ? 'border-[#003087] bg-[#003087] text-white'
-                      : 'border-gray-200 text-gray-600 hover:border-[#003087] hover:text-[#003087]'
+                      ? 'border-[#002b5b] bg-[#002b5b] text-white'
+                      : 'border-gray-200 text-gray-600 hover:border-[#002b5b] hover:text-[#002b5b]'
                   }`}
                 >
                   {s}
@@ -391,7 +391,7 @@ export default function BIPage() {
           <button
             onClick={runAnalysis}
             disabled={!canRun || running}
-            className="mt-5 w-full flex items-center justify-center gap-2 bg-[#003087] hover:bg-[#0057b8] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all"
+            className="mt-5 w-full flex items-center justify-center gap-2 bg-[#002b5b] hover:bg-[#1a7fd4] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all"
           >
             {running ? (
               <>
@@ -422,7 +422,7 @@ export default function BIPage() {
                   <SectionHeader icon={<DollarSign size={16} />} title="Fair Market Value" />
                   <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                     <div>
-                      <div className="text-4xl font-black text-[#003087]">
+                      <div className="text-4xl font-black text-[#002b5b]">
                         {formatQAR(results.estimate.estimated_price_qar)}
                       </div>
                       <div className="text-sm text-gray-400 mt-1">
@@ -430,7 +430,7 @@ export default function BIPage() {
                       </div>
                     </div>
                     <div className="sm:ml-auto flex flex-wrap gap-2">
-                      <span className="bg-[#003087]/10 text-[#003087] text-xs font-bold px-3 py-1 rounded-full">
+                      <span className="bg-[#002b5b]/10 text-[#002b5b] text-xs font-bold px-3 py-1 rounded-full">
                         {results.estimate.segment}
                       </span>
                       <span className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1 rounded-full">
@@ -483,8 +483,8 @@ export default function BIPage() {
                 <ResultCard>
                   <SectionHeader icon={<Clock size={16} />} title="Time to Sell Estimate" />
                   <div className="flex items-center gap-4 mb-5">
-                    <div className="w-16 h-16 rounded-2xl bg-[#003087]/10 flex flex-col items-center justify-center flex-shrink-0">
-                      <span className="text-xl font-black text-[#003087]">{results.timeToSell.estimated_days_to_sell}</span>
+                    <div className="w-16 h-16 rounded-2xl bg-[#002b5b]/10 flex flex-col items-center justify-center flex-shrink-0">
+                      <span className="text-xl font-black text-[#002b5b]">{results.timeToSell.estimated_days_to_sell}</span>
                       <span className="text-[10px] text-gray-500 font-semibold">days</span>
                     </div>
                     <div>
@@ -509,7 +509,7 @@ export default function BIPage() {
                   {results.margin.market_est_qar && (
                     <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4">
                       <div className="text-xs text-blue-600 font-semibold mb-0.5">Market Value</div>
-                      <div className="text-2xl font-black text-[#003087]">{formatQAR(results.margin.market_est_qar)}</div>
+                      <div className="text-2xl font-black text-[#002b5b]">{formatQAR(results.margin.market_est_qar)}</div>
                       {results.margin.market_low_qar && results.margin.market_high_qar && (
                         <div className="text-xs text-blue-500 mt-0.5">
                           Range: {formatQAR(results.margin.market_low_qar)} – {formatQAR(results.margin.market_high_qar)}
@@ -546,7 +546,7 @@ export default function BIPage() {
               <button
                 onClick={runAnalysis}
                 disabled={running}
-                className="w-full flex items-center justify-center gap-2 border-2 border-[#003087] text-[#003087] font-bold py-3 rounded-xl text-sm hover:bg-[#003087]/5 transition-all disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 border-2 border-[#002b5b] text-[#002b5b] font-bold py-3 rounded-xl text-sm hover:bg-[#002b5b]/5 transition-all disabled:opacity-50"
               >
                 <RefreshCw size={15} /> Run Again with Different Values
               </button>

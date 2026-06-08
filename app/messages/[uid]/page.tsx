@@ -115,10 +115,10 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
 
   if (loading || (fetching && !fetchError)) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -127,7 +127,7 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
 
   if (fetchError) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center max-w-md w-full shadow-sm">
@@ -136,7 +136,7 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
             <p className="text-sm text-gray-500 mb-6">{fetchError}</p>
             <Link
               href="/my-offers"
-              className="inline-flex items-center gap-2 bg-[#003087] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#002070] transition-colors"
+              className="inline-flex items-center gap-2 bg-[#002b5b] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#001a3d] transition-colors"
             >
               <ChevronLeft size={16} /> Back to My Offers
             </Link>
@@ -148,7 +148,7 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
 
       <div className="flex-1 max-w-2xl mx-auto w-full flex flex-col px-4 py-6" style={{ minHeight: 'calc(100vh - 140px)' }}>
@@ -156,7 +156,7 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
         <div className="flex items-center gap-3 mb-4">
           <Link
             href={`/my-offers/${uid}`}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#003087] transition-colors"
+            className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#002b5b] transition-colors"
           >
             <ChevronLeft size={16} /> Back to Offer
           </Link>
@@ -165,8 +165,8 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col flex-1 overflow-hidden">
           {/* Chat header */}
           <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#003087]/10 flex items-center justify-center">
-              <MessageSquare size={16} className="text-[#003087]" />
+            <div className="w-9 h-9 rounded-full bg-[#002b5b]/10 flex items-center justify-center">
+              <MessageSquare size={16} className="text-[#002b5b]" />
             </div>
             <div>
               <p className="font-bold text-gray-900 text-sm">Offer Chat</p>
@@ -202,7 +202,7 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
                       <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                         <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                           isMe
-                            ? 'bg-[#003087] text-white rounded-br-sm'
+                            ? 'bg-[#002b5b] text-white rounded-br-sm'
                             : 'bg-gray-100 text-gray-900 rounded-bl-sm'
                         }`}>
                           {msg.content}
@@ -227,14 +227,14 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
               value={text}
               onChange={e => setText(e.target.value)}
               placeholder="Type a message…"
-              className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+              className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#002b5b] focus:ring-2 focus:ring-[#002b5b]/10 transition-all"
               disabled={sending}
               autoComplete="off"
             />
             <button
               type="submit"
               disabled={!text.trim() || sending}
-              className="flex items-center justify-center w-10 h-10 bg-[#003087] text-white rounded-xl hover:bg-[#002070] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              className="flex items-center justify-center w-10 h-10 bg-[#002b5b] text-white rounded-xl hover:bg-[#001a3d] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
             >
               {sending
                 ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

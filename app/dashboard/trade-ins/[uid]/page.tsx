@@ -135,10 +135,10 @@ export default function TradeInDetailPage() {
 
   if (fetching || loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -147,7 +147,7 @@ export default function TradeInDetailPage() {
 
   if (fetchError || !req) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center max-w-md w-full shadow-sm">
@@ -157,7 +157,7 @@ export default function TradeInDetailPage() {
               {fetchError || "This trade-in request doesn't exist or you don't have access."}
             </p>
             <Link href="/dashboard/trade-ins"
-              className="inline-flex items-center gap-2 bg-[#003087] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#002070] transition-colors">
+              className="inline-flex items-center gap-2 bg-[#002b5b] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#001a3d] transition-colors">
               <ChevronLeft size={16} /> Back to Trade-ins
             </Link>
           </div>
@@ -186,11 +186,11 @@ export default function TradeInDetailPage() {
   const fcProjection = fcPoints.find(f => f.horizon === '12m') ?? fcPoints[fcPoints.length - 1] ?? null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="max-w-3xl mx-auto w-full px-4 py-8 flex-1">
         <Link href="/dashboard"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#003087] mb-6 transition-colors">
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#002b5b] mb-6 transition-colors">
           <ChevronLeft size={16} /> Dashboard
         </Link>
 
@@ -232,7 +232,7 @@ export default function TradeInDetailPage() {
               <p className="font-black text-gray-900 text-lg">{req.target_car_name}</p>
               {req.target_dealer && <p className="text-sm text-gray-500 mt-0.5">Dealer: {req.target_dealer}</p>}
               {req.target_price_qar && (
-                <p className="text-xl font-black text-[#003087] mt-2">{formatQAR(req.target_price_qar)}</p>
+                <p className="text-xl font-black text-[#002b5b] mt-2">{formatQAR(req.target_price_qar)}</p>
               )}
             </div>
           </Section>
@@ -306,7 +306,7 @@ export default function TradeInDetailPage() {
                 <span className="text-sm text-gray-500 flex items-center gap-1">
                   <Phone size={13} /> Phone
                 </span>
-                <a href={`tel:${req.contact_phone}`} className="text-sm font-semibold text-[#003087] hover:underline">
+                <a href={`tel:${req.contact_phone}`} className="text-sm font-semibold text-[#002b5b] hover:underline">
                   {req.contact_phone}
                 </a>
               </div>
@@ -362,7 +362,7 @@ export default function TradeInDetailPage() {
         ) : (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <h2 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <FileText size={16} className="text-[#003087]" /> Actions
+              <FileText size={16} className="text-[#002b5b]" /> Actions
             </h2>
             {!proposalOpen ? (
               <div className="flex gap-3">
@@ -373,7 +373,7 @@ export default function TradeInDetailPage() {
                     if (req.target_price_qar && !newCarPrice) setNewCarPrice(String(req.target_price_qar));
                   }}
                   disabled={['offer_made', 'accepted', 'rejected', 'closed'].includes(req.status)}
-                  className="flex items-center gap-2 bg-[#003087] hover:bg-[#002070] text-white font-bold px-5 py-3 rounded-xl text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 bg-[#002b5b] hover:bg-[#001a3d] text-white font-bold px-5 py-3 rounded-xl text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Send size={15} /> {req.status === 'offer_made' ? 'Proposal Sent' : 'Send Proposal'}
                 </button>
@@ -404,7 +404,7 @@ export default function TradeInDetailPage() {
                         value={tradeInOffer}
                         onChange={e => setTradeInOffer(e.target.value)}
                         placeholder={mktMid ? `Market ~${Math.round(mktMid / 1000)}k` : 'e.g. 60000'}
-                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]"
                       />
                       {mktMid && offerNum > 0 && (
                         <p className={`text-xs mt-1 font-semibold ${offerNum >= mktMid ? 'text-green-600' : 'text-orange-500'}`}>
@@ -423,15 +423,15 @@ export default function TradeInDetailPage() {
                         value={newCarPrice}
                         onChange={e => setNewCarPrice(e.target.value)}
                         placeholder={req.target_price_qar ? String(req.target_price_qar) : 'e.g. 280000'}
-                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]"
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]"
                       />
                     </div>
                   </div>
 
                   {/* ── Live package breakdown ── */}
                   {(offerNum > 0 || newCarNum > 0) && (
-                    <div className="bg-[#f0f4ff] border border-[#003087]/15 rounded-2xl p-4 space-y-3">
-                      <p className="text-xs font-black text-[#003087] uppercase tracking-wide flex items-center gap-1">
+                    <div className="bg-[#ebf5ff] border border-[#002b5b]/15 rounded-2xl p-4 space-y-3">
+                      <p className="text-xs font-black text-[#002b5b] uppercase tracking-wide flex items-center gap-1">
                         <Package size={13} /> Package Deal Breakdown
                       </p>
 
@@ -458,10 +458,10 @@ export default function TradeInDetailPage() {
                       {/* Divider + package price */}
                       {pkgPrice != null && (
                         <>
-                          <div className="border-t border-[#003087]/15" />
+                          <div className="border-t border-[#002b5b]/15" />
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-black text-gray-900">Buyer pays</span>
-                            <span className="text-xl font-black text-[#003087]">{formatQAR(pkgPrice)}</span>
+                            <span className="text-xl font-black text-[#002b5b]">{formatQAR(pkgPrice)}</span>
                           </div>
                         </>
                       )}
@@ -508,7 +508,7 @@ export default function TradeInDetailPage() {
                       onChange={e => setProposalNote(e.target.value)}
                       rows={2}
                       placeholder="e.g. This package includes a full service and 1-year warranty..."
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087] resize-none"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b] resize-none"
                     />
                   </div>
 

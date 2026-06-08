@@ -9,11 +9,11 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <main className="flex-1 max-w-3xl mx-auto px-4 py-12 w-full">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12">
-          <Link href="/" className="text-sm text-[#003087] hover:underline mb-6 inline-block">
+          <Link href="/" className="text-sm text-[#002b5b] hover:underline mb-6 inline-block">
             ← Back to home
           </Link>
 
@@ -123,7 +123,7 @@ export default function TermsPage() {
               <h2 className="text-xl font-bold text-gray-900 mb-3">12. Contact</h2>
               <p>
                 For questions about these terms:{' '}
-                <a href="mailto:legal@instaoffer.qa" className="text-[#003087] hover:underline">
+                <a href="mailto:legal@instaoffer.qa" className="text-[#002b5b] hover:underline">
                   legal@instaoffer.qa
                 </a>
               </p>

@@ -14,7 +14,7 @@ export default function PhoneInput({ label = 'Phone Number', error, className = 
       {label && (
         <label className="text-sm font-bold text-gray-700">{label}</label>
       )}
-      <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#003087] focus-within:ring-2 focus-within:ring-[#003087]/10 transition-all bg-white">
+      <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#002b5b] focus-within:ring-2 focus-within:ring-[#002b5b]/10 transition-all bg-white">
         <span className="px-3 py-3.5 text-sm font-semibold text-gray-500 bg-gray-50 border-r border-gray-200 select-none">
           🇶🇦 +974
         </span>
@@ -30,7 +30,7 @@ export default function PhoneInput({ label = 'Phone Number', error, className = 
         <p className="text-xs text-red-500">{error}</p>
       ) : (
         <p className="flex items-center gap-1.5 text-xs text-gray-400">
-          <Lock size={11} className="text-[#003087] flex-shrink-0" />
+          <Lock size={11} className="text-[#002b5b] flex-shrink-0" />
           Your number is never shared without your permission
         </p>
       )}

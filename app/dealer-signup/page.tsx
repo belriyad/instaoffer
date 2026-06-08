@@ -69,7 +69,7 @@ export default function DealerSignupPage() {
 
   if (submitted) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-4 py-16">
           <motion.div
@@ -84,7 +84,7 @@ export default function DealerSignupPage() {
             <p className="text-gray-500 mb-6">
               We&apos;ll review your dealer application and get back to you within <strong>24–48 hours</strong> via WhatsApp.
             </p>
-            <div className="bg-[#f5f7fa] rounded-xl p-4 text-left mb-6 space-y-1.5 text-sm text-gray-700">
+            <div className="bg-[#f8fafc] rounded-xl p-4 text-left mb-6 space-y-1.5 text-sm text-gray-700">
               <p><span className="text-gray-400">Business:</span> {form.business_name}</p>
               <p><span className="text-gray-400">WhatsApp:</span> +974 {form.whatsapp}</p>
               <p><span className="text-gray-400">Specialization:</span> {form.specialization}</p>
@@ -96,7 +96,7 @@ export default function DealerSignupPage() {
             >
               💬 Follow up on WhatsApp
             </a>
-            <Link href="/for-dealers" className="text-sm text-gray-400 hover:text-[#003087] transition-colors">
+            <Link href="/for-dealers" className="text-sm text-gray-400 hover:text-[#002b5b] transition-colors">
               ← Back to For Dealers
             </Link>
           </motion.div>
@@ -107,16 +107,16 @@ export default function DealerSignupPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
 
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-8">
         <motion.div initial="hidden" animate="visible" variants={fadeUp} className="mb-6">
-          <Link href="/for-dealers" className="text-sm text-gray-400 hover:text-[#003087] transition-colors">
+          <Link href="/for-dealers" className="text-sm text-gray-400 hover:text-[#002b5b] transition-colors">
             ← For Dealers
           </Link>
           <div className="flex items-center gap-3 mt-4">
-            <div className="w-11 h-11 bg-[#003087] rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-11 h-11 bg-[#002b5b] rounded-xl flex items-center justify-center flex-shrink-0">
               <Building2 size={20} className="text-white" />
             </div>
             <div>
@@ -135,7 +135,7 @@ export default function DealerSignupPage() {
               value={form.business_name}
               onChange={e => set('business_name', e.target.value)}
               placeholder="e.g. Al Meera Cars"
-              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10"
+              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#002b5b] focus:ring-2 focus:ring-[#002b5b]/10"
             />
           </div>
 
@@ -148,13 +148,13 @@ export default function DealerSignupPage() {
               value={form.cr_number}
               onChange={e => set('cr_number', e.target.value)}
               placeholder="Qatar Commercial Registration number"
-              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10"
+              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#002b5b] focus:ring-2 focus:ring-[#002b5b]/10"
             />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1.5">WhatsApp Number *</label>
-            <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#003087] focus-within:ring-2 focus-within:ring-[#003087]/10 bg-white">
+            <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#002b5b] focus-within:ring-2 focus-within:ring-[#002b5b]/10 bg-white">
               <span className="px-3 py-3 text-sm font-semibold text-gray-500 bg-gray-50 border-r border-gray-200">🇶🇦 +974</span>
               <input
                 type="tel"
@@ -177,7 +177,7 @@ export default function DealerSignupPage() {
               value={form.email}
               onChange={e => set('email', e.target.value)}
               placeholder="dealer@example.com"
-              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10"
+              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#002b5b] focus:ring-2 focus:ring-[#002b5b]/10"
             />
           </div>
 
@@ -191,7 +191,7 @@ export default function DealerSignupPage() {
                   onClick={() => set('specialization', s)}
                   className={`text-sm py-2.5 px-3 rounded-xl border-2 font-medium text-left transition-all ${
                     form.specialization === s
-                      ? 'border-[#003087] bg-[#003087]/5 text-[#003087]'
+                      ? 'border-[#002b5b] bg-[#002b5b]/5 text-[#002b5b]'
                       : 'border-gray-200 text-gray-600 hover:border-gray-300'
                   }`}
                 >
@@ -210,7 +210,7 @@ export default function DealerSignupPage() {
               onChange={e => set('notes', e.target.value)}
               rows={3}
               placeholder="Tell us about your dealership, years in business, typical inventory size, etc."
-              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 resize-none"
+              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#002b5b] focus:ring-2 focus:ring-[#002b5b]/10 resize-none"
             />
           </div>
 
@@ -224,7 +224,7 @@ export default function DealerSignupPage() {
             disabled={!canSubmit || loading}
             className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-base transition-all ${
               canSubmit && !loading
-                ? 'bg-[#003087] hover:bg-[#0057b8] text-white shadow-md'
+                ? 'bg-[#002b5b] hover:bg-[#1a7fd4] text-white shadow-md'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
@@ -235,7 +235,7 @@ export default function DealerSignupPage() {
 
           <p className="text-xs text-gray-400 text-center">
             We verify all dealers before granting access. By applying you agree to our{' '}
-            <Link href="/terms" className="underline hover:text-[#003087]">Terms of Service</Link>.
+            <Link href="/terms" className="underline hover:text-[#002b5b]">Terms of Service</Link>.
           </p>
         </motion.div>
       </div>

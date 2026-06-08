@@ -95,10 +95,10 @@ export default function MarginCalculatorPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -106,15 +106,15 @@ export default function MarginCalculatorPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="max-w-2xl mx-auto w-full px-4 py-8 flex-1">
         <div className="mb-6">
-          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] transition-colors mb-3">
+          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#002b5b] transition-colors mb-3">
             <ArrowLeft size={15} /> Back to Dashboard
           </Link>
           <h1 className="text-3xl font-black text-gray-900 flex items-center gap-2">
-            <Calculator size={28} className="text-[#003087]" /> Margin Calculator
+            <Calculator size={28} className="text-[#002b5b]" /> Margin Calculator
           </h1>
           <p className="text-gray-500 mt-1">Enter a car's details to see ML market estimate and expected gross margin.</p>
         </div>
@@ -130,7 +130,7 @@ export default function MarginCalculatorPage() {
                   placeholder={f.placeholder}
                   value={form[f.key]}
                   onChange={e => setForm(s => ({ ...s, [f.key]: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] transition-colors"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b] transition-colors"
                 />
               </div>
             ))}
@@ -139,7 +139,7 @@ export default function MarginCalculatorPage() {
           <button
             onClick={calculate}
             disabled={calculating}
-            className="w-full flex items-center justify-center gap-2 bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-2 bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
           >
             {calculating
               ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

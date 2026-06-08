@@ -72,15 +72,15 @@ export default function PriceGuidanceCard({ make, class_name, year, km, city = '
   if (!ready || failed) return null;
 
   return (
-    <div className="bg-gradient-to-br from-[#f0f4ff] to-white border border-[#003087]/15 rounded-xl p-4 mb-0">
+    <div className="bg-gradient-to-br from-[#ebf5ff] to-white border border-[#002b5b]/15 rounded-xl p-4 mb-0">
       <div className="flex items-center gap-2 mb-3">
-        <TrendingUp size={15} className="text-[#003087]" />
-        <span className="text-sm font-bold text-[#003087]">Estimated options for your car</span>
+        <TrendingUp size={15} className="text-[#002b5b]" />
+        <span className="text-sm font-bold text-[#002b5b]">Estimated options for your car</span>
       </div>
 
       {loading ? (
         <div className="flex items-center gap-2 text-sm text-gray-400 py-2">
-          <div className="w-4 h-4 border-2 border-[#003087]/40 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-[#002b5b]/40 border-t-[#002b5b] rounded-full animate-spin" />
           Calculating…
         </div>
       ) : bands ? (
@@ -89,7 +89,7 @@ export default function PriceGuidanceCard({ make, class_name, year, km, city = '
             {[
               { label: 'Private sale',   low: bands.privatePartyLow,  high: bands.privatePartyHigh,  color: 'text-gray-800' },
               { label: 'Trade-in',       low: bands.tradeInLow,       high: bands.tradeInHigh,       color: 'text-green-700' },
-              { label: 'Instant offer',  low: bands.instantLow,       high: bands.instantHigh,       color: 'text-[#ff6600]' },
+              { label: 'Instant offer',  low: bands.instantLow,       high: bands.instantHigh,       color: 'text-[#005ca9]' },
             ].map((row) => (
               <div key={row.label} className="flex items-center justify-between">
                 <span className="text-xs text-gray-500 w-28">{row.label}</span>
@@ -99,7 +99,7 @@ export default function PriceGuidanceCard({ make, class_name, year, km, city = '
               </div>
             ))}
           </div>
-          <div className="flex items-start gap-1.5 mt-3 pt-3 border-t border-[#003087]/10">
+          <div className="flex items-start gap-1.5 mt-3 pt-3 border-t border-[#002b5b]/10">
             <Info size={11} className="text-gray-400 mt-0.5 shrink-0" />
             <p className="text-[10px] text-gray-400 leading-relaxed">
               These are estimates. Actual dealer offers depend on photos, inspection, and market demand.

@@ -37,7 +37,7 @@ const TRADEIN_STATUS: Record<string, { label: string; color: string }> = {
 // ─── Unauthenticated teaser ───────────────────────────────────────────────────
 function UnauthenticatedState() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
@@ -60,15 +60,15 @@ function UnauthenticatedState() {
                   <p className="text-sm text-gray-400">Toyota Camry 2022 · 45,000 km</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-black text-lg text-[#003087]">{card.amount}</p>
+                  <p className="font-black text-lg text-[#002b5b]">{card.amount}</p>
                   {card.badge && <span className="text-xs font-bold bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{card.badge}</span>}
                 </div>
               </div>
             ))}
           </div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-[#f5f7fa]/60 to-[#f5f7fa]/90 rounded-2xl">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent via-[#f8fafc]/60 to-[#f8fafc]/90 rounded-2xl">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 px-6 py-4 flex items-center gap-3">
-              <Lock size={20} className="text-[#003087]" />
+              <Lock size={20} className="text-[#002b5b]" />
               <p className="font-bold text-gray-800 text-sm">Sign in to see your requests</p>
             </div>
           </div>
@@ -76,11 +76,11 @@ function UnauthenticatedState() {
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-3">
           <Link href="/login?redirect=/my-offers"
-            className="flex items-center justify-center gap-2 w-full bg-[#003087] hover:bg-[#002070] text-white font-black py-4 rounded-xl text-lg shadow-md transition-all">
+            className="flex items-center justify-center gap-2 w-full bg-[#002b5b] hover:bg-[#001a3d] text-white font-black py-4 rounded-xl text-lg shadow-md transition-all">
             Sign In to View Requests
           </Link>
           <Link href="/valuation"
-            className="flex items-center justify-center gap-2 w-full border-2 border-[#003087] text-[#003087] font-bold py-3 rounded-xl transition-all hover:bg-[#003087]/5">
+            className="flex items-center justify-center gap-2 w-full border-2 border-[#002b5b] text-[#002b5b] font-bold py-3 rounded-xl transition-all hover:bg-[#002b5b]/5">
             <Car size={18} /> Get Free Valuation
           </Link>
         </motion.div>
@@ -93,7 +93,7 @@ function UnauthenticatedState() {
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 function MyOffersSkeleton() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
         <div className="flex items-center justify-between mb-6">
@@ -176,7 +176,7 @@ function MyOffersContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
 
@@ -187,7 +187,7 @@ function MyOffersContent() {
             <p className="text-gray-500 mt-1">Track your offer and trade-in requests</p>
           </div>
           <Link href="/submit-offer"
-            className="flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-all">
+            className="flex items-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-all">
             <Car size={15} /> New Offer
           </Link>
         </div>
@@ -212,7 +212,7 @@ function MyOffersContent() {
           ] as const).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                tab === t.key ? 'bg-[#003087] text-white shadow' : 'text-gray-500 hover:text-gray-700'
+                tab === t.key ? 'bg-[#002b5b] text-white shadow' : 'text-gray-500 hover:text-gray-700'
               }`}>
               <t.icon size={15} />
               {t.label}
@@ -241,7 +241,7 @@ function MyOffersContent() {
                   <h3 className="text-xl font-bold text-gray-900 mb-2">No trade-in requests yet</h3>
                   <p className="text-gray-500 mb-6">Browse vehicles and start a trade-in from any car listing.</p>
                   <Link href="/listings"
-                    className="inline-flex items-center gap-2 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-6 py-3 rounded-xl transition-colors">
+                    className="inline-flex items-center gap-2 bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold px-6 py-3 rounded-xl transition-colors">
                     Browse Vehicles <ChevronRight size={18} />
                   </Link>
                 </div>
@@ -281,11 +281,11 @@ function MyOffersContent() {
 
                             {/* Target car */}
                             {req.target_car_name && (
-                              <div className="flex items-center gap-1.5 mt-1.5 bg-[#003087]/5 rounded-lg px-2.5 py-1.5">
-                                <Tag size={12} className="text-[#003087] shrink-0" />
-                                <span className="text-xs font-bold text-[#003087] truncate">{req.target_car_name}</span>
+                              <div className="flex items-center gap-1.5 mt-1.5 bg-[#002b5b]/5 rounded-lg px-2.5 py-1.5">
+                                <Tag size={12} className="text-[#002b5b] shrink-0" />
+                                <span className="text-xs font-bold text-[#002b5b] truncate">{req.target_car_name}</span>
                                 {req.target_price_qar && (
-                                  <span className="text-xs font-black text-[#003087] ml-auto shrink-0">{formatQAR(req.target_price_qar)}</span>
+                                  <span className="text-xs font-black text-[#002b5b] ml-auto shrink-0">{formatQAR(req.target_price_qar)}</span>
                                 )}
                               </div>
                             )}
@@ -313,7 +313,7 @@ function MyOffersContent() {
                           <div className="flex flex-col gap-2 shrink-0">
                             {uid && (
                               <Link href={`/my-trade-ins/${uid}`}
-                                className="flex items-center gap-1 text-sm font-semibold text-[#003087] bg-[#e8f0fd] hover:bg-[#d0e0fb] px-3 py-2 rounded-xl transition-colors">
+                                className="flex items-center gap-1 text-sm font-semibold text-[#002b5b] bg-[#ebf5ff] hover:bg-[#d6eeff] px-3 py-2 rounded-xl transition-colors">
                                 View <ChevronRight size={14} />
                               </Link>
                             )}
@@ -345,7 +345,7 @@ function MyOffersContent() {
                   <h3 className="text-xl font-bold text-gray-900 mb-2">No offer requests yet</h3>
                   <p className="text-gray-500 mb-6">Start by getting a free valuation on your car</p>
                   <Link href="/valuation"
-                    className="inline-flex items-center gap-2 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-6 py-3 rounded-xl transition-colors">
+                    className="inline-flex items-center gap-2 bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold px-6 py-3 rounded-xl transition-colors">
                     Get Free Valuation <ChevronRight size={18} />
                   </Link>
                 </div>
@@ -371,7 +371,7 @@ function MyOffersContent() {
                             </p>
                           </div>
                           <Link href={`/my-offers/${req.request_uid}`}
-                            className="flex-shrink-0 flex items-center gap-1 text-sm font-semibold text-[#003087] hover:text-[#0057b8] bg-[#e8f0fd] px-4 py-2 rounded-xl transition-colors">
+                            className="flex-shrink-0 flex items-center gap-1 text-sm font-semibold text-[#002b5b] hover:text-[#1a7fd4] bg-[#ebf5ff] px-4 py-2 rounded-xl transition-colors">
                             View <ChevronRight size={16} />
                           </Link>
                         </div>

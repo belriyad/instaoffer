@@ -251,7 +251,7 @@ function TradeInContent() {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        <main className="flex-1 bg-gradient-to-br from-[#003087] to-[#001a52] flex items-center justify-center px-4 py-16">
+        <main className="flex-1 bg-gradient-to-br from-[#002b5b] to-[#001a3d] flex items-center justify-center px-4 py-16">
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="text-green-500" size={36} />
@@ -269,10 +269,10 @@ function TradeInContent() {
               </div>
             )}
             <Link href="/my-offers"
-              className="block w-full bg-[#003087] text-white font-bold py-3 rounded-lg hover:bg-[#002070] transition-colors mb-3">
+              className="block w-full bg-[#002b5b] text-white font-bold py-3 rounded-lg hover:bg-[#001a3d] transition-colors mb-3">
               View My Requests
             </Link>
-            <Link href="/listings" className="block w-full text-[#003087] font-semibold py-2 text-sm hover:underline">
+            <Link href="/listings" className="block w-full text-[#002b5b] font-semibold py-2 text-sm hover:underline">
               Browse More Vehicles
             </Link>
           </div>
@@ -287,17 +287,17 @@ function TradeInContent() {
 
   // ─── Main render ─────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col min-h-screen bg-[#f4f6fb]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
 
-        <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-[#003087] font-semibold mb-6 hover:underline">
+        <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-[#002b5b] font-semibold mb-6 hover:underline">
           <ArrowLeft size={15} /> {targetCarName ? `Back to ${targetCarName}` : 'Back to Browse'}
         </Link>
 
         {/* ── Target car banner ── */}
         {hasTarget && (
-          <div className="bg-gradient-to-r from-[#003087] to-[#0057b8] text-white rounded-2xl p-5 mb-5 shadow-md">
+          <div className="bg-gradient-to-r from-[#002b5b] to-[#1a7fd4] text-white rounded-2xl p-5 mb-5 shadow-md">
             <p className="text-xs font-bold text-blue-200 uppercase tracking-wide mb-2 flex items-center gap-1">
               <Tag size={11} /> You are trading toward
             </p>
@@ -340,7 +340,7 @@ function TradeInContent() {
           <div className="space-y-5">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <h2 className="font-bold text-gray-900 mb-4 text-base flex items-center gap-2">
-                <Car size={16} className="text-[#003087]" /> Your Current Vehicle
+                <Car size={16} className="text-[#002b5b]" /> Your Current Vehicle
               </h2>
               <div className="space-y-4">
                 <div data-error-anchor="make">
@@ -357,7 +357,7 @@ function TradeInContent() {
                 <div data-error-anchor="year">
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Year *</label>
                   <select value={curYear} onChange={e => { setCurYear(e.target.value); clearError(); }}
-                    className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087] ${errorField === 'year' ? 'border-red-400 ring-2 ring-red-200' : 'border-gray-300'}`}>
+                    className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b] ${errorField === 'year' ? 'border-red-400 ring-2 ring-red-200' : 'border-gray-300'}`}>
                     <option value="">Select year</option>
                     {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                   </select>
@@ -373,7 +373,7 @@ function TradeInContent() {
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">City</label>
                   <select value={curCity} onChange={e => setCurCity(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]">
                     {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
@@ -390,7 +390,7 @@ function TradeInContent() {
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Estimated Value</p>
                 {estimateLoading ? (
                   <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span className="w-4 h-4 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" /> Calculating…
+                    <span className="w-4 h-4 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" /> Calculating…
                   </div>
                 ) : tradeEstimate ? (
                   <>
@@ -398,9 +398,9 @@ function TradeInContent() {
                       {formatQAR(tradeEstimate[0])} – {formatQAR(tradeEstimate[1])}
                     </p>
                     {targetPriceNum > 0 && (
-                      <div className="bg-[#f0f4ff] rounded-xl px-4 py-3">
-                        <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-1">Est. Amount to Top Up</p>
-                        <p className="text-xl font-black text-[#003087]">
+                      <div className="bg-[#ebf5ff] rounded-xl px-4 py-3">
+                        <p className="text-xs font-bold text-[#002b5b] uppercase tracking-wide mb-1">Est. Amount to Top Up</p>
+                        <p className="text-xl font-black text-[#002b5b]">
                           {(() => {
                             const lo = Math.max(0, Math.round((targetPriceNum - tradeEstimate[1]) / 1000) * 1000);
                             const hi = Math.max(0, Math.round((targetPriceNum - tradeEstimate[0]) / 1000) * 1000);
@@ -466,9 +466,9 @@ function TradeInContent() {
                             </button>
                           </div>
                         ) : ps.uploading ? (
-                          <div className="w-8 h-8 border-2 border-[#003087]/20 border-t-[#003087] rounded-full animate-spin" />
+                          <div className="w-8 h-8 border-2 border-[#002b5b]/20 border-t-[#002b5b] rounded-full animate-spin" />
                         ) : (
-                          <label className="cursor-pointer flex items-center gap-1.5 bg-[#003087] hover:bg-[#002070] text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors">
+                          <label className="cursor-pointer flex items-center gap-1.5 bg-[#002b5b] hover:bg-[#001a3d] text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors">
                             <Upload size={13} />
                             Upload
                             <input
@@ -537,7 +537,7 @@ function TradeInContent() {
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Approx. Year</label>
                     <select value={tgtYear} onChange={e => setTgtYear(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]">
                       <option value="">Any year</option>
                       {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
@@ -545,16 +545,16 @@ function TradeInContent() {
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Budget (QAR)</label>
                     <input type="number" value={tgtPrice} onChange={e => setTgtPrice(e.target.value)} placeholder="e.g. 180000" min={0}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]" />
                   </div>
                 </div>
               </div>
             </div>
 
             {tradeEstimate && tgtPriceNum > 0 && (
-              <div className="bg-[#f0f4ff] rounded-xl border border-[#003087]/15 p-4">
-                <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-2">Estimated Difference</p>
-                <p className="text-2xl font-black text-[#003087] mb-1">
+              <div className="bg-[#ebf5ff] rounded-xl border border-[#002b5b]/15 p-4">
+                <p className="text-xs font-bold text-[#002b5b] uppercase tracking-wide mb-2">Estimated Difference</p>
+                <p className="text-2xl font-black text-[#002b5b] mb-1">
                   {(() => {
                     const lo = Math.max(0, Math.round((tgtPriceNum - tradeEstimate[1]) / 1000) * 1000);
                     const hi = Math.max(0, Math.round((tgtPriceNum - tradeEstimate[0]) / 1000) * 1000);
@@ -572,8 +572,8 @@ function TradeInContent() {
         {/* ── TIMELINE step ── */}
         {step === TIMELINE_STEP && !authLoading && !user && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-            <div className="w-14 h-14 bg-[#003087]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <LogIn size={26} className="text-[#003087]" />
+            <div className="w-14 h-14 bg-[#002b5b]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <LogIn size={26} className="text-[#002b5b]" />
             </div>
             <h2 className="text-xl font-black text-gray-900 mb-2">Sign in to submit your request</h2>
             <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
@@ -582,13 +582,13 @@ function TradeInContent() {
             <div className="flex flex-col gap-3">
               <Link
                 href={buildLoginRedirect('/login')}
-                className="flex items-center justify-center gap-2 bg-[#003087] text-white font-bold py-3 rounded-xl hover:bg-[#002070] transition-colors"
+                className="flex items-center justify-center gap-2 bg-[#002b5b] text-white font-bold py-3 rounded-xl hover:bg-[#001a3d] transition-colors"
               >
                 <LogIn size={16} /> Sign In
               </Link>
               <Link
                 href={buildLoginRedirect('/login') + '&mode=register'}
-                className="flex items-center justify-center gap-2 border-2 border-[#003087] text-[#003087] font-bold py-3 rounded-xl hover:bg-[#003087]/5 transition-colors"
+                className="flex items-center justify-center gap-2 border-2 border-[#002b5b] text-[#002b5b] font-bold py-3 rounded-xl hover:bg-[#002b5b]/5 transition-colors"
               >
                 <UserPlus size={16} /> Create Free Account
               </Link>
@@ -621,13 +621,13 @@ function TradeInContent() {
                   </div>
                 </div>
                 {hasTarget && (
-                  <div className="flex items-start gap-3 p-3 bg-[#003087]/5 rounded-xl">
-                    <Tag size={16} className="text-[#003087] mt-0.5 shrink-0" />
+                  <div className="flex items-start gap-3 p-3 bg-[#002b5b]/5 rounded-xl">
+                    <Tag size={16} className="text-[#002b5b] mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs text-gray-400 font-medium">Target vehicle</p>
                       <p className="text-sm font-bold text-gray-900">{targetCarName}</p>
                       {targetDealer && <p className="text-xs text-gray-500">{targetDealer}</p>}
-                      {targetPriceNum > 0 && <p className="text-xs font-bold text-[#003087] mt-0.5">{formatQAR(targetPriceNum)}</p>}
+                      {targetPriceNum > 0 && <p className="text-xs font-bold text-[#002b5b] mt-0.5">{formatQAR(targetPriceNum)}</p>}
                     </div>
                   </div>
                 )}
@@ -671,7 +671,7 @@ function TradeInContent() {
               <label className="block text-sm font-semibold text-gray-700 mb-1">Notes for the dealer <span className="text-gray-400 font-normal">(optional)</span></label>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
                 placeholder="e.g. My car is in great condition, no accidents. Looking for a quick deal."
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087] resize-none" />
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b] resize-none" />
             </div>
 
             <button type="button" onClick={handleSubmit} disabled={submitting}
@@ -694,7 +694,7 @@ function TradeInContent() {
           }
           {step < STEPS.length - 1 && (
             <button type="button" onClick={goNext}
-              className="flex items-center gap-1.5 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-6 py-3 rounded-xl text-sm transition-all ml-auto">
+              className="flex items-center gap-1.5 bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold px-6 py-3 rounded-xl text-sm transition-all ml-auto">
               Continue <ChevronRight size={16} />
             </button>
           )}
@@ -708,7 +708,7 @@ function TradeInContent() {
 export default function TradeInPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
+      <div className="min-h-screen bg-[#f8fafc] flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />

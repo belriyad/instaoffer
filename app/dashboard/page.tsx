@@ -74,7 +74,7 @@ function EstimatorTab() {
     <div className="space-y-5">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <h2 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
-          <Calculator size={17} className="text-[#003087]" /> Car Valuation Estimator
+          <Calculator size={17} className="text-[#002b5b]" /> Car Valuation Estimator
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -88,7 +88,7 @@ function EstimatorTab() {
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Year *</label>
             <select value={year} onChange={e => setYear(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]">
               <option value="">Select year</option>
               {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
@@ -100,14 +100,14 @@ function EstimatorTab() {
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">City</label>
             <select value={city} onChange={e => setCity(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]">
               {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Condition</label>
             <select value={condition} onChange={e => setCond(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]">
               <option value="excellent">Excellent</option>
               <option value="good">Good</option>
               <option value="fair">Fair</option>
@@ -123,7 +123,7 @@ function EstimatorTab() {
         )}
 
         <button onClick={handleEstimate} disabled={loading}
-          className="mt-5 w-full flex items-center justify-center gap-2 bg-[#003087] hover:bg-[#002070] text-white font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-60">
+          className="mt-5 w-full flex items-center justify-center gap-2 bg-[#002b5b] hover:bg-[#001a3d] text-white font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-60">
           {loading
             ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Calculating…</>
             : <><Calculator size={16} /> Get Estimate</>}
@@ -238,13 +238,13 @@ function RequestCard({
 
         {/* Target car */}
         {req.target_car_name && (
-          <div className="bg-[#003087]/5 rounded-xl px-4 py-3 mb-3 flex items-center justify-between gap-3">
+          <div className="bg-[#002b5b]/5 rounded-xl px-4 py-3 mb-3 flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs text-[#003087] font-bold uppercase tracking-wide mb-0.5">Target Vehicle</p>
+              <p className="text-xs text-[#002b5b] font-bold uppercase tracking-wide mb-0.5">Target Vehicle</p>
               <p className="font-bold text-gray-900 text-sm">{req.target_car_name}</p>
             </div>
             {req.target_price_qar != null && (
-              <p className="font-black text-[#003087] text-sm shrink-0">{formatQAR(req.target_price_qar)}</p>
+              <p className="font-black text-[#002b5b] text-sm shrink-0">{formatQAR(req.target_price_qar)}</p>
             )}
           </div>
         )}
@@ -269,7 +269,7 @@ function RequestCard({
         <div className="flex gap-2 flex-wrap">
           <Link
             href={`/dashboard/trade-ins/${uid}`}
-            className="flex items-center gap-1.5 text-sm font-bold text-[#003087] bg-[#e8f0fd] hover:bg-[#d0e0fb] px-4 py-2.5 rounded-xl transition-colors"
+            className="flex items-center gap-1.5 text-sm font-bold text-[#002b5b] bg-[#ebf5ff] hover:bg-[#d6eeff] px-4 py-2.5 rounded-xl transition-colors"
           >
             View Details <ChevronRight size={14} />
           </Link>
@@ -332,8 +332,8 @@ function RequestsTab({ token }: { token: string }) {
           <button key={f.value} onClick={() => setStatusFilter(f.value)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
               statusFilter === f.value
-                ? 'bg-[#003087] text-white'
-                : 'bg-white border border-gray-200 text-gray-600 hover:border-[#003087] hover:text-[#003087]'
+                ? 'bg-[#002b5b] text-white'
+                : 'bg-white border border-gray-200 text-gray-600 hover:border-[#002b5b] hover:text-[#002b5b]'
             }`}>
             {f.label}
             {f.value && counts[f.value] ? ` (${counts[f.value]})` : ''}
@@ -347,7 +347,7 @@ function RequestsTab({ token }: { token: string }) {
 
       {fetching ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-2 border-[#003087]/20 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/20 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
       ) : fetchError ? (
         <div className="bg-red-50 border border-red-100 rounded-2xl p-8 text-center">
@@ -393,10 +393,10 @@ export default function DashboardPage() {
 
   if (loading || !user) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -404,7 +404,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
 
@@ -422,7 +422,7 @@ export default function DashboardPage() {
             onClick={() => setTab('requests')}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${
               tab === 'requests'
-                ? 'bg-[#003087] text-white shadow'
+                ? 'bg-[#002b5b] text-white shadow'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
@@ -432,7 +432,7 @@ export default function DashboardPage() {
             onClick={() => setTab('estimator')}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${
               tab === 'estimator'
-                ? 'bg-[#003087] text-white shadow'
+                ? 'bg-[#002b5b] text-white shadow'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >

@@ -114,7 +114,7 @@ export default function BuyerRequestsPage() {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / LIMIT)) : 1;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
 
@@ -131,7 +131,7 @@ export default function BuyerRequestsPage() {
           <button
             onClick={load}
             disabled={fetching}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#003087] transition-colors"
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#002b5b] transition-colors"
           >
             <RefreshCw size={13} className={fetching ? 'animate-spin' : ''} /> Refresh
           </button>

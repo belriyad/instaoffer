@@ -21,9 +21,9 @@ export default function StepIndicator({ steps, current }: StepIndicatorProps) {
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0 transition-all ${
                 i < current
-                  ? 'bg-[#003087] text-white'
+                  ? 'bg-[#002b5b] text-white'
                   : i === current
-                  ? 'bg-[#003087] text-white ring-4 ring-[#003087]/20'
+                  ? 'bg-[#002b5b] text-white ring-4 ring-[#002b5b]/20'
                   : 'bg-gray-200 text-gray-400'
               }`}
             >
@@ -37,7 +37,7 @@ export default function StepIndicator({ steps, current }: StepIndicatorProps) {
             </div>
             {/* Connector */}
             {i < steps.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-1 transition-all ${i < current ? 'bg-[#003087]' : 'bg-gray-200'}`} />
+              <div className={`flex-1 h-0.5 mx-1 transition-all ${i < current ? 'bg-[#002b5b]' : 'bg-gray-200'}`} />
             )}
           </div>
         ))}

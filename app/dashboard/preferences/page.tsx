@@ -85,10 +85,10 @@ export default function PreferencesPage() {
 
   if (loading || fetching) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -96,7 +96,7 @@ export default function PreferencesPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
 
       <div className="max-w-2xl mx-auto w-full px-4 py-8 flex-1">
@@ -124,7 +124,7 @@ export default function PreferencesPage() {
               </div>
               <button
                 onClick={() => setPrefs(p => ({ ...p, active: !p.active }))}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prefs.active ? 'bg-[#003087]' : 'bg-gray-300'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prefs.active ? 'bg-[#002b5b]' : 'bg-gray-300'}`}
               >
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${prefs.active ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
@@ -142,8 +142,8 @@ export default function PreferencesPage() {
                   onClick={() => toggleItem('makes', make)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
                     prefs.makes.includes(make)
-                      ? 'bg-[#003087] text-white border-[#003087]'
-                      : 'bg-white text-gray-700 border-gray-200 hover:border-[#003087]'
+                      ? 'bg-[#002b5b] text-white border-[#002b5b]'
+                      : 'bg-white text-gray-700 border-gray-200 hover:border-[#002b5b]'
                   }`}
                 >
                   {make}
@@ -163,8 +163,8 @@ export default function PreferencesPage() {
                   onClick={() => toggleItem('cities', city)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
                     prefs.cities.includes(city)
-                      ? 'bg-[#003087] text-white border-[#003087]'
-                      : 'bg-white text-gray-700 border-gray-200 hover:border-[#003087]'
+                      ? 'bg-[#002b5b] text-white border-[#002b5b]'
+                      : 'bg-white text-gray-700 border-gray-200 hover:border-[#002b5b]'
                   }`}
                 >
                   {city}
@@ -185,7 +185,7 @@ export default function PreferencesPage() {
                   max={prefs.max_year}
                   value={prefs.min_year}
                   onChange={e => setPrefs(p => ({ ...p, min_year: Number(e.target.value) }))}
-                  className="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:border-[#003087]"
+                  className="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:border-[#002b5b]"
                 />
               </div>
               <div>
@@ -196,7 +196,7 @@ export default function PreferencesPage() {
                   max={new Date().getFullYear() + 1}
                   value={prefs.max_year}
                   onChange={e => setPrefs(p => ({ ...p, max_year: Number(e.target.value) }))}
-                  className="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:border-[#003087]"
+                  className="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:border-[#002b5b]"
                 />
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function PreferencesPage() {
               step={5000}
               value={prefs.max_km}
               onChange={e => setPrefs(p => ({ ...p, max_km: Number(e.target.value) }))}
-              className="w-full accent-[#003087]"
+              className="w-full accent-[#002b5b]"
             />
             <div className="flex justify-between text-xs text-gray-400 mt-1">
               <span>10,000 km</span>
@@ -238,7 +238,7 @@ export default function PreferencesPage() {
                   </div>
                   <button
                     onClick={() => setPrefs(p => ({ ...p, [key]: !p[key] }))}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prefs[key] ? 'bg-[#003087]' : 'bg-gray-300'}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prefs[key] ? 'bg-[#002b5b]' : 'bg-gray-300'}`}
                   >
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${prefs[key] ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
@@ -252,7 +252,7 @@ export default function PreferencesPage() {
             <h2 className="font-bold text-gray-900 mb-1">Minimum Alert Score</h2>
             <p className="text-sm text-gray-500 mb-1">
               Only alert me on opportunities scoring{' '}
-              <span className="font-bold text-[#003087]">{prefs.min_score_for_alert}+</span> out of 100
+              <span className="font-bold text-[#002b5b]">{prefs.min_score_for_alert}+</span> out of 100
             </p>
             <p className="text-xs text-gray-400 mb-4">Higher = fewer but higher-quality alerts. Lower = more alerts.</p>
             <input
@@ -262,7 +262,7 @@ export default function PreferencesPage() {
               step={5}
               value={prefs.min_score_for_alert}
               onChange={e => setPrefs(p => ({ ...p, min_score_for_alert: Number(e.target.value) }))}
-              className="w-full accent-[#003087]"
+              className="w-full accent-[#002b5b]"
             />
             <div className="flex justify-between text-xs text-gray-400 mt-1">
               <span>0 — all alerts</span>
@@ -282,7 +282,7 @@ export default function PreferencesPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full flex items-center justify-center gap-2 bg-[#003087] text-white font-bold py-3.5 rounded-xl text-base hover:bg-[#0057b8] transition-colors disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-2 bg-[#002b5b] text-white font-bold py-3.5 rounded-xl text-base hover:bg-[#1a7fd4] transition-colors disabled:opacity-60"
           >
             {saving ? (
               <><Loader2 size={18} className="animate-spin" /> Saving…</>

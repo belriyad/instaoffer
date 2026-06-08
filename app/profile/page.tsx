@@ -36,7 +36,7 @@ const LANGUAGES = [
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   admin:  { label: 'Admin',  color: 'bg-purple-100 text-purple-700' },
-  dealer: { label: 'Dealer', color: 'bg-blue-100 text-[#003087]' },
+  dealer: { label: 'Dealer', color: 'bg-blue-100 text-[#002b5b]' },
   user:   { label: 'Seller', color: 'bg-green-100 text-green-700' },
   guest:  { label: 'Guest',  color: 'bg-gray-100 text-gray-600' },
 };
@@ -132,7 +132,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-2 border-[#003087] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b] border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -153,7 +153,7 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 flex items-center gap-5"
         >
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#003087] to-blue-500 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#002b5b] to-blue-500 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
             {(user.full_name || user.email || '?')[0].toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
@@ -170,11 +170,11 @@ export default function ProfilePage() {
           </div>
           <div className="hidden sm:flex flex-col gap-2">
             {user.role === 'dealer' || user.role === 'admin' ? (
-              <button onClick={() => router.push('/dashboard')} className="text-sm text-[#003087] font-semibold flex items-center gap-1 hover:underline">
+              <button onClick={() => router.push('/dashboard')} className="text-sm text-[#002b5b] font-semibold flex items-center gap-1 hover:underline">
                 Dashboard <ChevronRight size={14} />
               </button>
             ) : (
-              <button onClick={() => router.push('/my-offers')} className="text-sm text-[#003087] font-semibold flex items-center gap-1 hover:underline">
+              <button onClick={() => router.push('/my-offers')} className="text-sm text-[#002b5b] font-semibold flex items-center gap-1 hover:underline">
                 My Offers <ChevronRight size={14} />
               </button>
             )}
@@ -192,7 +192,7 @@ export default function ProfilePage() {
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6"
         >
           <h2 className="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
-            <User size={18} className="text-[#003087]" /> Profile Information
+            <User size={18} className="text-[#002b5b]" /> Profile Information
           </h2>
           <form onSubmit={handleSaveProfile} className="space-y-5">
             <div>
@@ -200,7 +200,7 @@ export default function ProfilePage() {
               <div className="relative">
                 <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name"
-                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]" />
+                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b]" />
               </div>
             </div>
             <div>
@@ -227,7 +227,7 @@ export default function ProfilePage() {
               <div className="relative">
                 <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <select value={city} onChange={e => setCity(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] appearance-none bg-white">
+                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b] appearance-none bg-white">
                   <option value="">Select city</option>
                   {QATAR_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -238,7 +238,7 @@ export default function ProfilePage() {
               <div className="relative">
                 <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <select value={lang} onChange={e => setLang(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] appearance-none bg-white">
+                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b] appearance-none bg-white">
                   {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
                 </select>
               </div>
@@ -254,7 +254,7 @@ export default function ProfilePage() {
               </div>
             )}
             <button type="submit" disabled={profileSaving}
-              className="w-full py-2.5 bg-[#003087] text-white text-sm font-semibold rounded-xl hover:bg-[#002570] transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
+              className="w-full py-2.5 bg-[#002b5b] text-white text-sm font-semibold rounded-xl hover:bg-[#001a3d] transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
               {profileSaving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save size={16} />}
               {profileSaving ? 'Saving…' : 'Save Profile'}
             </button>
@@ -269,23 +269,23 @@ export default function ProfilePage() {
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6"
         >
           <h2 className="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
-            <Lock size={18} className="text-[#003087]" /> Change Password
+            <Lock size={18} className="text-[#002b5b]" /> Change Password
           </h2>
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
               <input type="password" value={currentPwd} onChange={e => setCurrentPwd(e.target.value)} required placeholder="Enter current password"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]" />
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b]" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
               <input type="password" value={newPwd} onChange={e => setNewPwd(e.target.value)} required minLength={8} placeholder="At least 8 characters"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]" />
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b]" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm New Password</label>
               <input type="password" value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} required placeholder="Repeat new password"
-                className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] ${confirmPwd && confirmPwd !== newPwd ? 'border-red-300 bg-red-50' : 'border-gray-200'}`} />
+                className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b] ${confirmPwd && confirmPwd !== newPwd ? 'border-red-300 bg-red-50' : 'border-gray-200'}`} />
               {confirmPwd && confirmPwd !== newPwd && <p className="text-xs text-red-500 mt-1">Passwords don&apos;t match</p>}
             </div>
             {pwdError && (
@@ -314,19 +314,19 @@ export default function ProfilePage() {
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
         >
           <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Shield size={18} className="text-[#003087]" /> Account
+            <Shield size={18} className="text-[#002b5b]" /> Account
           </h2>
           <div className="space-y-3">
             {(user.role === 'dealer' || user.role === 'admin') && (
               <button onClick={() => router.push('/dashboard')}
                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700">
-                <span className="flex items-center gap-2"><Tag size={16} className="text-[#003087]" /> Dealer Dashboard</span>
+                <span className="flex items-center gap-2"><Tag size={16} className="text-[#002b5b]" /> Dealer Dashboard</span>
                 <ChevronRight size={16} className="text-gray-400" />
               </button>
             )}
             <button onClick={() => router.push('/my-offers')}
               className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700">
-              <span className="flex items-center gap-2"><Tag size={16} className="text-[#003087]" /> My Offer Requests</span>
+              <span className="flex items-center gap-2"><Tag size={16} className="text-[#002b5b]" /> My Offer Requests</span>
               <ChevronRight size={16} className="text-gray-400" />
             </button>
             <button onClick={() => { signOut(); router.push('/'); }}

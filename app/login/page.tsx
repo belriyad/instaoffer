@@ -92,13 +92,13 @@ function LoginContent() {
     }
   }
 
-  const inputCls = 'w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-base focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/20 transition-colors';
+  const inputCls = 'w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-base focus:outline-none focus:border-[#002b5b] focus:ring-2 focus:ring-[#002b5b]/20 transition-colors';
 
   // While redirecting dealers to /login/dealer, don't flash the seller form.
-  if (isDealerRole) return <div className="min-h-screen bg-[#f5f7fa]" />;
+  if (isDealerRole) return <div className="min-h-screen bg-[#f8fafc]" />;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <motion.div
@@ -111,7 +111,7 @@ function LoginContent() {
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
               <div className="text-2xl font-black">
-                Insta<span className="text-[#ff6600]">Offer</span>
+                Insta<span className="text-[#005ca9]">Offer</span>
               </div>
             </Link>
             <h1 className="text-2xl font-black text-gray-900 mt-4">
@@ -133,7 +133,7 @@ function LoginContent() {
                 onClick={() => switchMode(m)}
                 className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
                   mode === m
-                    ? 'bg-white shadow-sm text-[#003087]'
+                    ? 'bg-white shadow-sm text-[#002b5b]'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -196,7 +196,7 @@ function LoginContent() {
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-sm font-semibold text-gray-700">Password</label>
                 {mode === 'login' && (
-                  <Link href="/forgot-password" className="text-xs text-[#003087] hover:underline">
+                  <Link href="/forgot-password" className="text-xs text-[#002b5b] hover:underline">
                     Forgot password?
                   </Link>
                 )}
@@ -265,7 +265,7 @@ function LoginContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#003087] hover:bg-[#0057b8] active:bg-[#002060] text-white font-bold py-4 rounded-xl text-base transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+              className="w-full bg-[#002b5b] hover:bg-[#1a7fd4] active:bg-[#001a3d] text-white font-bold py-4 rounded-xl text-base transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
             >
               {loading ? (
                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -285,7 +285,7 @@ function LoginContent() {
           <div className="mt-4 border-t border-gray-100 pt-4">
             <p className="text-center text-sm text-gray-500">
               Are you a dealer?{' '}
-              <Link href="/login/dealer" className="text-[#003087] font-semibold hover:underline">
+              <Link href="/login/dealer" className="text-[#002b5b] font-semibold hover:underline">
                 Dealer login →
               </Link>
             </p>
@@ -298,7 +298,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f5f7fa]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#f8fafc]" />}>
       <LoginContent />
     </Suspense>
   );

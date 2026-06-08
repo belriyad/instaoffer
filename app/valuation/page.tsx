@@ -65,7 +65,7 @@ function Screen1({
         {data.make && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             <p className="text-sm font-bold text-gray-700 mb-2">
-              Model <span className="text-[#003087]">·</span> {data.make}
+              Model <span className="text-[#002b5b]">·</span> {data.make}
             </p>
             <SearchableModelSelect
               make={data.make}
@@ -100,7 +100,7 @@ function Screen1({
         disabled={!canContinue}
         className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-base transition-all ${
           canContinue
-            ? 'bg-[#003087] hover:bg-[#0057b8] text-white shadow-md'
+            ? 'bg-[#002b5b] hover:bg-[#1a7fd4] text-white shadow-md'
             : 'bg-gray-100 text-gray-400 cursor-not-allowed'
         }`}
       >
@@ -172,12 +172,12 @@ function Screen2({
           <div className="border border-gray-200 rounded-xl overflow-hidden">
             {/* Locked auto-detected row */}
             {hasLocked && (
-              <div className="flex flex-wrap items-center gap-2 px-4 py-3 bg-[#f5f8ff] border-b border-gray-100">
-                <Lock size={11} className="text-[#003087] opacity-60" />
-                <span className="text-[10px] font-bold text-[#003087] uppercase tracking-widest opacity-70">Auto-detected</span>
-                {d.fuel_type && <span className="bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-2.5 py-0.5 rounded-full">{d.fuel_type}</span>}
-                {d.gear_type && <span className="bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-2.5 py-0.5 rounded-full">{d.gear_type}</span>}
-                {d.car_type  && <span className="bg-[#e8f0fd] text-[#003087] text-xs font-semibold px-2.5 py-0.5 rounded-full">{d.car_type}</span>}
+              <div className="flex flex-wrap items-center gap-2 px-4 py-3 bg-[#ebf5ff] border-b border-gray-100">
+                <Lock size={11} className="text-[#002b5b] opacity-60" />
+                <span className="text-[10px] font-bold text-[#002b5b] uppercase tracking-widest opacity-70">Auto-detected</span>
+                {d.fuel_type && <span className="bg-[#ebf5ff] text-[#002b5b] text-xs font-semibold px-2.5 py-0.5 rounded-full">{d.fuel_type}</span>}
+                {d.gear_type && <span className="bg-[#ebf5ff] text-[#002b5b] text-xs font-semibold px-2.5 py-0.5 rounded-full">{d.gear_type}</span>}
+                {d.car_type  && <span className="bg-[#ebf5ff] text-[#002b5b] text-xs font-semibold px-2.5 py-0.5 rounded-full">{d.car_type}</span>}
               </div>
             )}
             <button
@@ -248,7 +248,7 @@ function Screen2({
         disabled={!canSubmit || loading}
         className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all ${
           canSubmit && !loading
-            ? 'bg-[#ff6600] hover:bg-[#e05a00] text-white shadow-md hover:shadow-lg'
+            ? 'bg-[#005ca9] hover:bg-[#004a87] text-white shadow-md hover:shadow-lg'
             : 'bg-gray-100 text-gray-400 cursor-not-allowed'
         }`}
       >
@@ -419,29 +419,29 @@ function ValuationContent() {
     const label = [s.data.year, s.data.make, s.data.class_name, s.data.trim].filter(Boolean).join(' ');
     const kmText = s.data.km && s.data.km > 0 ? ` · ${formatKM(s.data.km)}` : '';
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 max-w-sm w-full text-center">
-            <div className="w-14 h-14 bg-[#e8f0fd] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Car className="text-[#003087]" size={28} />
+            <div className="w-14 h-14 bg-[#ebf5ff] rounded-full flex items-center justify-center mx-auto mb-4">
+              <Car className="text-[#002b5b]" size={28} />
             </div>
             <h2 className="text-xl font-black text-gray-900 mb-1">Welcome back!</h2>
             <p className="text-gray-500 text-sm mb-6">
               We saved your previous car details. Continue where you left off?
             </p>
-            <div className="bg-[#f5f8ff] border border-[#d0e0ff] rounded-xl p-4 mb-6 text-left">
+            <div className="bg-[#ebf5ff] border border-[#d0e0ff] rounded-xl p-4 mb-6 text-left">
               <p className="font-bold text-gray-900 text-sm">{label}{kmText}</p>
               {s.data.condition && <p className="text-xs text-gray-500 mt-0.5">{s.data.condition} condition · {s.data.city || 'Qatar'}</p>}
               {s.estimate && (
-                <p className="text-xs text-[#003087] font-semibold mt-2">
+                <p className="text-xs text-[#002b5b] font-semibold mt-2">
                   Last estimate: {formatQAR(s.estimate.estimated_price_qar)}
                 </p>
               )}
             </div>
             <button
               onClick={() => setShowReuse(false)}
-              className="w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-3 rounded-xl mb-3 transition-colors"
+              className="w-full bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold py-3 rounded-xl mb-3 transition-colors"
             >
               Continue with this car
             </button>
@@ -470,10 +470,10 @@ function ValuationContent() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
-          <div className="w-14 h-14 border-4 border-[#003087]/20 border-t-[#003087] rounded-full animate-spin mb-6" />
+          <div className="w-14 h-14 border-4 border-[#002b5b]/20 border-t-[#002b5b] rounded-full animate-spin mb-6" />
           <p className="text-lg font-bold text-gray-900 mb-1">Analysing your car…</p>
           <p className="text-sm text-gray-400 text-center max-w-xs">
             Running Qatar market data, depreciation model, and time-to-sell estimate
@@ -481,7 +481,7 @@ function ValuationContent() {
           <div className="mt-8 flex flex-col gap-2 w-full max-w-xs">
             {['Fetching market comparables…', 'Running ML valuation model…', 'Estimating time to sell…'].map((step, i) => (
               <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
-                <span className="w-4 h-4 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin flex-shrink-0" style={{ animationDelay: `${i * 0.2}s` }} />
+                <span className="w-4 h-4 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin flex-shrink-0" style={{ animationDelay: `${i * 0.2}s` }} />
                 {step}
               </div>
             ))}
@@ -496,7 +496,7 @@ function ValuationContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
 
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-6">
@@ -507,7 +507,7 @@ function ValuationContent() {
           {screen === 2 && (
             <button
               onClick={() => setScreen(1)}
-              className="text-xs text-gray-400 hover:text-[#003087] font-medium transition-colors"
+              className="text-xs text-gray-400 hover:text-[#002b5b] font-medium transition-colors"
             >
               ← Back
             </button>
@@ -517,7 +517,7 @@ function ValuationContent() {
               <div
                 key={s}
                 className={`h-1.5 rounded-full flex-1 transition-all duration-300 ${
-                  s <= screen ? 'bg-[#003087]' : 'bg-gray-200'
+                  s <= screen ? 'bg-[#002b5b]' : 'bg-gray-200'
                 }`}
               />
             ))}

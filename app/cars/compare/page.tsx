@@ -132,7 +132,7 @@ function CompareInner() {
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center py-24">
-      <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
     </div>
   );
 
@@ -143,7 +143,7 @@ function CompareInner() {
     <div className="max-w-7xl mx-auto w-full px-4 py-8 flex-1">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <Link href="/cars" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#003087] font-medium transition-colors">
+        <Link href="/cars" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#002b5b] font-medium transition-colors">
           <ChevronLeft size={16} /> Browse Vehicles
         </Link>
         <div>
@@ -154,7 +154,7 @@ function CompareInner() {
           </p>
         </div>
         {colCount < MAX_COMPARE && (
-          <Link href="/cars" className="flex items-center gap-1.5 text-sm font-bold text-[#003087] bg-[#e8f0fd] hover:bg-[#d0e0fb] px-4 py-2.5 rounded-xl transition-colors">
+          <Link href="/cars" className="flex items-center gap-1.5 text-sm font-bold text-[#002b5b] bg-[#ebf5ff] hover:bg-[#d6eeff] px-4 py-2.5 rounded-xl transition-colors">
             <Plus size={14} /> Add Car
           </Link>
         )}
@@ -165,7 +165,7 @@ function CompareInner() {
           <AlertCircle size={32} className="text-gray-300 mx-auto mb-3" />
           <p className="font-bold text-gray-500 mb-2">No cars to compare</p>
           <p className="text-xs text-gray-400 mb-4">Go to the cars listing and tap "+ Compare" on any car</p>
-          <Link href="/cars" className="text-[#003087] text-sm font-bold hover:underline">Browse vehicles →</Link>
+          <Link href="/cars" className="text-[#002b5b] text-sm font-bold hover:underline">Browse vehicles →</Link>
         </div>
       ) : (
         <div className="overflow-x-auto pb-4">
@@ -207,7 +207,7 @@ function CompareInner() {
                         <p className="text-xs text-gray-400">{car.dealer}</p>
                         <p className="font-black text-gray-900 text-sm leading-tight mt-0.5">{car.year} {car.make} {car.model}</p>
                         {car.base_price_qar && (
-                          <p className="text-lg font-black text-[#003087] mt-2">{formatQAR(car.base_price_qar)}</p>
+                          <p className="text-lg font-black text-[#002b5b] mt-2">{formatQAR(car.base_price_qar)}</p>
                         )}
                         {/* CTAs */}
                         <div className="flex flex-col gap-1.5 mt-3">
@@ -219,7 +219,7 @@ function CompareInner() {
                           </Link>
                           <Link
                             href={`/cars/${car.slug}`}
-                            className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#003087] bg-[#e8f0fd] hover:bg-[#d0e0fb] px-3 py-2 rounded-lg transition-colors"
+                            className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#002b5b] bg-[#ebf5ff] hover:bg-[#d6eeff] px-3 py-2 rounded-lg transition-colors"
                           >
                             <MessageSquare size={11} /> View & Contact
                           </Link>
@@ -231,7 +231,7 @@ function CompareInner() {
                 {/* Add slot */}
                 {showAddSlot && (
                   <th className="px-3 pb-4 align-top">
-                    <Link href="/cars" className="flex flex-col items-center justify-center gap-3 h-full min-h-[200px] bg-white/60 border-2 border-dashed border-gray-200 rounded-2xl hover:border-[#003087] hover:bg-[#f0f5ff] transition-all p-4">
+                    <Link href="/cars" className="flex flex-col items-center justify-center gap-3 h-full min-h-[200px] bg-white/60 border-2 border-dashed border-gray-200 rounded-2xl hover:border-[#002b5b] hover:bg-[#f0f5ff] transition-all p-4">
                       <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                         <Plus size={20} className="text-gray-400" />
                       </div>
@@ -298,7 +298,7 @@ function CompareInner() {
                         <ul className="space-y-1">
                           {car.features_json.slice(0, 6).map((f, fi) => (
                             <li key={fi} className="text-xs text-gray-600 flex items-start gap-1.5">
-                              <span className="text-[#003087] shrink-0 mt-0.5">✓</span>{f}
+                              <span className="text-[#002b5b] shrink-0 mt-0.5">✓</span>{f}
                             </li>
                           ))}
                           {car.features_json.length > 6 && (
@@ -320,7 +320,7 @@ function CompareInner() {
 
       {colCount >= 2 && colCount < MAX_COMPARE && (
         <p className="text-center text-xs text-gray-400 mt-4">
-          Up to {MAX_COMPARE} cars — <Link href="/cars" className="text-[#003087] font-semibold hover:underline">add more from the listing →</Link>
+          Up to {MAX_COMPARE} cars — <Link href="/cars" className="text-[#002b5b] font-semibold hover:underline">add more from the listing →</Link>
         </p>
       )}
     </div>
@@ -330,11 +330,11 @@ function CompareInner() {
 // ─── Page wrapper (Suspense for useSearchParams) ──────────────────────────────
 export default function ComparePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <Suspense fallback={
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
       }>
         <CompareInner />

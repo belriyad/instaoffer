@@ -39,7 +39,7 @@ function ForgotPasswordContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <motion.div
@@ -50,7 +50,7 @@ function ForgotPasswordContent() {
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
               <div className="text-2xl font-black">
-                Insta<span className="text-[#ff6600]">Offer</span>
+                Insta<span className="text-[#005ca9]">Offer</span>
               </div>
             </Link>
             <h1 className="text-2xl font-black text-gray-900 mt-4">Reset your password</h1>
@@ -71,7 +71,7 @@ function ForgotPasswordContent() {
               </p>
               <Link
                 href="/login"
-                className="inline-block bg-[#003087] text-white font-bold py-3 px-6 rounded-xl text-sm hover:bg-[#0057b8] transition-colors"
+                className="inline-block bg-[#002b5b] text-white font-bold py-3 px-6 rounded-xl text-sm hover:bg-[#1a7fd4] transition-colors"
               >
                 Back to sign in
               </Link>
@@ -90,7 +90,7 @@ function ForgotPasswordContent() {
                     onChange={e => setEmail(e.target.value)}
                     required
                     placeholder="you@example.com"
-                    className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-base focus:outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/20"
+                    className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-base focus:outline-none focus:border-[#002b5b] focus:ring-2 focus:ring-[#002b5b]/20"
                   />
                 </div>
               </div>
@@ -105,7 +105,7 @@ function ForgotPasswordContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-4 rounded-xl text-base transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                className="w-full bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold py-4 rounded-xl text-base transition-all flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 {loading ? (
                   <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -115,7 +115,7 @@ function ForgotPasswordContent() {
               </button>
 
               <div className="text-center">
-                <Link href="/login" className="text-sm text-[#003087] hover:underline">
+                <Link href="/login" className="text-sm text-[#002b5b] hover:underline">
                   ← Back to sign in
                 </Link>
               </div>

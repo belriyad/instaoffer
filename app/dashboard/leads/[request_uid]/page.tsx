@@ -35,7 +35,7 @@ const LEAD_BANNER: Record<string, { label: string; cls: string }> = {
   trade_in:       { label: '🔄 Trade-In Lead',  cls: 'bg-green-600 text-white' },
   buyer_request:  { label: '🛒 Buyer Request',  cls: 'bg-blue-600 text-white' },
   dealer_inquiry: { label: '📋 Dealer Inquiry', cls: 'bg-purple-600 text-white' },
-  seller_offer:   { label: '🚗 Seller Offer',   cls: 'bg-[#003087] text-white' },
+  seller_offer:   { label: '🚗 Seller Offer',   cls: 'bg-[#002b5b] text-white' },
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -111,10 +111,10 @@ export default function DealerLeadDetailPage() {
 
   if (fetching || loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -123,7 +123,7 @@ export default function DealerLeadDetailPage() {
 
   if (fetchError || !req) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center max-w-md w-full shadow-sm">
@@ -131,7 +131,7 @@ export default function DealerLeadDetailPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-2">Lead Not Found</h2>
             <p className="text-sm text-gray-500 mb-6">{fetchError ?? 'This lead may have expired or been removed.'}</p>
             <Link href="/dashboard/leads"
-              className="inline-flex items-center gap-2 bg-[#003087] text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#002070] transition-colors">
+              className="inline-flex items-center gap-2 bg-[#002b5b] text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#001a3d] transition-colors">
               <ChevronLeft size={16} /> Back to Leads
             </Link>
           </div>
@@ -159,14 +159,14 @@ export default function DealerLeadDetailPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="max-w-3xl mx-auto w-full px-4 py-8 flex-1">
 
         {/* Back + Header */}
         <div className="flex items-center gap-3 mb-4">
           <Link href="/dashboard/leads"
-            className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#003087] transition-colors">
+            className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#002b5b] transition-colors">
             <ChevronLeft size={16} /> Seller Leads
           </Link>
         </div>
@@ -234,7 +234,7 @@ export default function DealerLeadDetailPage() {
 
         {/* Opportunity Score */}
         {req.opportunity_score !== undefined && req.opportunity_score !== null && (
-          <div className="bg-[#003087] text-white rounded-2xl p-5 mb-4 flex items-center justify-between">
+          <div className="bg-[#002b5b] text-white rounded-2xl p-5 mb-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide opacity-70">Opportunity Score</p>
               <p className="text-4xl font-black mt-1">{req.opportunity_score}<span className="text-lg font-semibold opacity-70">/100</span></p>
@@ -279,13 +279,13 @@ export default function DealerLeadDetailPage() {
         <Section title="Vehicle Details">
           <div className="flex flex-wrap gap-3 mb-4">
             <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-xl text-sm font-semibold text-gray-700">
-              <Car size={13} className="text-[#003087]" /> {req.year}
+              <Car size={13} className="text-[#002b5b]" /> {req.year}
             </span>
             <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-xl text-sm font-semibold text-gray-700">
-              <Gauge size={13} className="text-[#003087]" /> {formatKM(req.km)}
+              <Gauge size={13} className="text-[#002b5b]" /> {formatKM(req.km)}
             </span>
             <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-xl text-sm font-semibold text-gray-700">
-              <MapPin size={13} className="text-[#003087]" /> {req.city}
+              <MapPin size={13} className="text-[#002b5b]" /> {req.city}
             </span>
             <span className="bg-gray-50 px-3 py-1.5 rounded-xl text-sm font-semibold text-gray-700 capitalize">
               {req.condition}
@@ -371,7 +371,7 @@ export default function DealerLeadDetailPage() {
                 <span className="text-sm text-gray-500">Phone</span>
                 <div className="flex items-center gap-2">
                   <a href={`tel:${req.contact_phone}`}
-                    className="flex items-center gap-1.5 text-sm font-semibold text-[#003087] hover:underline">
+                    className="flex items-center gap-1.5 text-sm font-semibold text-[#002b5b] hover:underline">
                     <Phone size={13} /> {req.contact_phone}
                   </a>
                   <a
@@ -417,14 +417,14 @@ export default function DealerLeadDetailPage() {
             {!bidOpen ? (
               <button
                 onClick={() => setBidOpen(true)}
-                className="w-full flex items-center justify-center gap-2 bg-[#ff6600] hover:bg-orange-600 text-white font-black py-4 rounded-2xl text-base shadow-lg transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-[#005ca9] hover:bg-orange-600 text-white font-black py-4 rounded-2xl text-base shadow-lg transition-colors"
               >
                 <Send size={18} /> Place a Bid
               </button>
             ) : (
               <div className="bg-white rounded-2xl border border-gray-200 shadow-xl p-5">
                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <Send size={16} className="text-[#003087]" /> Submit Your Offer
+                  <Send size={16} className="text-[#002b5b]" /> Submit Your Offer
                 </h3>
                 <div className="mb-3">
                   <label className="text-xs font-semibold text-gray-600 block mb-1">Your Offer (QAR)</label>
@@ -433,7 +433,7 @@ export default function DealerLeadDetailPage() {
                     value={bidAmount}
                     onChange={e => setBidAmount(e.target.value)}
                     placeholder="e.g. 85000"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#002b5b]"
                   />
                 </div>
                 <div className="mb-3">
@@ -443,7 +443,7 @@ export default function DealerLeadDetailPage() {
                     onChange={e => setBidMessage(e.target.value)}
                     rows={2}
                     placeholder="e.g. We can complete the transfer within 2 days..."
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:border-[#003087]"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:border-[#002b5b]"
                   />
                 </div>
                 {bidError && (
@@ -461,7 +461,7 @@ export default function DealerLeadDetailPage() {
                   <button
                     onClick={handlePlaceBid}
                     disabled={submitting}
-                    className="flex-1 bg-[#003087] hover:bg-[#002070] text-white font-bold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    className="flex-1 bg-[#002b5b] hover:bg-[#001a3d] text-white font-bold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
                   >
                     {submitting ? (
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -48,11 +48,11 @@ function LeadCard({ lead }: { lead: DealerLead }) {
           {lead.estimate_qar && (
             <p className="text-xs text-gray-400">Est: {formatQAR(lead.estimate_qar)}</p>
           )}
-          <button className="mt-3 flex items-center gap-1.5 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-3 py-2 rounded-xl text-xs transition-colors">
+          <button className="mt-3 flex items-center gap-1.5 bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold px-3 py-2 rounded-xl text-xs transition-colors">
             <Send size={12} /> Submit Offer
           </button>
           <Link href={`/dashboard/leads/${lead.request_uid}`}
-            className="mt-2 flex items-center gap-1.5 text-[#003087] hover:underline font-semibold text-xs">
+            className="mt-2 flex items-center gap-1.5 text-[#002b5b] hover:underline font-semibold text-xs">
             <ExternalLink size={12} /> View Full Lead
           </Link>
         </div>
@@ -86,7 +86,7 @@ export default function DealerLeadsPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="max-w-4xl mx-auto w-full px-4 py-8 flex-1">
         <div className="mb-6">
@@ -96,7 +96,7 @@ export default function DealerLeadsPage() {
 
         {fetching && (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
           </div>
         )}
 
@@ -117,7 +117,7 @@ export default function DealerLeadsPage() {
                 <button
                   disabled={page === 0}
                   onClick={() => setPage(p => p - 1)}
-                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#003087] transition-colors"
+                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#002b5b] transition-colors"
                 >
                   <ChevronLeft size={16} /> Previous
                 </button>
@@ -125,7 +125,7 @@ export default function DealerLeadsPage() {
                 <button
                   disabled={(page + 1) * LIMIT >= data.total}
                   onClick={() => setPage(p => p + 1)}
-                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#003087] transition-colors"
+                  className="flex items-center gap-1 border border-gray-200 bg-white px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-40 hover:border-[#002b5b] transition-colors"
                 >
                   Next <ChevronRight size={16} />
                 </button>

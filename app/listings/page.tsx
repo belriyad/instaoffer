@@ -111,7 +111,7 @@ function CarCard({ car }: { car: WakalatCarSummary }) {
         )}
       </div>
       <div className="p-4">
-        <p className="text-xs font-semibold text-[#003087] uppercase tracking-wide mb-0.5">{car.make}</p>
+        <p className="text-xs font-semibold text-[#002b5b] uppercase tracking-wide mb-0.5">{car.make}</p>
         <h3 className="font-bold text-gray-900 text-sm leading-snug">{car.model}</h3>
         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
           {car.body_type && (
@@ -137,10 +137,10 @@ function CarCard({ car }: { car: WakalatCarSummary }) {
         )}
         <div className="flex items-center justify-between mt-3">
           {car.base_price_qar
-            ? <span className="text-[#003087] font-black text-base">{formatQAR(car.base_price_qar)}</span>
+            ? <span className="text-[#002b5b] font-black text-base">{formatQAR(car.base_price_qar)}</span>
             : <span className="text-gray-400 text-sm italic">Price on request</span>}
           <Link href={`/cars/${car.slug}`}
-            className="text-xs font-bold text-white bg-[#003087] hover:bg-[#002570] px-3 py-1.5 rounded-lg transition-colors">
+            className="text-xs font-bold text-white bg-[#002b5b] hover:bg-[#001a3d] px-3 py-1.5 rounded-lg transition-colors">
             Details
           </Link>
         </div>
@@ -153,7 +153,7 @@ export default function BrowseCarsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#003087] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#002b5b] border-t-transparent rounded-full animate-spin" />
       </div>
     }>
       <BrowseCarsInner />
@@ -244,14 +244,14 @@ function BrowseCarsInner() {
   const currentTab = VEHICLE_TABS.find(t => t.id === activeTab)!;
   const TabIcon = currentTab.icon;
 
-  const selectCls = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] appearance-none bg-white';
-  const inputCls  = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]';
+  const selectCls = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b] appearance-none bg-white';
+  const inputCls  = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20 focus:border-[#002b5b]';
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="bg-[#003087] text-white pt-8 pb-0">
+      <div className="bg-[#002b5b] text-white pt-8 pb-0">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-2xl md:text-3xl font-black mb-0.5">New Vehicle Inventory</h1>
           <p className="text-blue-200 text-sm">Brand-new dealer inventory across Qatar</p>
@@ -261,10 +261,10 @@ function BrowseCarsInner() {
               <input type="text" value={q} onChange={e => setQ(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && fetchCars(1)}
                 placeholder="Search make, model, dealer…"
-                className="w-full pl-9 pr-4 py-3 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ff6600]" />
+                className="w-full pl-9 pr-4 py-3 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#005ca9]" />
             </div>
             <button onClick={() => fetchCars(1)}
-              className="bg-[#ff6600] hover:bg-[#e05a00] text-white text-sm font-bold px-5 rounded-xl transition-colors">
+              className="bg-[#005ca9] hover:bg-[#004a87] text-white text-sm font-bold px-5 rounded-xl transition-colors">
               Search
             </button>
           </div>
@@ -280,7 +280,7 @@ function BrowseCarsInner() {
                   onClick={() => switchTab(tab.id)}
                   className={`flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-t-xl transition-colors border-b-2 ${
                     active
-                      ? 'bg-white text-[#003087] border-b-white'
+                      ? 'bg-white text-[#002b5b] border-b-white'
                       : 'text-blue-200 hover:text-white border-b-transparent hover:border-b-blue-300'
                   }`}
                 >
@@ -298,21 +298,21 @@ function BrowseCarsInner() {
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">
             <select value={sort} onChange={e => setSort(e.target.value as WakalatFilters['sort'])}
-              className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#003087]/20">
+              className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20">
               {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             <select value={make} onChange={e => setMake(e.target.value)}
-              className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#003087]/20">
+              className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#002b5b]/20">
               <option value="">All Makes</option>
               {(filterOpts?.makes || []).map(m => <option key={m} value={m}>{m}</option>)}
             </select>
             <button onClick={() => setFiltersOpen(v => !v)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold border transition-colors relative ${
-                filtersOpen ? 'bg-[#003087] text-white border-[#003087]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#003087]'
+                filtersOpen ? 'bg-[#002b5b] text-white border-[#002b5b]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#002b5b]'
               }`}>
               <SlidersHorizontal size={13} /> Filters
               {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#ff6600] text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#005ca9] text-white text-[9px] font-black rounded-full flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
@@ -409,7 +409,7 @@ function BrowseCarsInner() {
             <h3 className="text-lg font-bold text-gray-400">{currentTab.emptyLabel}</h3>
             <p className="text-sm text-gray-400 mt-1">Try adjusting your filters or search term.</p>
             {activeFilterCount > 0 && (
-              <button onClick={clearFilters} className="mt-4 px-5 py-2 bg-[#003087] text-white text-sm font-semibold rounded-xl hover:bg-[#002570] transition-colors">
+              <button onClick={clearFilters} className="mt-4 px-5 py-2 bg-[#002b5b] text-white text-sm font-semibold rounded-xl hover:bg-[#001a3d] transition-colors">
                 Clear Filters
               </button>
             )}
@@ -425,14 +425,14 @@ function BrowseCarsInner() {
             {pages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-8">
                 <button onClick={() => fetchCars(page - 1)} disabled={page <= 1}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 hover:border-[#003087] disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                  className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 hover:border-[#002b5b] disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                   <ChevronLeft size={16} />
                 </button>
                 <span className="text-sm text-gray-600 px-3">
                   Page <strong>{page}</strong> of <strong>{pages}</strong>
                 </span>
                 <button onClick={() => fetchCars(page + 1)} disabled={page >= pages}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 hover:border-[#003087] disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                  className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 hover:border-[#002b5b] disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                   <ChevronRightIcon size={16} />
                 </button>
               </div>

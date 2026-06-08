@@ -99,10 +99,10 @@ export default function ForDealersPage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-[#003087] to-[#001a52] text-white py-20">
+      <section className="bg-gradient-to-br from-[#002b5b] to-[#001a3d] text-white py-20">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <motion.div initial="hidden" animate="visible" variants={stagger}>
-            <motion.span variants={fadeUp} className="inline-block bg-[#ff6600] text-white text-xs font-bold px-3 py-1.5 rounded-full mb-6">
+            <motion.span variants={fadeUp} className="inline-block bg-[#005ca9] text-white text-xs font-bold px-3 py-1.5 rounded-full mb-6">
               For Car Dealers in Qatar
             </motion.span>
             <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl font-black mb-4 leading-tight">
@@ -112,7 +112,7 @@ export default function ForDealersPage() {
               Connect with people actively trying to sell their cars. Unlimited seller requests, direct messaging, and smart tools — start free for 30 days.
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/dealer-signup" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
+              <Link href="/dealer-signup" className="inline-flex items-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
                 Start Free 30-Day Trial <ChevronRight size={20} />
               </Link>
               <a href={waLink("Hi, I'm interested in becoming an InstaOffer dealer")} target="_blank" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl text-base transition-all">
@@ -136,10 +136,10 @@ export default function ForDealersPage() {
               <motion.div
                 key={plan.name}
                 variants={fadeUp}
-                className={`rounded-2xl border-2 p-7 flex flex-col relative ${plan.highlight ? 'border-[#003087] shadow-xl' : 'border-gray-200'}`}
+                className={`rounded-2xl border-2 p-7 flex flex-col relative ${plan.highlight ? 'border-[#002b5b] shadow-xl' : 'border-gray-200'}`}
               >
                 {plan.highlight && (
-                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#003087] text-white text-xs font-bold px-4 py-1 rounded-full">
+                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#002b5b] text-white text-xs font-bold px-4 py-1 rounded-full">
                     Most Popular
                   </span>
                 )}
@@ -147,10 +147,10 @@ export default function ForDealersPage() {
                   <h3 className="font-black text-lg text-gray-900 mb-1">{plan.name}</h3>
                   <div className="flex items-end gap-1 mb-1">
                     {plan.price === 'Custom' ? (
-                      <span className="text-3xl font-black text-[#003087]">Custom</span>
+                      <span className="text-3xl font-black text-[#002b5b]">Custom</span>
                     ) : (
                       <>
-                        <span className="text-3xl font-black text-[#003087]">{plan.price}</span>
+                        <span className="text-3xl font-black text-[#002b5b]">{plan.price}</span>
                         <span className="text-gray-500 text-sm pb-1">QAR / {plan.period}</span>
                       </>
                     )}
@@ -174,8 +174,8 @@ export default function ForDealersPage() {
                   target={plan.href.startsWith('http') ? '_blank' : undefined}
                   className={`flex items-center justify-center gap-2 w-full font-bold py-3.5 rounded-xl text-sm transition-all ${
                     plan.highlight
-                      ? 'bg-[#003087] hover:bg-[#0057b8] text-white'
-                      : 'border border-gray-200 hover:border-[#003087] text-gray-700 hover:text-[#003087]'
+                      ? 'bg-[#002b5b] hover:bg-[#1a7fd4] text-white'
+                      : 'border border-gray-200 hover:border-[#002b5b] text-gray-700 hover:text-[#002b5b]'
                   }`}
                 >
                   {plan.cta}
@@ -187,7 +187,7 @@ export default function ForDealersPage() {
       </section>
 
       {/* Comparison table */}
-      <section className="py-16 bg-[#f5f7fa]">
+      <section className="py-16 bg-[#f8fafc]">
         <div className="max-w-4xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
             <motion.h2 variants={fadeUp} className="text-3xl font-black text-gray-900 text-center mb-10">
@@ -196,7 +196,7 @@ export default function ForDealersPage() {
             <motion.div variants={fadeUp} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[#003087] text-white">
+                  <tr className="bg-[#002b5b] text-white">
                     <th className="text-left px-5 py-4 font-semibold w-1/2">Feature</th>
                     <th className="px-4 py-4 font-bold">InstaOffer</th>
                     <th className="px-4 py-4 font-semibold text-blue-200">Mzad Qatar</th>
@@ -232,8 +232,8 @@ export default function ForDealersPage() {
           </div>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map(f => (
-              <motion.div key={f.title} variants={fadeUp} className="bg-[#f5f7fa] rounded-2xl p-6 border border-gray-100">
-                <div className="w-11 h-11 bg-[#003087] rounded-xl flex items-center justify-center mb-4">
+              <motion.div key={f.title} variants={fadeUp} className="bg-[#f8fafc] rounded-2xl p-6 border border-gray-100">
+                <div className="w-11 h-11 bg-[#002b5b] rounded-xl flex items-center justify-center mb-4">
                   <f.icon size={20} className="text-white" />
                 </div>
                 <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
@@ -245,7 +245,7 @@ export default function ForDealersPage() {
       </section>
 
       {/* Lead Types */}
-      <section className="py-16 bg-[#f5f7fa]">
+      <section className="py-16 bg-[#f8fafc]">
         <div className="max-w-5xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
             <motion.div variants={fadeUp} className="text-center mb-12">
@@ -307,7 +307,7 @@ export default function ForDealersPage() {
       </section>
 
       {/* How it works for dealers */}
-      <section className="py-16 bg-[#f5f7fa]">
+      <section className="py-16 bg-[#f8fafc]">
         <div className="max-w-3xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black text-gray-900">How the Dealer Flow Works</h2>
@@ -319,7 +319,7 @@ export default function ForDealersPage() {
             { num: '4', title: 'Chat & Close the Deal', desc: 'Message sellers, request phone access if needed (seller approves), and arrange inspection to finalize the deal.' },
           ].map(step => (
             <div key={step.num} className="flex gap-4 mb-8">
-              <div className="w-10 h-10 bg-[#ff6600] text-white rounded-full flex items-center justify-center font-black flex-shrink-0">
+              <div className="w-10 h-10 bg-[#005ca9] text-white rounded-full flex items-center justify-center font-black flex-shrink-0">
                 {step.num}
               </div>
               <div>
@@ -332,11 +332,11 @@ export default function ForDealersPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-[#003087] text-white text-center">
+      <section className="py-16 bg-[#002b5b] text-white text-center">
         <h2 className="text-3xl font-black mb-4">Start acquiring smarter today</h2>
         <p className="text-blue-200 mb-8 max-w-md mx-auto">Join 30+ verified Qatar dealers already using InstaOffer. First 30 days free.</p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/dealer-signup" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
+          <Link href="/dealer-signup" className="inline-flex items-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
             Start Free 30-Day Trial <ChevronRight size={20} />
           </Link>
           <a href={waLink("Hi, I'm interested in becoming an InstaOffer dealer")} target="_blank" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl transition-all">

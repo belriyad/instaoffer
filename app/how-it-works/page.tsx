@@ -18,7 +18,7 @@ export default function HowItWorksPage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="bg-[#003087] text-white py-16">
+      <section className="bg-[#002b5b] text-white py-16">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div initial="hidden" animate="visible" variants={stagger}>
             <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl font-black mb-4">How InstaOffer Works</motion.h1>
@@ -65,14 +65,14 @@ export default function HowItWorksPage() {
               variants={fadeUp}
               className={`flex gap-6 mb-12 ${i % 2 === 0 ? '' : ''}`}
             >
-              <div className="flex-shrink-0 w-16 h-16 bg-[#003087] text-white rounded-2xl flex items-center justify-center text-3xl shadow-md">
+              <div className="flex-shrink-0 w-16 h-16 bg-[#002b5b] text-white rounded-2xl flex items-center justify-center text-3xl shadow-md">
                 {step.icon}
               </div>
               <div>
-                <span className="text-xs font-bold text-[#ff6600] uppercase tracking-widest">Step {step.num}</span>
+                <span className="text-xs font-bold text-[#005ca9] uppercase tracking-widest">Step {step.num}</span>
                 <h3 className="text-xl font-black text-gray-900 mt-1 mb-2">{step.title}</h3>
                 <p className="text-gray-600 leading-relaxed mb-3">{step.desc}</p>
-                <div className="flex items-center gap-1.5 text-sm text-[#003087] font-semibold bg-[#e8f0fd] px-3 py-1.5 rounded-full w-fit">
+                <div className="flex items-center gap-1.5 text-sm text-[#002b5b] font-semibold bg-[#ebf5ff] px-3 py-1.5 rounded-full w-fit">
                   <Check size={14} /> {step.note}
                 </div>
               </div>
@@ -82,10 +82,10 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Privacy deep dive */}
-      <section className="py-16 bg-[#f5f7fa]">
+      <section className="py-16 bg-[#f8fafc]">
         <div className="max-w-3xl mx-auto px-4">
           <div className="text-center mb-10">
-            <Lock size={36} className="text-[#003087] mx-auto mb-4" />
+            <Lock size={36} className="text-[#002b5b] mx-auto mb-4" />
             <h2 className="text-3xl font-black text-gray-900">Your Privacy, Explained</h2>
           </div>
           <div className="space-y-4">
@@ -107,10 +107,10 @@ export default function HowItWorksPage() {
 
       {/* CTA */}
       <section className="py-16 bg-white text-center">
-        <Clock size={36} className="text-[#003087] mx-auto mb-4" />
+        <Clock size={36} className="text-[#002b5b] mx-auto mb-4" />
         <h2 className="text-2xl font-black text-gray-900 mb-2">Ready to get started?</h2>
         <p className="text-gray-500 mb-6">No sign-up needed for your first estimate.</p>
-        <Link href="/valuation" className="inline-flex items-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
+        <Link href="/valuation" className="inline-flex items-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all">
           Start Free Valuation <ChevronRight size={20} />
         </Link>
       </section>

@@ -246,10 +246,10 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
 
   if (fetching || loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -258,7 +258,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
 
   if (fetchError || !request) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center max-w-md w-full shadow-sm">
@@ -269,7 +269,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
             </p>
             <Link
               href="/my-offers"
-              className="inline-flex items-center gap-2 bg-[#003087] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#002070] transition-colors"
+              className="inline-flex items-center gap-2 bg-[#002b5b] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#001a3d] transition-colors"
             >
               <ChevronLeft size={16} /> Back to My Offers
             </Link>
@@ -292,10 +292,10 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
-        <Link href="/my-offers" className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#003087] mb-6 transition-colors">
+        <Link href="/my-offers" className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#002b5b] mb-6 transition-colors">
           <ChevronLeft size={16} /> Back to My Offers
         </Link>
 
@@ -359,7 +359,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
                       value={opt.value}
                       checked={docVisibility === opt.value}
                       onChange={() => handleDocVisibilityChange(opt.value)}
-                      className="accent-[#003087]"
+                      className="accent-[#002b5b]"
                     />
                     <span className="text-sm text-gray-700">{opt.label}</span>
                   </label>
@@ -370,9 +370,9 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
         </div>
 
         {/* Privacy reminder */}
-        <div className="bg-[#e8f0fd] border border-[#003087]/20 rounded-2xl p-4 mb-6 flex items-start gap-3">
-          <Shield size={18} className="text-[#003087] mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-[#003087]/90">
+        <div className="bg-[#ebf5ff] border border-[#002b5b]/20 rounded-2xl p-4 mb-6 flex items-start gap-3">
+          <Shield size={18} className="text-[#002b5b] mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-[#002b5b]/90">
             <strong>Your phone number is private.</strong> Dealers must request access and you must approve before they can call or WhatsApp you.
           </p>
         </div>
@@ -410,7 +410,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
                 <button
                   onClick={handlePhoneRequest}
                   disabled={phoneReqLoading}
-                  className="inline-flex items-center gap-2 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-60"
+                  className="inline-flex items-center gap-2 bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-60"
                 >
                   {phoneReqLoading
                     ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -494,7 +494,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
                 <button
                   onClick={loadAuditLog}
                   disabled={auditLoading}
-                  className="text-xs text-[#003087] font-semibold hover:underline disabled:opacity-50"
+                  className="text-xs text-[#002b5b] font-semibold hover:underline disabled:opacity-50"
                 >
                   {auditLoading ? 'Loading…' : 'Load log'}
                 </button>
@@ -563,12 +563,12 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
               <div className="space-y-4">
                 {[
                   {
-                    num: '1', color: 'bg-[#003087]',
+                    num: '1', color: 'bg-[#002b5b]',
                     title: 'Coordinate inspection',
                     desc: 'Message the dealer to agree on a time and location. The dealer will inspect your car before finalising.',
                   },
                   {
-                    num: '2', color: 'bg-[#003087]',
+                    num: '2', color: 'bg-[#002b5b]',
                     title: 'Agree on final price',
                     desc: 'The accepted offer may be adjusted based on inspection findings. Any changes need your approval.',
                   },
@@ -594,7 +594,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
               <div className="mt-5 pt-4 border-t border-gray-100">
                 <Link
                   href={`/messages/${request.request_uid}?dealer=${acceptedBid.dealer_id}`}
-                  className="flex items-center justify-center gap-2 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-3.5 rounded-xl text-sm transition-all"
+                  className="flex items-center justify-center gap-2 w-full bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold py-3.5 rounded-xl text-sm transition-all"
                 >
                   <MessageSquare size={16} /> Message Dealer to Arrange Inspection
                 </Link>
@@ -737,7 +737,7 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
                             </button>
                             <Link
                               href={`/messages/${request.request_uid}?dealer=${bid.dealer_id}`}
-                              className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#003087] hover:text-[#003087] text-gray-600 font-semibold px-4 py-2.5 rounded-xl text-sm transition-all"
+                              className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-[#002b5b] hover:text-[#002b5b] text-gray-600 font-semibold px-4 py-2.5 rounded-xl text-sm transition-all"
                             >
                               <MessageSquare size={16} /> Chat
                             </Link>

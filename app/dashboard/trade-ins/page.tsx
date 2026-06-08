@@ -33,7 +33,7 @@ function TradeInCard({ req }: { req: TradeInRequest }) {
               <p className="text-xs font-bold text-green-700 uppercase tracking-wide">Target</p>
               <p className="font-bold text-gray-900 text-base truncate">{req.target_car_name}</p>
               {req.target_price_qar && (
-                <p className="text-sm font-bold text-[#003087]">{formatQAR(req.target_price_qar)}</p>
+                <p className="text-sm font-bold text-[#002b5b]">{formatQAR(req.target_price_qar)}</p>
               )}
             </div>
           ) : null}
@@ -61,7 +61,7 @@ function TradeInCard({ req }: { req: TradeInRequest }) {
           {req.target_price_qar && req.market_est_qar < req.target_price_qar && (
             <div>
               <p className="text-xs text-gray-400 font-medium">Gap to Target</p>
-              <p className="text-sm font-bold text-[#ff6600]">
+              <p className="text-sm font-bold text-[#005ca9]">
                 {formatQAR(req.target_price_qar - req.market_est_qar)}
               </p>
             </div>
@@ -77,7 +77,7 @@ function TradeInCard({ req }: { req: TradeInRequest }) {
       <div className="flex gap-2 mt-3">
         <Link
           href={`/dashboard/trade-ins/${req.uid}`}
-          className="flex items-center gap-1.5 bg-white border border-gray-200 hover:border-[#003087] text-gray-700 hover:text-[#003087] font-bold px-3 py-2 rounded-xl text-xs transition-colors flex-1 justify-center"
+          className="flex items-center gap-1.5 bg-white border border-gray-200 hover:border-[#002b5b] text-gray-700 hover:text-[#002b5b] font-bold px-3 py-2 rounded-xl text-xs transition-colors flex-1 justify-center"
         >
           <Eye size={13} /> View Details
         </Link>
@@ -124,11 +124,11 @@ export default function DealerTradeInsPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="max-w-4xl mx-auto w-full px-4 py-8 flex-1">
         <div className="mb-6">
-          <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#003087] mb-3 transition-colors">
+          <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#002b5b] mb-3 transition-colors">
             <ChevronLeft size={15} /> Dashboard
           </Link>
           <div className="flex items-center gap-3">
@@ -148,8 +148,8 @@ export default function DealerTradeInsPage() {
             <button key={s} onClick={() => { setStatusFilter(s); setPage(0); }}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                 statusFilter === s
-                  ? 'bg-[#003087] text-white'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-[#003087]'
+                  ? 'bg-[#002b5b] text-white'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:border-[#002b5b]'
               }`}>
               {s === '' ? 'All' : STATUS_CONFIG[s]?.label ?? s}
             </button>
@@ -158,7 +158,7 @@ export default function DealerTradeInsPage() {
 
         {fetching && (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
           </div>
         )}
 
@@ -167,7 +167,7 @@ export default function DealerTradeInsPage() {
             <Car size={36} className="text-red-300 mx-auto mb-3" />
             <p className="text-red-600 font-semibold mb-1">Could not load trade-in requests</p>
             <p className="text-sm text-red-400 mb-4">{fetchError}</p>
-            <button onClick={load} className="bg-[#003087] text-white font-bold px-5 py-2 rounded-xl text-sm hover:bg-[#002070] transition-colors">
+            <button onClick={load} className="bg-[#002b5b] text-white font-bold px-5 py-2 rounded-xl text-sm hover:bg-[#001a3d] transition-colors">
               Retry
             </button>
           </div>

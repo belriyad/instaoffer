@@ -103,7 +103,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
 
       <div className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
@@ -123,7 +123,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
             className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
               saved
                 ? 'bg-green-100 border-green-300 text-green-700'
-                : 'bg-white border-gray-200 text-gray-500 hover:border-[#003087] hover:text-[#003087]'
+                : 'bg-white border-gray-200 text-gray-500 hover:border-[#002b5b] hover:text-[#002b5b]'
             }`}
           >
             <Bookmark size={12} className={saved ? 'fill-green-600' : ''} />
@@ -186,7 +186,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
               </div>
               <Link
                 href={`/submit-offer?${submitParams}`}
-                className="flex items-center justify-center gap-1.5 w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-3 rounded-xl text-sm transition-all"
+                className="flex items-center justify-center gap-1.5 w-full bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold py-3 rounded-xl text-sm transition-all"
               >
                 List for Offers <ChevronRight size={15} />
               </Link>
@@ -234,14 +234,14 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
               transition={{ delay: 0.2 }}
               className="bg-white rounded-2xl border-2 border-orange-300 shadow-md p-5 relative overflow-hidden"
             >
-              <span className="absolute top-4 right-4 bg-[#ff6600] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Fastest</span>
+              <span className="absolute top-4 right-4 bg-[#005ca9] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Fastest</span>
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
-                  <div className="text-xs font-bold text-[#ff6600] uppercase tracking-widest mb-0.5">Fastest Sale</div>
+                  <div className="text-xs font-bold text-[#005ca9] uppercase tracking-widest mb-0.5">Fastest Sale</div>
                   <div className="font-black text-gray-900 text-base">Instant Offer</div>
                 </div>
                 <div className="text-right shrink-0 pr-12">
-                  <div className="text-2xl font-black text-[#ff6600]">
+                  <div className="text-2xl font-black text-[#005ca9]">
                     {formatQAR(bands.instantLow)}–{formatQAR(bands.instantHigh)}
                   </div>
                   <div className="text-xs text-gray-400">Expected urgent-sale range</div>
@@ -254,7 +254,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
               </div>
               <Link
                 href={`/urgent-sale?${urgentParams}`}
-                className="flex items-center justify-center gap-1.5 w-full bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold py-3 rounded-xl text-sm transition-all"
+                className="flex items-center justify-center gap-1.5 w-full bg-[#005ca9] hover:bg-[#004a87] text-white font-bold py-3 rounded-xl text-sm transition-all"
               >
                 <Zap size={14} /> Sell Fast Now
               </Link>
@@ -275,7 +275,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
               className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <span className="flex items-center gap-2">
-                <TrendingUp size={16} className="text-[#003087]" />
+                <TrendingUp size={16} className="text-[#002b5b]" />
                 Market analytics &amp; price forecast
               </span>
               <ChevronDown size={16} className={`transition-transform text-gray-400 ${showAnalytics ? 'rotate-180' : ''}`} />
@@ -297,10 +297,10 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                            <Clock size={18} className="text-[#003087]" />
+                            <Clock size={18} className="text-[#002b5b]" />
                             Time to Sell
                           </h3>
-                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#e8f0fd] text-[#003087]">
+                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#ebf5ff] text-[#002b5b]">
                             AI estimate
                           </span>
                         </div>
@@ -323,7 +323,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
                                     className="h-full rounded-full transition-all duration-500"
                                     style={{
                                       width: `${pct}%`,
-                                      backgroundColor: pct >= 70 ? '#22c55e' : pct >= 40 ? '#003087' : '#f97316',
+                                      backgroundColor: pct >= 70 ? '#22c55e' : pct >= 40 ? '#002b5b' : '#f97316',
                                     }}
                                   />
                                 </div>
@@ -342,7 +342,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                            <TrendingUp size={18} className="text-[#003087]" />
+                            <TrendingUp size={18} className="text-[#002b5b]" />
                             Price Forecast
                           </h3>
                           <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${forecast.market_trend_annual_pct >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
@@ -381,13 +381,13 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="bg-[#e8f0fd] border border-[#003087]/20 rounded-2xl p-5 mt-5 mb-6"
+          className="bg-[#ebf5ff] border border-[#002b5b]/20 rounded-2xl p-5 mt-5 mb-6"
         >
           <div className="flex items-start gap-3">
-            <Shield size={20} className="text-[#003087] mt-0.5 flex-shrink-0" />
+            <Shield size={20} className="text-[#002b5b] mt-0.5 flex-shrink-0" />
             <div>
-              <p className="font-bold text-[#003087] mb-1">Your privacy is protected</p>
-              <p className="text-sm text-[#003087]/80">
+              <p className="font-bold text-[#002b5b] mb-1">Your privacy is protected</p>
+              <p className="text-sm text-[#002b5b]/80">
                 Dealers will not see your phone number unless you approve it. All offers are non-binding
                 and subject to inspection. You stay in full control.
               </p>
@@ -399,7 +399,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
         <div className="text-center mb-6">
           <button
             onClick={() => { try { sessionStorage.removeItem('instaoffer_valuation'); } catch { /* ignore */ } window.location.href = '/valuation'; }}
-            className="inline-flex items-center gap-2 text-[#003087] hover:underline text-sm font-semibold"
+            className="inline-flex items-center gap-2 text-[#002b5b] hover:underline text-sm font-semibold"
           >
             <ArrowRight size={15} /> Value another car
           </button>

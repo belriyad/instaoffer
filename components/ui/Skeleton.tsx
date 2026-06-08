@@ -2,13 +2,13 @@ import Navbar from '@/components/Navbar';
 
 export function FormSkeleton() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-6 animate-pulse">
         {/* Step indicator */}
         <div className="flex items-center gap-3 mb-5">
           <div className="flex-1 flex gap-1.5">
-            <div className="h-1.5 rounded-full flex-1 bg-[#003087]/30" />
+            <div className="h-1.5 rounded-full flex-1 bg-[#002b5b]/30" />
             <div className="h-1.5 rounded-full flex-1 bg-gray-200" />
           </div>
           <div className="w-8 h-3 bg-gray-200 rounded" />
@@ -32,7 +32,7 @@ export function FormSkeleton() {
 
 export function EstimateSkeleton() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-6 animate-pulse space-y-4">
         <div className="bg-white rounded-2xl p-6 border border-gray-100 space-y-4">

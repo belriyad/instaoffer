@@ -4,20 +4,20 @@ import { waLink } from '@/lib/utils';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#1a1a1a] text-white mt-auto">
+    <footer className="bg-[#1e293b] text-white mt-auto">
       {/* Trust strip */}
-      <div className="bg-[#003087] py-4">
+      <div className="bg-[#002b5b] py-4">
         <div className="max-w-7xl mx-auto px-4 flex flex-wrap justify-center gap-6 text-sm">
           <div className="flex items-center gap-2">
-            <Shield size={16} className="text-[#ff6600]" />
+            <Shield size={16} className="text-[#005ca9]" />
             <span>Your phone stays private</span>
           </div>
           <div className="flex items-center gap-2">
-            <Star size={16} className="text-[#ff6600]" />
+            <Star size={16} className="text-[#005ca9]" />
             <span>Non-binding offers</span>
           </div>
           <div className="flex items-center gap-2">
-            <Phone size={16} className="text-[#ff6600]" />
+            <Phone size={16} className="text-[#005ca9]" />
             <span>Trusted by Qatar dealers</span>
           </div>
         </div>
@@ -29,7 +29,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="text-2xl font-black mb-3">
-              Insta<span className="text-[#ff6600]">Offer</span>
+              Insta<span className="text-[#005ca9]">Offer</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               Qatar&apos;s fastest car selling platform. Get real dealer offers in minutes.

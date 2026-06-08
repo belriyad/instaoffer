@@ -229,14 +229,14 @@ function UrgentSaleContent() {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        <main className="flex-1 bg-gradient-to-br from-[#003087] to-[#001a52] flex items-center justify-center px-4 py-16">
+        <main className="flex-1 bg-gradient-to-br from-[#002b5b] to-[#001a3d] flex items-center justify-center px-4 py-16">
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="text-green-500" size={36} />
             </div>
             <h2 className="text-2xl font-black text-gray-900 mb-2">You&apos;re in the queue! 🚀</h2>
             <p className="text-gray-600 mb-4">
-              Your request was sent to <span className="font-bold text-[#003087]">30+ verified dealers</span>.
+              Your request was sent to <span className="font-bold text-[#002b5b]">30+ verified dealers</span>.
               They&apos;ll compete to give you the best offer fast.
             </p>
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 text-sm text-orange-800">
@@ -248,7 +248,7 @@ function UrgentSaleContent() {
               </ul>
             </div>
             <div className="flex flex-col gap-3">
-              <Link href="/my-offers" className="w-full bg-[#003087] text-white font-bold py-3 rounded-lg hover:bg-[#002070] transition-colors">View My Offers</Link>
+              <Link href="/my-offers" className="w-full bg-[#002b5b] text-white font-bold py-3 rounded-lg hover:bg-[#001a3d] transition-colors">View My Offers</Link>
               <button onClick={() => router.push('/')} className="w-full text-gray-500 hover:text-gray-700 text-sm py-2 transition-colors">Back to Home</button>
             </div>
           </div>
@@ -259,15 +259,15 @@ function UrgentSaleContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f4f6fb]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-[#003087] font-semibold mb-6 hover:underline">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-[#002b5b] font-semibold mb-6 hover:underline">
           <ArrowLeft size={15} /> Back
         </Link>
 
         <div className="flex items-center gap-2 mb-6">
-          <div className="w-10 h-10 bg-[#ff6600] rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-[#005ca9] rounded-xl flex items-center justify-center">
             <Zap size={20} className="text-white" />
           </div>
           <div>
@@ -305,7 +305,7 @@ function UrgentSaleContent() {
                   <div data-error-anchor="year">
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Year *</label>
                     <select value={form.year} onChange={e => set('year', e.target.value)}
-                      className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087] ${errorField === 'year' ? 'border-red-400 ring-2 ring-red-200' : 'border-gray-300'}`}>
+                      className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b] ${errorField === 'year' ? 'border-red-400 ring-2 ring-red-200' : 'border-gray-300'}`}>
                       <option value="">Year</option>
                       {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
@@ -323,7 +323,7 @@ function UrgentSaleContent() {
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Condition</label>
                     <select value={form.condition} onChange={e => set('condition', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]">
                       <option value="excellent">Excellent</option>
                       <option value="good">Good</option>
                       <option value="fair">Fair</option>
@@ -333,7 +333,7 @@ function UrgentSaleContent() {
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">City</label>
                     <select value={form.city} onChange={e => set('city', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]">
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]">
                       {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
@@ -352,7 +352,7 @@ function UrgentSaleContent() {
               <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 ${errorField === 'urgency_reason' ? 'rounded-xl ring-2 ring-red-300 p-2' : ''}`}>
                 {URGENCY_OPTIONS.map(opt => (
                   <button key={opt.value} type="button" onClick={() => set('urgency_reason', opt.value)}
-                    className={`text-left p-4 rounded-xl border-2 transition-all ${form.urgency_reason === opt.value ? 'border-[#ff6600] bg-orange-50' : 'border-gray-200 hover:border-[#ff6600]/50'}`}>
+                    className={`text-left p-4 rounded-xl border-2 transition-all ${form.urgency_reason === opt.value ? 'border-[#005ca9] bg-orange-50' : 'border-gray-200 hover:border-[#005ca9]/50'}`}>
                     <div className="font-semibold text-sm text-gray-900">{opt.label}</div>
                     <div className="text-xs text-gray-500 mt-0.5">{opt.desc}</div>
                   </button>
@@ -395,7 +395,7 @@ function UrgentSaleContent() {
             {/* Header + progress */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5" data-error-anchor="evidence">
               <h2 className="font-bold text-gray-900 mb-1 text-base flex items-center gap-2">
-                <Camera size={18} className="text-[#003087]" /> Evidence Package
+                <Camera size={18} className="text-[#002b5b]" /> Evidence Package
               </h2>
               <p className="text-xs text-gray-500 mb-4">
                 Dealers need photos to evaluate your car and place confident bids.
@@ -417,7 +417,7 @@ function UrgentSaleContent() {
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2">
                   <div
-                    className={`h-2 rounded-full transition-all duration-500 ${requiredComplete === REQUIRED_CATEGORIES.length ? 'bg-green-500' : 'bg-[#ff6600]'}`}
+                    className={`h-2 rounded-full transition-all duration-500 ${requiredComplete === REQUIRED_CATEGORIES.length ? 'bg-green-500' : 'bg-[#005ca9]'}`}
                     style={{ width: `${(requiredComplete / REQUIRED_CATEGORIES.length) * 100}%` }}
                   />
                 </div>
@@ -481,7 +481,7 @@ function UrgentSaleContent() {
                           className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
                             isUploaded
                               ? 'border-green-300 text-green-700 hover:bg-green-100'
-                              : 'border-[#003087] text-[#003087] hover:bg-[#f0f4ff]'
+                              : 'border-[#002b5b] text-[#002b5b] hover:bg-[#ebf5ff]'
                           }`}
                         >
                           {isUploaded ? 'Change' : 'Upload'}
@@ -529,7 +529,7 @@ function UrgentSaleContent() {
                 <ImageIcon size={15} className="text-gray-400" /> Additional Photos (optional)
               </h3>
               <div
-                className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer ${dragActive ? 'border-[#003087] bg-[#eef3ff]' : 'border-gray-200 bg-gray-50 hover:border-[#003087]/60'}`}
+                className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer ${dragActive ? 'border-[#002b5b] bg-[#eef3ff]' : 'border-gray-200 bg-gray-50 hover:border-[#002b5b]/60'}`}
                 onDragEnter={e => { e.preventDefault(); setDragActive(true); }}
                 onDragOver={e => { e.preventDefault(); setDragActive(true); }}
                 onDragLeave={() => setDragActive(false)}
@@ -537,7 +537,7 @@ function UrgentSaleContent() {
                 onClick={() => extraFileRef.current?.click()}
               >
                 <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
-                  <Upload size={22} className={`mb-1.5 ${dragActive ? 'text-[#003087]' : 'text-gray-300'}`} />
+                  <Upload size={22} className={`mb-1.5 ${dragActive ? 'text-[#002b5b]' : 'text-gray-300'}`} />
                   <p className="text-xs text-gray-500">{dragActive ? 'Drop files here' : 'Drag more photos or tap to add'}</p>
                 </div>
                 <input ref={extraFileRef} type="file" multiple accept="image/*" capture="environment" className="hidden" onChange={e => handleFiles(e.target.files)} />
@@ -586,7 +586,7 @@ function UrgentSaleContent() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                   <input type="text" value={form.contact_name} onChange={e => set('contact_name', e.target.value)} placeholder="Your name"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]" />
                 </div>
                 <div>
                   <PhoneInput
@@ -597,8 +597,8 @@ function UrgentSaleContent() {
                 </div>
               </div>
             </div>
-            <div className="bg-[#f0f4ff] rounded-xl border border-[#003087]/15 p-4">
-              <p className="text-xs font-bold text-[#003087] uppercase tracking-wide mb-2">Submission Summary</p>
+            <div className="bg-[#ebf5ff] rounded-xl border border-[#002b5b]/15 p-4">
+              <p className="text-xs font-bold text-[#002b5b] uppercase tracking-wide mb-2">Submission Summary</p>
               <div className="text-sm text-gray-700 space-y-0.5">
                 <p><span className="text-gray-400">Car:</span> {form.year} {form.make} {form.class_name}</p>
                 <p><span className="text-gray-400">Mileage:</span> {form.km != null ? kmLabel(form.km) : '—'}</p>
@@ -608,7 +608,7 @@ function UrgentSaleContent() {
               </div>
             </div>
             <button type="button" onClick={handleSubmit} disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#ff6600] hover:bg-[#e05a00] text-white font-bold py-4 rounded-xl text-base transition-all disabled:opacity-60 shadow-md">
+              className="w-full flex items-center justify-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-bold py-4 rounded-xl text-base transition-all disabled:opacity-60 shadow-md">
               {loading
                 ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 : <><Zap size={18} /> Submit — Get Dealer Offers</>}
@@ -625,7 +625,7 @@ function UrgentSaleContent() {
           }
           {step < STEPS.length - 1 && (
             <button type="button" onClick={goNext}
-              className="flex items-center gap-1.5 bg-[#003087] hover:bg-[#0057b8] text-white font-bold px-6 py-3 rounded-xl text-sm transition-all ml-auto">
+              className="flex items-center gap-1.5 bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold px-6 py-3 rounded-xl text-sm transition-all ml-auto">
               Continue <ChevronRight size={16} />
             </button>
           )}
@@ -639,10 +639,10 @@ function UrgentSaleContent() {
 export default function UrgentSalePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
+      <div className="min-h-screen bg-[#f8fafc] flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-[#ff6600] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-[#005ca9] border-t-transparent rounded-full animate-spin" />
         </div>
         <Footer />
       </div>

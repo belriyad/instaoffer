@@ -96,7 +96,7 @@ function BuyRequestContent() {
 
   if (done) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-4 py-16">
           <motion.div
@@ -117,7 +117,7 @@ function BuyRequestContent() {
             </p>
             <button
               onClick={() => router.push('/')}
-              className="w-full bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-3 rounded-xl transition-all"
+              className="w-full bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold py-3 rounded-xl transition-all"
             >
               Back to Home
             </button>
@@ -129,12 +129,12 @@ function BuyRequestContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-[#003087] rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 bg-[#002b5b] rounded-xl flex items-center justify-center flex-shrink-0">
               <ShoppingCart size={20} className="text-white" />
             </div>
             <div>
@@ -147,7 +147,7 @@ function BuyRequestContent() {
           {car.make && (
             <div className="mt-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
               <div className="flex items-center gap-2 mb-3">
-                <Car size={16} className="text-[#003087]" />
+                <Car size={16} className="text-[#002b5b]" />
                 <span className="text-sm font-bold text-gray-900">Your Target Car</span>
               </div>
               <p className="font-semibold text-gray-800 text-base">
@@ -156,7 +156,7 @@ function BuyRequestContent() {
               {estimateQar > 0 && (
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-xs text-gray-500">Market estimate:</span>
-                  <span className="text-sm font-bold text-[#003087]">{formatQAR(Math.round(estimateQar))}</span>
+                  <span className="text-sm font-bold text-[#002b5b]">{formatQAR(Math.round(estimateQar))}</span>
                   {lowQar > 0 && highQar > 0 && (
                     <span className="text-xs text-gray-400">
                       ({formatQAR(Math.round(lowQar))} – {formatQAR(Math.round(highQar))})
@@ -184,7 +184,7 @@ function BuyRequestContent() {
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Body Type</label>
                   <select value={bodyType} onChange={e => setBodyType(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white">
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b] bg-white">
                     <option value="">Any body type</option>
                     {['SUV', 'Sedan', 'Hatchback', 'Pickup', 'Van', 'Coupe', 'Other'].map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
@@ -194,12 +194,12 @@ function BuyRequestContent() {
 
             {/* Match preview */}
             {matchCount > 0 && (
-              <div className="bg-[#003087]/5 border border-[#003087]/20 rounded-xl p-4 flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#003087] rounded-full flex items-center justify-center shrink-0">
+              <div className="bg-[#002b5b]/5 border border-[#002b5b]/20 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#002b5b] rounded-full flex items-center justify-center shrink-0">
                   <Users size={16} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-bold text-[#003087] text-sm">{matchCount} possible matches</p>
+                  <p className="font-bold text-[#002b5b] text-sm">{matchCount} possible matches</p>
                   <p className="text-xs text-gray-500">from verified dealers currently active on InstaOffer</p>
                 </div>
               </div>
@@ -214,7 +214,7 @@ function BuyRequestContent() {
                   <select
                     value={form.budget_min_qar}
                     onChange={e => set('budget_min_qar', e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b] bg-white"
                   >
                     <option value="">No minimum</option>
                     {[30000,50000,75000,100000,125000,150000,175000,200000,250000,300000,400000,500000].map(v =>
@@ -228,7 +228,7 @@ function BuyRequestContent() {
                     value={form.budget_max_qar}
                     onChange={e => set('budget_max_qar', e.target.value)}
                     required
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b] bg-white"
                   >
                     <option value="">Select max</option>
                     {[50000,75000,100000,125000,150000,175000,200000,250000,300000,400000,500000,700000,1000000].map(v =>
@@ -248,7 +248,7 @@ function BuyRequestContent() {
                   <select
                     value={form.year_min}
                     onChange={e => set('year_min', e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b] bg-white"
                   >
                     <option value="">Any year</option>
                     {Array.from({length: 25}, (_, i) => new Date().getFullYear() - i).map(y =>
@@ -261,7 +261,7 @@ function BuyRequestContent() {
                   <select
                     value={form.year_max}
                     onChange={e => set('year_max', e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b] bg-white"
                   >
                     <option value="">Any year</option>
                     {Array.from({length: 25}, (_, i) => new Date().getFullYear() - i).map(y =>
@@ -274,7 +274,7 @@ function BuyRequestContent() {
                   <select
                     value={form.km_max}
                     onChange={e => set('km_max', e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b] bg-white"
                   >
                     <option value="">Any mileage</option>
                     <option value="20000">Under 20,000 km</option>
@@ -290,7 +290,7 @@ function BuyRequestContent() {
                   <select
                     value={form.city}
                     onChange={e => set('city', e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b] bg-white"
                   >
                     <option value="">Any city</option>
                     {QATAR_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -311,7 +311,7 @@ function BuyRequestContent() {
                     onChange={e => set('contact_name', e.target.value)}
                     required
                     placeholder="Your name"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b]"
                   />
                 </div>
                 <div>
@@ -329,7 +329,7 @@ function BuyRequestContent() {
                     value={form.contact_email}
                     onChange={e => set('contact_email', e.target.value)}
                     placeholder="your@email.com"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b]"
                   />
                 </div>
                 <div>
@@ -339,7 +339,7 @@ function BuyRequestContent() {
                     onChange={e => set('notes', e.target.value)}
                     rows={3}
                     placeholder="Preferred color, specific features, financing needed, etc."
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#003087] resize-none"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#002b5b] resize-none"
                   />
                 </div>
               </div>
@@ -362,7 +362,7 @@ function BuyRequestContent() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 bg-[#003087] hover:bg-[#0057b8] text-white font-bold py-4 rounded-xl text-lg transition-all disabled:opacity-60 shadow-md"
+              className="w-full flex items-center justify-center gap-2 bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold py-4 rounded-xl text-lg transition-all disabled:opacity-60 shadow-md"
             >
               {submitting
                 ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -382,7 +382,7 @@ function BuyRequestContent() {
 
 export default function BuyRequestPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f5f7fa]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#f8fafc]" />}>
       <BuyRequestContent />
     </Suspense>
   );

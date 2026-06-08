@@ -219,11 +219,11 @@ export default function CarsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
 
       {/* Hero bar */}
-      <div className="bg-[#003087] text-white py-10 px-4">
+      <div className="bg-[#002b5b] text-white py-10 px-4">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-black mb-1">New Cars in Qatar</h1>
           <p className="text-blue-200 text-sm">Browse new cars from authorised dealerships across Qatar</p>
@@ -247,12 +247,12 @@ export default function CarsPage() {
             </div>
             <button
               onClick={() => setShowFilters(v => !v)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all ${showFilters ? 'bg-[#ff6600] text-white' : 'bg-white text-[#003087]'}`}
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all ${showFilters ? 'bg-[#005ca9] text-white' : 'bg-white text-[#002b5b]'}`}
             >
               <SlidersHorizontal size={16} />
               Filters
               {activeFilterCount > 0 && (
-                <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${showFilters ? 'bg-white text-[#ff6600]' : 'bg-[#003087] text-white'}`}>
+                <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${showFilters ? 'bg-white text-[#005ca9]' : 'bg-[#002b5b] text-white'}`}>
                   {activeFilterCount}
                 </span>
               )}
@@ -264,7 +264,7 @@ export default function CarsPage() {
             <span className="text-xs text-blue-200 font-semibold shrink-0">Budget:</span>
             <button
               onClick={() => { setBudgetBand('any'); setPage(1); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${budgetBand === 'any' ? 'bg-white text-[#003087] border-white' : 'border-white/30 text-white/80 hover:border-white hover:text-white'}`}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${budgetBand === 'any' ? 'bg-white text-[#002b5b] border-white' : 'border-white/30 text-white/80 hover:border-white hover:text-white'}`}
             >
               Any
             </button>
@@ -272,7 +272,7 @@ export default function CarsPage() {
               <button
                 key={band.value}
                 onClick={() => { setBudgetBand(budgetBand === band.value ? 'any' : band.value); setPage(1); }}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${budgetBand === band.value ? 'bg-[#ff6600] text-white border-[#ff6600]' : 'border-white/30 text-white/80 hover:border-white hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${budgetBand === band.value ? 'bg-[#005ca9] text-white border-[#005ca9]' : 'border-white/30 text-white/80 hover:border-white hover:text-white'}`}
               >
                 {band.label}
               </button>
@@ -298,18 +298,18 @@ export default function CarsPage() {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
-                      <Calculator size={15} className="text-[#003087]" /> Budget
+                      <Calculator size={15} className="text-[#002b5b]" /> Budget
                     </h3>
                     <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
                       <button
                         onClick={() => setBudgetMode('cash')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${budgetMode === 'cash' ? 'bg-white shadow text-[#003087]' : 'text-gray-500'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${budgetMode === 'cash' ? 'bg-white shadow text-[#002b5b]' : 'text-gray-500'}`}
                       >
                         <Banknote size={13} /> Cash
                       </button>
                       <button
                         onClick={() => setBudgetMode('finance')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${budgetMode === 'finance' ? 'bg-white shadow text-[#003087]' : 'text-gray-500'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${budgetMode === 'finance' ? 'bg-white shadow text-[#002b5b]' : 'text-gray-500'}`}
                       >
                         <CreditCard size={13} /> Finance
                       </button>
@@ -324,14 +324,14 @@ export default function CarsPage() {
                           value={cashBudget}
                           onChange={e => { setCashBudget(e.target.value); setPage(1); }}
                           placeholder="Max budget (QAR)"
-                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#003087]"
+                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#002b5b]"
                         />
                         {cashBudget && (
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">QAR</span>
                         )}
                       </div>
                       {cashBudget && (
-                        <div className="text-sm font-bold text-[#003087] whitespace-nowrap">
+                        <div className="text-sm font-bold text-[#002b5b] whitespace-nowrap">
                           Up to {formatQAR(Number(cashBudget))}
                         </div>
                       )}
@@ -346,7 +346,7 @@ export default function CarsPage() {
                             value={monthlyBudget}
                             onChange={e => { setMonthlyBudget(e.target.value); setPage(1); }}
                             placeholder="e.g. 3500"
-                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#003087]"
+                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#002b5b]"
                           />
                         </div>
                         <div>
@@ -356,7 +356,7 @@ export default function CarsPage() {
                             value={downPayment}
                             onChange={e => setDownPayment(e.target.value)}
                             placeholder="e.g. 20000"
-                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#003087]"
+                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#002b5b]"
                           />
                         </div>
                         <div>
@@ -364,7 +364,7 @@ export default function CarsPage() {
                           <select
                             value={loanTerm}
                             onChange={e => setLoanTerm(e.target.value)}
-                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#003087]"
+                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#002b5b]"
                           >
                             {[12, 24, 36, 48, 60, 72, 84].map(m => (
                               <option key={m} value={m}>{m} months ({m / 12}yr)</option>
@@ -379,16 +379,16 @@ export default function CarsPage() {
                             value={interestRate}
                             onChange={e => setInterestRate(e.target.value)}
                             placeholder="e.g. 4.5"
-                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#003087]"
+                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#002b5b]"
                           />
                         </div>
                       </div>
                       {maxPriceFromFinance && monthlyBudget && (
                         <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 flex items-center gap-3">
-                          <Calculator size={16} className="text-[#003087] flex-shrink-0" />
+                          <Calculator size={16} className="text-[#002b5b] flex-shrink-0" />
                           <div>
                             <span className="text-xs text-gray-500">Estimated max car price: </span>
-                            <span className="font-black text-[#003087]">{formatQAR(maxPriceFromFinance)}</span>
+                            <span className="font-black text-[#002b5b]">{formatQAR(maxPriceFromFinance)}</span>
                             <span className="text-xs text-gray-400 ml-2">
                               (QAR {Number(monthlyBudget).toLocaleString()}/mo × {loanTerm}m @ {interestRate}% + QAR {Number(downPayment || 0).toLocaleString()} down)
                             </span>
@@ -413,9 +413,9 @@ export default function CarsPage() {
                 <div>
                   <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Year Range</h4>
                   <div className="flex items-center gap-2">
-                    <input type="number" value={yearMin} onChange={e => { setYearMin(e.target.value); setPage(1); }} placeholder="From" className="w-28 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#003087]" />
+                    <input type="number" value={yearMin} onChange={e => { setYearMin(e.target.value); setPage(1); }} placeholder="From" className="w-28 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#002b5b]" />
                     <span className="text-gray-400">–</span>
-                    <input type="number" value={yearMax} onChange={e => { setYearMax(e.target.value); setPage(1); }} placeholder="To" className="w-28 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#003087]" />
+                    <input type="number" value={yearMax} onChange={e => { setYearMax(e.target.value); setPage(1); }} placeholder="To" className="w-28 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#002b5b]" />
                   </div>
                 </div>
 
@@ -442,7 +442,7 @@ export default function CarsPage() {
             <select
               value={sort}
               onChange={e => { setSort(e.target.value as WakalatCarsParams['sort']); setPage(1); }}
-              className="border border-gray-200 bg-white rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:border-[#003087]"
+              className="border border-gray-200 bg-white rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:border-[#002b5b]"
             >
               {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
@@ -469,7 +469,7 @@ export default function CarsPage() {
             <p className="font-bold text-gray-700 text-lg mb-1">No cars found</p>
             <p className="text-gray-400 text-sm">Try adjusting your filters or search</p>
             {activeFilterCount > 0 && (
-              <button onClick={clearAll} className="mt-4 text-sm text-[#003087] font-semibold hover:underline">
+              <button onClick={clearAll} className="mt-4 text-sm text-[#002b5b] font-semibold hover:underline">
                 Clear all filters
               </button>
             )}
@@ -496,7 +496,7 @@ export default function CarsPage() {
             <button
               onClick={() => fetchCars(page - 1)}
               disabled={page <= 1}
-              className="flex items-center gap-1 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#003087] hover:text-[#003087] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-1 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#002b5b] hover:text-[#002b5b] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               <ChevronLeft size={16} /> Prev
             </button>
@@ -506,7 +506,7 @@ export default function CarsPage() {
             <button
               onClick={() => fetchCars(page + 1)}
               disabled={page >= pages}
-              className="flex items-center gap-1 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#003087] hover:text-[#003087] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-1 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#002b5b] hover:text-[#002b5b] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               Next <ChevronRight size={16} />
             </button>
@@ -531,7 +531,7 @@ export default function CarsPage() {
                 {Array.from({ length: MAX_COMPARE }).map((_, i) => {
                   const item = compareItems[i];
                   return item ? (
-                    <div key={item.slug} className="relative flex-shrink-0 w-28 bg-[#003087]/5 border border-[#003087]/20 rounded-xl overflow-hidden group">
+                    <div key={item.slug} className="relative flex-shrink-0 w-28 bg-[#002b5b]/5 border border-[#002b5b]/20 rounded-xl overflow-hidden group">
                       {/* Thumbnail */}
                       {item.thumbnail ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -549,7 +549,7 @@ export default function CarsPage() {
                       {/* Name */}
                       <div className="px-2 py-1.5">
                         <p className="text-xs font-bold text-gray-800 leading-tight truncate">{item.name}</p>
-                        {item.price && <p className="text-xs text-[#003087] font-black mt-0.5">{formatQAR(item.price)}</p>}
+                        {item.price && <p className="text-xs text-[#002b5b] font-black mt-0.5">{formatQAR(item.price)}</p>}
                       </div>
                     </div>
                   ) : (
@@ -572,7 +572,7 @@ export default function CarsPage() {
                 <button
                   disabled={compareItems.length < 2}
                   onClick={() => router.push(`/cars/compare?slugs=${compareList.join(',')}`)}
-                  className="flex items-center gap-2 text-sm font-black bg-[#ff6600] hover:bg-[#e65c00] disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap"
+                  className="flex items-center gap-2 text-sm font-black bg-[#005ca9] hover:bg-[#004a87] disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap"
                 >
                   <BarChart2 size={16} />
                   {compareItems.length < 2
@@ -620,7 +620,7 @@ function CarCard({
       transition={{ delay: Math.min(index * 0.03, 0.5) }}
       className="flex flex-col"
     >
-      <div className={`group flex flex-col bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-all h-full ${isCompared ? 'border-[#003087] ring-2 ring-[#003087]/20' : 'border-gray-100 hover:border-[#003087]/30'}`}>
+      <div className={`group flex flex-col bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-all h-full ${isCompared ? 'border-[#002b5b] ring-2 ring-[#002b5b]/20' : 'border-gray-100 hover:border-[#002b5b]/30'}`}>
 
         {/* Image with checkbox overlay */}
         <div className="relative h-44 bg-gray-50 overflow-hidden flex-shrink-0">
@@ -657,10 +657,10 @@ function CarCard({
             title={isCompared ? 'Remove from compare' : compareDisabled ? `Max ${MAX_COMPARE} cars` : 'Add to compare'}
             className={`absolute top-2 left-2 w-7 h-7 rounded-lg flex items-center justify-center transition-all shadow-md z-10 ${
               isCompared
-                ? 'bg-[#003087] border-2 border-[#003087]'
+                ? 'bg-[#002b5b] border-2 border-[#002b5b]'
                 : compareDisabled
                   ? 'bg-white/60 border-2 border-gray-200 cursor-not-allowed'
-                  : 'bg-white/90 border-2 border-gray-200 hover:border-[#003087] hover:bg-white'
+                  : 'bg-white/90 border-2 border-gray-200 hover:border-[#002b5b] hover:bg-white'
             }`}
           >
             {isCompared ? (
@@ -675,7 +675,7 @@ function CarCard({
 
           {/* "Comparing" label strip */}
           {isCompared && (
-            <div className="absolute bottom-0 left-0 right-0 bg-[#003087]/90 text-white text-xs font-bold py-1 text-center tracking-wide pointer-events-none">
+            <div className="absolute bottom-0 left-0 right-0 bg-[#002b5b]/90 text-white text-xs font-bold py-1 text-center tracking-wide pointer-events-none">
               ✓ Added to compare
             </div>
           )}
@@ -684,7 +684,7 @@ function CarCard({
         {/* Info — links to detail */}
         <Link href={`/cars/${car.slug}`} className="flex flex-col flex-1 p-4">
           <p className="text-xs text-gray-400 font-medium mb-0.5">{car.dealer}</p>
-          <h3 className="font-bold text-gray-900 text-sm leading-snug group-hover:text-[#003087] transition-colors">
+          <h3 className="font-bold text-gray-900 text-sm leading-snug group-hover:text-[#002b5b] transition-colors">
             {car.year} {car.make} {car.model}
           </h3>
           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -697,7 +697,7 @@ function CarCard({
           <div className="mt-3 pt-3 border-t border-gray-50">
             {car.base_price_qar ? (
               <>
-                <div className="text-lg font-black text-[#003087]">{formatQAR(car.base_price_qar)}</div>
+                <div className="text-lg font-black text-[#002b5b]">{formatQAR(car.base_price_qar)}</div>
                 {financeMode && monthly > 0 && (
                   <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                     <CreditCard size={11} />
@@ -738,8 +738,8 @@ function FilterGroup({ label, items, selected, onToggle }: {
             onClick={() => onToggle(item)}
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
               selected.includes(item)
-                ? 'bg-[#003087] text-white border-[#003087]'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-[#003087] hover:text-[#003087]'
+                ? 'bg-[#002b5b] text-white border-[#002b5b]'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-[#002b5b] hover:text-[#002b5b]'
             }`}
           >
             {item}
@@ -748,7 +748,7 @@ function FilterGroup({ label, items, selected, onToggle }: {
         {items.length > 6 && (
           <button
             onClick={() => setExpanded(v => !v)}
-            className="px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-400 hover:text-[#003087] flex items-center gap-1"
+            className="px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-400 hover:text-[#002b5b] flex items-center gap-1"
           >
             {expanded ? <><ChevronUp size={12} /> Less</> : <><ChevronDown size={12} /> +{items.length - 6} more</>}
           </button>

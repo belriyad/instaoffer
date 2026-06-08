@@ -67,7 +67,7 @@ function PreferenceCard({
           <button
             type="button"
             onClick={() => set('enabled', !pref.enabled)}
-            className={`w-10 h-6 rounded-full transition-colors relative ${pref.enabled ? 'bg-[#003087]' : 'bg-gray-200'}`}
+            className={`w-10 h-6 rounded-full transition-colors relative ${pref.enabled ? 'bg-[#002b5b]' : 'bg-gray-200'}`}
           >
             <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${pref.enabled ? 'left-5' : 'left-1'}`} />
           </button>
@@ -99,13 +99,13 @@ function PreferenceCard({
           <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Year From</label>
           <input type="number" min="2000" max={new Date().getFullYear()} value={pref.year_min}
             onChange={e => set('year_min', e.target.value)} placeholder="e.g. 2019"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
+            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]" />
         </div>
         <div>
           <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Year To</label>
           <input type="number" min="2000" max={new Date().getFullYear()} value={pref.year_max}
             onChange={e => set('year_max', e.target.value)} placeholder={String(new Date().getFullYear())}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
+            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]" />
         </div>
       </div>
 
@@ -114,7 +114,7 @@ function PreferenceCard({
         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Max Asking Price (QAR)</label>
         <input type="number" value={pref.price_max} min="0" step="5000"
           onChange={e => set('price_max', e.target.value)} placeholder="e.g. 300000"
-          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]" />
+          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]" />
       </div>
 
       {/* Score threshold */}
@@ -125,8 +125,8 @@ function PreferenceCard({
             <button key={opt.value} type="button" onClick={() => set('min_score', opt.value)}
               className={`text-xs font-semibold py-2 rounded-lg border-2 transition-all leading-tight ${
                 pref.min_score === opt.value
-                  ? 'border-[#003087] bg-[#003087] text-white'
-                  : 'border-gray-200 text-gray-500 hover:border-[#003087]/40'
+                  ? 'border-[#002b5b] bg-[#002b5b] text-white'
+                  : 'border-gray-200 text-gray-500 hover:border-[#002b5b]/40'
               }`}>
               {opt.label}
             </button>
@@ -138,12 +138,12 @@ function PreferenceCard({
       {/* Urgent only */}
       <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
         <button type="button" onClick={() => set('urgent_only', !pref.urgent_only)}
-          className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${pref.urgent_only ? 'bg-[#ff6600]' : 'bg-gray-200'}`}>
+          className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${pref.urgent_only ? 'bg-[#005ca9]' : 'bg-gray-200'}`}>
           <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${pref.urgent_only ? 'left-4' : 'left-0.5'}`} />
         </button>
         <div>
           <p className="text-xs font-semibold text-gray-700 flex items-center gap-1">
-            <Zap size={11} className="text-[#ff6600]" /> Urgent sellers only
+            <Zap size={11} className="text-[#005ca9]" /> Urgent sellers only
           </p>
           <p className="text-[10px] text-gray-400">Only alert when seller has flagged urgency</p>
         </div>
@@ -262,12 +262,12 @@ export default function AlertPreferencesPage() {
   const activeCount = prefs.filter(p => p.enabled).length;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f7fa]">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
 
         {/* Back link */}
-        <Link href="/dashboard/alerts" className="inline-flex items-center gap-1.5 text-sm text-[#003087] font-semibold mb-6 hover:underline">
+        <Link href="/dashboard/alerts" className="inline-flex items-center gap-1.5 text-sm text-[#002b5b] font-semibold mb-6 hover:underline">
           <ArrowLeft size={15} /> Back to Alerts
         </Link>
 
@@ -275,25 +275,25 @@ export default function AlertPreferencesPage() {
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">
-              <Bell className="text-[#003087]" size={22} /> Alert Preferences
+              <Bell className="text-[#002b5b]" size={22} /> Alert Preferences
             </h1>
             <p className="text-sm text-gray-400 mt-0.5">
               Get notified when matching opportunities appear
             </p>
           </div>
           {activeCount > 0 && (
-            <span className="bg-[#003087] text-white text-xs font-bold px-2.5 py-1.5 rounded-full shrink-0">
+            <span className="bg-[#002b5b] text-white text-xs font-bold px-2.5 py-1.5 rounded-full shrink-0">
               {activeCount} active
             </span>
           )}
         </div>
 
         {/* How it works banner */}
-        <div className="bg-[#003087]/5 border border-[#003087]/10 rounded-2xl p-4 mb-6 flex items-start gap-3">
-          <Zap size={18} className="text-[#ff6600] mt-0.5 shrink-0" />
+        <div className="bg-[#002b5b]/5 border border-[#002b5b]/10 rounded-2xl p-4 mb-6 flex items-start gap-3">
+          <Zap size={18} className="text-[#005ca9] mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-bold text-[#003087] mb-1">How WhatsApp alerts work</p>
-            <ul className="text-xs text-[#003087]/75 space-y-0.5">
+            <p className="text-sm font-bold text-[#002b5b] mb-1">How WhatsApp alerts work</p>
+            <ul className="text-xs text-[#002b5b]/75 space-y-0.5">
               <li>• A seller submits a car matching your make/model/year/price criteria</li>
               <li>• The opportunity score meets your threshold</li>
               <li>• You receive an instant WhatsApp with valuation, margin estimate, and photos</li>
@@ -323,7 +323,7 @@ export default function AlertPreferencesPage() {
             <p className="font-bold text-gray-900 mb-1">No alert rules yet</p>
             <p className="text-sm text-gray-400 mb-5">Add rules to receive WhatsApp alerts when matching cars appear.</p>
             <button type="button" onClick={() => addPref()}
-              className="inline-flex items-center gap-2 bg-[#003087] text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#002070] transition-colors">
+              className="inline-flex items-center gap-2 bg-[#002b5b] text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#001a3d] transition-colors">
               <Plus size={16} /> Add Alert Rule
             </button>
 
@@ -333,7 +333,7 @@ export default function AlertPreferencesPage() {
               <div className="flex flex-wrap justify-center gap-2">
                 {QUICK_MAKES.map(make => (
                   <button key={make} type="button" onClick={() => addPref(make)}
-                    className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-[#003087] hover:text-[#003087] transition-colors">
+                    className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-[#002b5b] hover:text-[#002b5b] transition-colors">
                     {make}
                   </button>
                 ))}
@@ -360,11 +360,11 @@ export default function AlertPreferencesPage() {
         {prefs.length > 0 && (
           <div className="flex gap-3">
             <button type="button" onClick={() => addPref()}
-              className="flex items-center gap-2 border-2 border-dashed border-gray-300 text-gray-500 font-semibold px-4 py-3 rounded-xl text-sm hover:border-[#003087] hover:text-[#003087] transition-colors">
+              className="flex items-center gap-2 border-2 border-dashed border-gray-300 text-gray-500 font-semibold px-4 py-3 rounded-xl text-sm hover:border-[#002b5b] hover:text-[#002b5b] transition-colors">
               <Plus size={15} /> Add rule
             </button>
             <button type="button" onClick={save} disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 bg-[#003087] hover:bg-[#002070] text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              className="flex-1 flex items-center justify-center gap-2 bg-[#002b5b] hover:bg-[#001a3d] text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
               {saving
                 ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 : <Save size={15} />}
