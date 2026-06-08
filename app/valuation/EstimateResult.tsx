@@ -54,11 +54,39 @@ function rangeConfidence(estimate: MLEstimate): { label: string; cls: string } {
   return { label: 'Indicative range', cls: 'bg-gray-50 text-gray-500 border-gray-200' };
 }
 
+/** KBB-style semicircle gauge: red (low) · green (your range) · grey (high),
+ *  with a pointer at where the value sits within its range. */
+function PriceGauge({ low, high, value }: { low: number; high: number; value: number }) {
+  const cx = 130, cy = 126, r = 98, sw = 28;
+  const pt = (a: number): [number, number] => {
+    const rad = (a * Math.PI) / 180;
+    return [cx + r * Math.cos(rad), cy - r * Math.sin(rad)];
+  };
+  const arc = (a1: number, a2: number) => {
+    const [x1, y1] = pt(a1), [x2, y2] = pt(a2);
+    return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+  };
+  const valuePct = high > low ? Math.min(1, Math.max(0, (value - low) / (high - low))) : 0.5;
+  const ptrAngle = 116 - valuePct * 52; // map within the green band (116°→64°)
+  const [px, py] = pt(ptrAngle);
+  return (
+    <svg viewBox="0 0 260 140" className="w-full max-w-[330px] mx-auto block">
+      <path d={arc(180, 124)} stroke="#dc2626" strokeWidth={sw} fill="none" />
+      <path d={arc(116, 64)}  stroke="#16a34a" strokeWidth={sw} fill="none" />
+      <path d={arc(56, 0)}    stroke="#cbd5e1" strokeWidth={sw} fill="none" />
+      <line x1={px} y1={py} x2={px} y2={2} stroke="#94a3b8" strokeWidth="1.5" />
+      <circle cx={px} cy={py} r="10" fill="#16a34a" stroke="#fff" strokeWidth="3" />
+    </svg>
+  );
+}
+
 export default function EstimateResult({ estimate, forecast, comps, timeToSell, data }: Props) {
   const bands = computePriceBands(estimate);
   const confidence = rangeConfidence(estimate);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [priceTab, setPriceTab] = useState(0);
+  const validDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   const carLabel = [data.year, data.make, data.class_name, data.trim].filter(Boolean).join(' ')
     + (data.km ? ` · ${formatKM(data.km)}` : '')
@@ -142,128 +170,105 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
           </motion.div>
         )}
 
-        {/* Intent price bands */}
+        {/* Price evaluation — tabbed gauge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-2"
         >
-          <h2 className="text-center text-lg font-black text-gray-900 mb-1">What is your car worth to you?</h2>
-          <div className="flex justify-center mb-2">
-            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${confidence.cls}`}>
-              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
-              {confidence.label}
-            </span>
-          </div>
-          <p className="text-center text-xs text-gray-400 mb-5">Price depends on how fast you want to sell and how much effort you want to put in.</p>
+          <h2 className="text-center text-lg font-black text-gray-900 mb-3">What&apos;s your car worth?</h2>
 
-          <div className="space-y-4">
-
-            {/* Band 1 — Maximize Value */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="bg-white rounded-2xl border-2 border-gray-100 shadow-sm p-5"
-            >
-              <div className="flex items-start justify-between gap-4 mb-3">
-                <div>
-                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Maximize Value</div>
-                  <div className="font-black text-gray-900 text-base">Private Sale</div>
+          {(() => {
+            const tabs = [
+              {
+                label: 'Private Party', low: bands.privatePartyLow, high: bands.privatePartyHigh,
+                blurb: 'Selling privately — the highest payout, but more time and effort.',
+                cta: { href: `/submit-offer?${submitParams}`, label: 'List for Offers', icon: <ChevronRight size={15} />, cls: 'bg-[#002b5b] hover:bg-[#1a7fd4]' },
+              },
+              {
+                label: 'Trade-In', low: bands.tradeInLow, high: bands.tradeInHigh,
+                blurb: 'Trading in at a dealer — one smooth transaction, slightly lower payout.',
+                cta: { href: `/trade-in?${tradeParams}`, label: 'Start Trade-In', icon: <RefreshCw size={14} />, cls: 'bg-green-600 hover:bg-green-700' },
+              },
+              {
+                label: 'Instant Offer', low: bands.instantLow, high: bands.instantHigh,
+                blurb: 'Fastest cash sale — sell within days for a small speed discount.',
+                cta: { href: `/urgent-sale?${urgentParams}`, label: 'Sell Fast Now', icon: <Zap size={14} />, cls: 'bg-[#005ca9] hover:bg-[#004a87]' },
+              },
+            ];
+            const cur = tabs[priceTab];
+            const value = Math.round((cur.low + cur.high) / 2);
+            const rangeStr = `QAR ${cur.low.toLocaleString()} – ${cur.high.toLocaleString()}`;
+            return (
+              <>
+                {/* Pricing-type tabs */}
+                <div className="flex rounded-xl bg-gray-100 p-1 mb-4 max-w-md mx-auto">
+                  {tabs.map((t, i) => (
+                    <button
+                      key={t.label}
+                      type="button"
+                      onClick={() => setPriceTab(i)}
+                      className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${
+                        priceTab === i ? 'bg-white shadow-sm text-[#002b5b]' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
                 </div>
-                <div className="text-right shrink-0">
-                  <div className="text-2xl font-black text-gray-900">
-                    {formatQAR(bands.privatePartyLow)}–{formatQAR(bands.privatePartyHigh)}
+
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                  {/* Range/value callout + gauge */}
+                  <div className="flex flex-col items-center">
+                    <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm text-center w-[240px] relative z-10">
+                      <div className="bg-green-600 text-white px-4 py-2">
+                        <div className="text-[11px] font-semibold opacity-90">{cur.label} Range</div>
+                        <div className="text-lg font-black leading-tight">{rangeStr}</div>
+                      </div>
+                      <div className="bg-white px-4 py-1.5">
+                        <div className="text-[11px] font-semibold text-gray-500">{cur.label} Value</div>
+                        <div className="text-base font-black text-gray-900">{formatQAR(value)}</div>
+                      </div>
+                    </div>
+                    <div className="-mt-1 w-full">
+                      <PriceGauge low={cur.low} high={cur.high} value={value} />
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-400">Highest expected payout</div>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-4">
-                <span className="flex items-center gap-1"><span className="text-amber-500">~</span> Weeks to months to sell</span>
-                <span className="flex items-center gap-1"><span className="text-amber-500">~</span> More effort and negotiation</span>
-                <span className="flex items-center gap-1"><span className="text-green-500">✓</span> Best final price</span>
-              </div>
-              <Link
-                href={`/submit-offer?${submitParams}`}
-                className="flex items-center justify-center gap-1.5 w-full bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold py-3 rounded-xl text-sm transition-all"
-              >
-                List for Offers <ChevronRight size={15} />
-              </Link>
-              <p className="text-center text-xs text-gray-400 mt-2">
-                Free account required — takes 30 seconds · No credit card
-              </p>
-            </motion.div>
 
-            {/* Band 2 — Easy Upgrade */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12 }}
-              className="bg-white rounded-2xl border-2 border-green-200 shadow-sm p-5"
-            >
-              <div className="flex items-start justify-between gap-4 mb-3">
-                <div>
-                  <div className="text-xs font-bold text-green-500 uppercase tracking-widest mb-0.5">Easy Upgrade</div>
-                  <div className="font-black text-gray-900 text-base">Trade-In Value</div>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="text-2xl font-black text-gray-900">
-                    {formatQAR(bands.tradeInLow)}–{formatQAR(bands.tradeInHigh)}
+                  <div className="flex items-center justify-center gap-2 -mt-3 mb-4">
+                    <span className="text-xs text-gray-400">Valid as of {validDate}</span>
+                    <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border ${confidence.cls}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                      {confidence.label}
+                    </span>
                   </div>
-                  <div className="text-xs text-gray-400">Typical trade-in range</div>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-4">
-                <span className="flex items-center gap-1"><span className="text-green-500">✓</span> One smooth transaction</span>
-                <span className="flex items-center gap-1"><span className="text-green-500">✓</span> Sell &amp; upgrade together</span>
-                <span className="flex items-center gap-1"><span className="text-amber-500">~</span> Slightly lower payout</span>
-              </div>
-              <Link
-                href={`/trade-in?${tradeParams}`}
-                className="flex items-center justify-center gap-1.5 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-sm transition-all"
-              >
-                <RefreshCw size={14} /> Start Trade-In
-              </Link>
-            </motion.div>
 
-            {/* Band 3 — Fastest Sale */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl border-2 border-orange-300 shadow-md p-5 relative overflow-hidden"
-            >
-              <span className="absolute top-4 right-4 bg-[#005ca9] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Fastest</span>
-              <div className="flex items-start justify-between gap-4 mb-3">
-                <div>
-                  <div className="text-xs font-bold text-[#005ca9] uppercase tracking-widest mb-0.5">Fastest Sale</div>
-                  <div className="font-black text-gray-900 text-base">Instant Offer</div>
-                </div>
-                <div className="text-right shrink-0 pr-12">
-                  <div className="text-2xl font-black text-[#005ca9]">
-                    {formatQAR(bands.instantLow)}–{formatQAR(bands.instantHigh)}
+                  <p className="text-center text-sm text-gray-600 mb-3">{cur.blurb}</p>
+                  <Link
+                    href={cur.cta.href}
+                    className={`flex items-center justify-center gap-1.5 w-full ${cur.cta.cls} text-white font-bold py-3 rounded-xl text-sm transition-all`}
+                  >
+                    {cur.cta.icon} {cur.cta.label}
+                  </Link>
+
+                  {/* Factors that impact value */}
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2">Factors that impact value</p>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {data.year && <span className="bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1 text-gray-600">Year: <b className="text-gray-800">{data.year}</b></span>}
+                      {data.km != null && <span className="bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1 text-gray-600">Mileage: <b className="text-gray-800">{formatKM(data.km)}</b></span>}
+                      {data.city && <span className="bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1 text-gray-600">City: <b className="text-gray-800">{data.city}</b></span>}
+                      {data.condition && <span className="bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1 text-gray-600 capitalize">Condition: <b className="text-gray-800">{data.condition}</b></span>}
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-400">Expected urgent-sale range</div>
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-4">
-                <span className="flex items-center gap-1"><span className="text-green-500">✓</span> Fastest and most convenient</span>
-                <span className="flex items-center gap-1"><span className="text-green-500">✓</span> Sell within days</span>
-                <span className="flex items-center gap-1"><span className="text-amber-500">~</span> Lower payout for speed</span>
-              </div>
-              <Link
-                href={`/urgent-sale?${urgentParams}`}
-                className="flex items-center justify-center gap-1.5 w-full bg-[#005ca9] hover:bg-[#004a87] text-white font-bold py-3 rounded-xl text-sm transition-all"
-              >
-                <Zap size={14} /> Sell Fast Now
-              </Link>
-            </motion.div>
 
-          </div>
-
-          <p className="text-center text-xs text-gray-400 mt-4">
-            These are AI estimates — not guaranteed prices. Actual dealer offers depend on inspection and market conditions.
-          </p>
+                <p className="text-center text-xs text-gray-400 mt-4">
+                  These are AI estimates — not guaranteed prices. Actual dealer offers depend on inspection and market conditions.
+                </p>
+              </>
+            );
+          })()}
         </motion.div>
 
         {/* ── Analytics accordion ──────────────────────────────────────────────── */}
