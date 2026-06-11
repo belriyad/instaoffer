@@ -130,8 +130,15 @@ function MyOffersContent() {
   const { token } = useAuth();
   const searchParams = useSearchParams();
   const submitted = searchParams.get('submitted');
+  const tabParam = searchParams.get('tab');
 
-  const [tab, setTab] = useState<'offers' | 'tradeins'>('tradeins');
+  // Land on the right tab: an explicit ?tab=, else the Sell Offers tab when
+  // arriving from a sell submission (?submitted=), else Trade-in by default.
+  const initialTab: 'offers' | 'tradeins' =
+    tabParam === 'offers' || tabParam === 'tradeins'
+      ? tabParam
+      : submitted ? 'offers' : 'tradeins';
+  const [tab, setTab] = useState<'offers' | 'tradeins'>(initialTab);
   const [offers, setOffers] = useState<OfferRequest[]>([]);
   const [tradeIns, setTradeIns] = useState<TradeInRequest[]>([]);
   const [fetching, setFetching] = useState(true);

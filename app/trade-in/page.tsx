@@ -268,7 +268,7 @@ function TradeInContent() {
                 <p className="font-bold text-gray-900 text-sm">{targetCarName}</p>
               </div>
             )}
-            <Link href="/my-offers"
+            <Link href="/my-offers?tab=tradeins"
               className="block w-full bg-[#002b5b] text-white font-bold py-3 rounded-lg hover:bg-[#001a3d] transition-colors mb-3">
               View My Requests
             </Link>

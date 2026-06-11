@@ -248,7 +248,7 @@ function UrgentSaleContent() {
               </ul>
             </div>
             <div className="flex flex-col gap-3">
-              <Link href="/my-offers" className="w-full bg-[#002b5b] text-white font-bold py-3 rounded-lg hover:bg-[#001a3d] transition-colors">View My Offers</Link>
+              <Link href="/my-offers?tab=offers" className="w-full bg-[#002b5b] text-white font-bold py-3 rounded-lg hover:bg-[#001a3d] transition-colors">View My Offers</Link>
               <button onClick={() => router.push('/')} className="w-full text-gray-500 hover:text-gray-700 text-sm py-2 transition-colors">Back to Home</button>
             </div>
           </div>
