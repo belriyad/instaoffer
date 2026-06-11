@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -62,6 +62,8 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
   const [request, setRequest] = useState<RequestWithBids | null>(null);
   const [fetching, setFetching] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const attemptsRef = useRef(0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [uid, setUid] = useState('');
 
@@ -91,20 +93,47 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
       router.push('/login?redirect=' + encodeURIComponent(pathname));
       return;
     }
-    if (token && uid) {
-      setFetching(true);
-      setFetchError(null);
-      getOfferRequestDetail(uid, token)
-        .then(r => {
-          const req = r as RequestWithBids;
-          setRequest(req);
-          // FE-007: seed doc visibility from request
-          if (req.document_visibility) setDocVisibility(req.document_visibility);
-        })
-        .catch(err => setFetchError(err instanceof Error ? err.message : 'Failed to load offer'))
-        .finally(() => setFetching(false));
-    }
-  }, [token, loading, uid, router]);
+    if (!(token && uid)) return;
+
+    let cancelled = false;
+    setFetching(true);
+    setFetchError(null);
+    getOfferRequestDetail(uid, token)
+      .then(r => {
+        if (cancelled) return;
+        attemptsRef.current = 0;
+        const req = r as RequestWithBids;
+        setRequest(req);
+        if (req.document_visibility) setDocVisibility(req.document_visibility);
+        setFetching(false);
+      })
+      .catch(err => {
+        if (cancelled) return;
+        // Auto-recover from transient backend hiccups (e.g. SQLite contention)
+        // before surfacing an error — the proxy already retries, this covers the
+        // guest re-auth race too.
+        if (attemptsRef.current < 2) {
+          attemptsRef.current += 1;
+          setTimeout(() => { if (!cancelled) setReloadKey(k => k + 1); }, 600 * attemptsRef.current);
+          return; // keep the skeleton up
+        }
+        const msg = err instanceof Error ? err.message : '';
+        const transient = /busy|locked|timeout|503|502|temporar/i.test(msg);
+        setFetchError(
+          transient
+            ? "We couldn't load this offer just now — the service was briefly busy."
+            : (msg || "This offer request doesn't exist or you don't have access to it.")
+        );
+        setFetching(false);
+      });
+    return () => { cancelled = true; };
+  }, [token, loading, uid, router, reloadKey]);
+
+  function retryLoad() {
+    attemptsRef.current = 0;
+    setFetchError(null);
+    setReloadKey(k => k + 1);
+  }
 
   // FE-001: Fetch phone requests after main request loads
   useEffect(() => {
@@ -248,8 +277,20 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
     return (
       <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
+        <div className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
+          <div className="h-4 w-28 bg-gray-100 rounded mb-6 animate-pulse" />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 animate-pulse">
+            <div className="h-6 w-2/3 bg-gray-100 rounded mb-3" />
+            <div className="h-4 w-1/2 bg-gray-100 rounded mb-6" />
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="h-16 bg-gray-100 rounded-xl" />
+              <div className="h-16 bg-gray-100 rounded-xl" />
+            </div>
+            <div className="space-y-3">
+              <div className="h-20 bg-gray-100 rounded-xl" />
+              <div className="h-20 bg-gray-100 rounded-xl" />
+            </div>
+          </div>
         </div>
         <Footer />
       </div>
@@ -257,22 +298,39 @@ export default function OfferDetailPage({ params }: { params: Promise<{ uid: str
   }
 
   if (fetchError || !request) {
+    const transient = !!fetchError && /busy|temporar|try again/i.test(fetchError);
     return (
       <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center max-w-md w-full shadow-sm">
-            <AlertCircle size={40} className="text-red-400 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Offer Not Found</h2>
+            <AlertCircle size={40} className={`${transient ? 'text-amber-400' : 'text-red-400'} mx-auto mb-4`} />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              {transient ? 'Taking a moment…' : 'Offer Not Found'}
+            </h2>
             <p className="text-sm text-gray-500 mb-6">
               {fetchError || "This offer request doesn't exist or you don't have access to it."}
             </p>
-            <Link
-              href="/my-offers"
-              className="inline-flex items-center gap-2 bg-[#002b5b] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#001a3d] transition-colors"
-            >
-              <ChevronLeft size={16} /> Back to My Offers
-            </Link>
+            <div className="flex items-center justify-center gap-3">
+              {transient && (
+                <button
+                  onClick={retryLoad}
+                  className="inline-flex items-center gap-2 bg-[#002b5b] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#001a3d] transition-colors"
+                >
+                  Try Again
+                </button>
+              )}
+              <Link
+                href="/my-offers"
+                className={`inline-flex items-center gap-2 font-bold px-6 py-3 rounded-xl transition-colors ${
+                  transient
+                    ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-[#002b5b] text-white hover:bg-[#001a3d]'
+                }`}
+              >
+                <ChevronLeft size={16} /> Back to My Offers
+              </Link>
+            </div>
           </div>
         </div>
         <Footer />

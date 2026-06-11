@@ -14,6 +14,11 @@ const HOP_BY_HOP = new Set([
   'upgrade',
 ]);
 
+const MAX_RETRIES = 3;
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+// SQLite contention / transient backend errors worth retrying.
+const LOCK_RE = /database is locked|database table is locked|locked|busy|try again/i;
+
 async function handler(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
   const pathStr = path.join('/');
@@ -32,28 +37,52 @@ async function handler(req: NextRequest, { params }: { params: Promise<{ path: s
   // Ensure host points at backend
   forwardHeaders['host'] = new URL(BACKEND).host;
 
-  let body: BodyInit | undefined;
+  // arrayBuffer is reusable across retries (immutable buffer)
+  let body: ArrayBuffer | undefined;
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     body = await req.arrayBuffer();
   }
+  const isSafe = req.method === 'GET' || req.method === 'HEAD';
 
   const t0 = Date.now();
-  let backendRes: Response;
-  try {
-    backendRes = await fetch(targetUrl, {
-      method: req.method,
-      headers: forwardHeaders,
-      body,
-      // Don't follow redirects — pass them through
-      redirect: 'manual',
-    });
-  } catch (err) {
-    const ms = Date.now() - t0;
-    console.error(JSON.stringify({ ts: new Date().toISOString(), method: req.method, path: `/${pathStr}${search}`, status: 502, ms, error: String(err) }));
-    return NextResponse.json({ message: 'Backend unreachable' }, { status: 502 });
+  let backendRes: Response | null = null;
+  let lastErr: unknown = null;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) await sleep(120 * attempt); // 120/240/360ms backoff
+
+    try {
+      backendRes = await fetch(targetUrl, {
+        method: req.method,
+        headers: forwardHeaders,
+        body,
+        redirect: 'manual',
+      });
+    } catch (err) {
+      lastErr = err;
+      backendRes = null;
+      if (isSafe && attempt < MAX_RETRIES) continue; // network blip — retry GETs
+      break;
+    }
+
+    // Retry transient 5xx. For GET/HEAD any 5xx is safe to retry; for writes,
+    // only retry a "database is locked" error (the write didn't commit).
+    if (backendRes.status >= 500 && attempt < MAX_RETRIES) {
+      const peek = await backendRes.clone().text().catch(() => '');
+      const isLock = LOCK_RE.test(peek);
+      const isTransient = backendRes.status === 502 || backendRes.status === 503;
+      if (isLock || (isSafe && isTransient)) continue;
+    }
+    break;
   }
 
   const ms = Date.now() - t0;
+
+  if (!backendRes) {
+    console.error(JSON.stringify({ ts: new Date().toISOString(), method: req.method, path: `/${pathStr}${search}`, status: 502, ms, error: String(lastErr) }));
+    return NextResponse.json({ message: 'The service is busy right now. Please try again in a moment.' }, { status: 503 });
+  }
+
   console.log(JSON.stringify({
     ts:     new Date().toISOString(),
     method: req.method,
@@ -71,6 +100,19 @@ async function handler(req: NextRequest, { params }: { params: Promise<{ path: s
   });
 
   const resBody = await backendRes.arrayBuffer();
+
+  // Sanitize raw DB/internal errors so they never reach end users.
+  if (backendRes.status >= 500) {
+    const text = new TextDecoder().decode(resBody);
+    if (LOCK_RE.test(text) || /sqlite|traceback|exception/i.test(text)) {
+      resHeaders.delete('content-length');
+      resHeaders.set('content-type', 'application/json');
+      return NextResponse.json(
+        { message: 'The service is busy right now. Please try again in a moment.' },
+        { status: 503, headers: resHeaders }
+      );
+    }
+  }
 
   return new NextResponse(resBody, {
     status: backendRes.status,
