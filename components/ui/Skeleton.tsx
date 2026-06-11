@@ -69,3 +69,30 @@ export function CardSkeleton({ count = 3 }: { count?: number }) {
     </div>
   );
 }
+
+/** Full-page detail skeleton (header card + sections) for request/lead detail pages. */
+export function DetailSkeleton() {
+  return (
+    <div className="flex flex-col min-h-screen bg-[#f8fafc]">
+      <Navbar />
+      <div className="flex-1 max-w-3xl mx-auto w-full px-4 py-8 animate-pulse">
+        <div className="h-4 w-28 bg-gray-100 rounded mb-6" />
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4">
+          <div className="h-7 w-2/3 bg-gray-200 rounded mb-3" />
+          <div className="h-4 w-1/2 bg-gray-100 rounded mb-5" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-20 bg-gray-100 rounded-xl" />
+            <div className="h-20 bg-gray-100 rounded-xl" />
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4 space-y-3">
+          <div className="h-5 w-40 bg-gray-200 rounded" />
+          <div className="h-4 w-full bg-gray-100 rounded" />
+          <div className="h-4 w-5/6 bg-gray-100 rounded" />
+          <div className="h-4 w-2/3 bg-gray-100 rounded" />
+        </div>
+        <div className="h-12 w-full bg-gray-200 rounded-xl" />
+      </div>
+    </div>
+  );
+}

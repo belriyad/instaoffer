@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { DetailSkeleton } from '@/components/ui/Skeleton';
 import { useAuth } from '@/lib/auth-context';
 import { getDealerTradeInDetail, submitTradeInProposal, getMLEstimate, getMLForecast, MLForecast, TradeInRequest } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
@@ -134,15 +135,7 @@ export default function TradeInDetailPage() {
   }
 
   if (fetching || loading) {
-    return (
-      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
-        </div>
-        <Footer />
-      </div>
-    );
+    return <DetailSkeleton />;
   }
 
   if (fetchError || !req) {

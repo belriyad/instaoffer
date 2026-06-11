@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { CardSkeleton } from '@/components/ui/Skeleton';
 import { useAuth } from '@/lib/auth-context';
 import {
   getMLEstimate, getDealerTradeIns,
@@ -346,9 +347,7 @@ function RequestsTab({ token }: { token: string }) {
 
 
       {fetching ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-2 border-[#002b5b]/20 border-t-[#002b5b] rounded-full animate-spin" />
-        </div>
+        <CardSkeleton count={4} />
       ) : fetchError ? (
         <div className="bg-red-50 border border-red-100 rounded-2xl p-8 text-center">
           <AlertCircle size={28} className="text-red-400 mx-auto mb-2" />
@@ -395,9 +394,12 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col min-h-screen bg-[#f8fafc]">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-[#002b5b]/30 border-t-[#002b5b] rounded-full animate-spin" />
-        </div>
+        <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
+          <div className="h-7 w-52 bg-gray-200 rounded mb-2 animate-pulse" />
+          <div className="h-4 w-40 bg-gray-100 rounded mb-6 animate-pulse" />
+          <div className="h-12 w-full bg-white border border-gray-200 rounded-2xl mb-6 animate-pulse" />
+          <CardSkeleton count={4} />
+        </main>
         <Footer />
       </div>
     );
