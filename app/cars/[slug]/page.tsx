@@ -137,10 +137,13 @@ export default function CarDetailPage() {
     </div>
   );
 
-  const images = car.images?.filter(i => i.type === 'detail' || i.type === 'card') ?? [];
-  const allImgUrls = images.length > 0
-    ? images.map(i => wakalatImageUrl(i.url))
-    : car.image_urls_json?.map(wakalatImageUrl) ?? [];
+  // car.images carries valid API paths (type is usually "main"); image_urls_json
+  // holds raw filesystem paths (/opt/...) that 404, so never use it. Fall back to
+  // the thumbnail (the same image the listing cards render successfully).
+  const galleryUrls = (car.images ?? []).map(i => wakalatImageUrl(i.url)).filter(Boolean);
+  const allImgUrls = galleryUrls.length > 0
+    ? galleryUrls
+    : (car.thumbnail ? [wakalatImageUrl(car.thumbnail)] : []);
 
   const trimPrice = car.trims?.[selectedTrim]?.price_qar ?? car.base_price_qar;
   const monthly = trimPrice ? calcMonthlyPayment(trimPrice, Number(downPayment || 0), Number(interestRate), Number(loanTerm)) : 0;
@@ -176,7 +179,17 @@ export default function CarDetailPage() {
             <div className="relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm aspect-[4/3]">
               {allImgUrls.length > 0 ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={allImgUrls[imgIndex]} alt={`${car.make} ${car.model}`} className="w-full h-full object-cover" />
+                <img
+                  src={allImgUrls[imgIndex]}
+                  alt={`${car.make} ${car.model}`}
+                  className="w-full h-full object-cover"
+                  onError={e => {
+                    const img = e.currentTarget;
+                    const fallback = car.thumbnail ? wakalatImageUrl(car.thumbnail) : '';
+                    if (fallback && img.src !== fallback) { img.src = fallback; return; }
+                    img.style.display = 'none';
+                  }}
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-200 text-6xl">🚗</div>
               )}
