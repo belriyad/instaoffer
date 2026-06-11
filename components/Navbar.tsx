@@ -92,7 +92,7 @@ function NavDropdown({
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { locale, setLocale, t } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -172,7 +172,14 @@ export default function Navbar() {
 
           {/* Desktop right — auth */}
           <div className="hidden md:flex items-center gap-3 flex-shrink-0">
-            {user ? (
+            {authLoading ? (
+              /* Neutral placeholder while the session resolves — avoids flashing
+                 the logged-out "Sign In" state on hard reload. */
+              <div className="flex items-center gap-3" aria-hidden>
+                <div className="w-9 h-9 rounded-xl bg-gray-100 animate-pulse" />
+                <div className="w-28 h-9 rounded-xl bg-gray-100 animate-pulse" />
+              </div>
+            ) : user ? (
               <>
                 {/* Shortcut for dealers */}
                 {isDealer && (
