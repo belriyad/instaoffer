@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Info, TrendingUp } from 'lucide-react';
-import { getMLEstimate } from '@/lib/api';
+import { getMLEstimate, intentPriceBands, IntentPriceBands } from '@/lib/api';
 import { formatQAR } from '@/lib/utils';
 
 interface Props {
@@ -13,27 +13,7 @@ interface Props {
   city?: string;
 }
 
-interface Bands {
-  privatePartyLow: number;
-  privatePartyHigh: number;
-  tradeInLow: number;
-  tradeInHigh: number;
-  instantLow: number;
-  instantHigh: number;
-}
-
-function computeBands(estimate: number, low: number, high: number): Bands {
-  const rangeRatio = (high - low) / estimate;
-  const demandDiscount = Math.min(0.04, rangeRatio * 0.3);
-  return {
-    privatePartyLow:  Math.round((low  * 0.98) / 1000) * 1000,
-    privatePartyHigh: Math.round((high * 1.01) / 1000) * 1000,
-    tradeInLow:       Math.round((estimate * (1 - 0.10 - demandDiscount)) / 1000) * 1000,
-    tradeInHigh:      Math.round((estimate * (1 - 0.06 - demandDiscount * 0.5)) / 1000) * 1000,
-    instantLow:       Math.round((estimate * (1 - 0.18 - demandDiscount)) / 1000) * 1000,
-    instantHigh:      Math.round((estimate * (1 - 0.12 - demandDiscount * 0.5)) / 1000) * 1000,
-  };
-}
+type Bands = IntentPriceBands;
 
 export default function PriceGuidanceCard({ make, class_name, year, km, city = 'Doha' }: Props) {
   const [bands, setBands] = useState<Bands | null>(null);
@@ -59,8 +39,7 @@ export default function PriceGuidanceCard({ make, class_name, year, km, city = '
         if (!controller.signal.aborted) {
           if ('error' in res) { setFailed(true); }
           else {
-            const [lo, hi] = res.confidence_range;
-            setBands(computeBands(res.estimated_price_qar, lo, hi));
+            setBands(intentPriceBands(res));
           }
         }
       })

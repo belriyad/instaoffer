@@ -149,6 +149,29 @@ export function mlPriceBand(estimate: {
   return { low: round(mid - half), high: round(mid + half), mapePct };
 }
 
+export interface IntentPriceBands {
+  privatePartyLow: number;  privatePartyHigh: number;
+  tradeInLow: number;       tradeInHigh: number;
+  instantLow: number;       instantHigh: number;
+}
+
+// The single source of truth for the three intent bands (private / trade-in /
+// instant), so every surface shows the same numbers. Width is the tight ±MAPE
+// accuracy band; trade-in centres 8% below market, instant 17% below.
+export function intentPriceBands(estimate: { estimated_price_qar: number; mape?: number | null }): IntentPriceBands {
+  const mid = estimate.estimated_price_qar;
+  const { mapePct } = mlPriceBand(estimate);
+  const spread = mid * (mapePct / 100);
+  const round = (n: number) => Math.round(n / 1000) * 1000;
+  const band = (center: number) => ({ low: round(center - spread), high: round(center + spread) });
+  const pp = band(mid), ti = band(mid * 0.92), io = band(mid * 0.83);
+  return {
+    privatePartyLow: pp.low,  privatePartyHigh: pp.high,
+    tradeInLow:      ti.low,  tradeInHigh:      ti.high,
+    instantLow:      io.low,  instantHigh:      io.high,
+  };
+}
+
 export interface ValuationParams {
   make: string;
   class_name: string;

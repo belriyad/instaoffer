@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronDown, TrendingUp, Shield, ArrowRight, Clock, Zap, RefreshCw, Bookmark } from 'lucide-react';
-import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate, mlPriceBand } from '@/lib/api';
+import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate, mlPriceBand, intentPriceBands } from '@/lib/api';
 import { formatQAR, formatKM } from '@/lib/utils';
 import { ValuationData } from './page';
 import Navbar from '@/components/Navbar';
@@ -16,34 +16,6 @@ interface Props {
   comps: OfferComps | null;
   timeToSell: MLTimeToSellEstimate | null;
   data: ValuationData;
-}
-
-/** Compute the 3 intent-based price bands from the ML estimate.
- *  Width = the model's own MAPE accuracy band (not the very wide confidence_range). */
-function computePriceBands(estimate: MLEstimate) {
-  const mid = estimate.estimated_price_qar;
-  const { mapePct } = mlPriceBand(estimate);
-  const spread = mid * (mapePct / 100);     // tight, accuracy-based half-width
-
-  const band = (center: number) => ({
-    low:  Math.round((center - spread) / 1000) * 1000,
-    high: Math.round((center + spread) / 1000) * 1000,
-  });
-
-  // Private party  — model centre, accuracy band
-  const pp = band(mid);
-
-  // Trade-in       — 8% below market (dealer needs margin)
-  const ti = band(mid * 0.92);
-
-  // Instant offer  — 17% below market (speed premium for dealer)
-  const io = band(mid * 0.83);
-
-  return {
-    privatePartyLow: pp.low,  privatePartyHigh: pp.high,
-    tradeInLow:      ti.low,  tradeInHigh:      ti.high,
-    instantLow:      io.low,  instantHigh:      io.high,
-  };
 }
 
 // Confidence from the model's MAPE: lower error → higher confidence.
@@ -81,7 +53,7 @@ function PriceGauge({ low, high, value }: { low: number; high: number; value: nu
 }
 
 export default function EstimateResult({ estimate, forecast, comps, timeToSell, data }: Props) {
-  const bands = computePriceBands(estimate);
+  const bands = intentPriceBands(estimate);
   const confidence = rangeConfidence(estimate);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [saved, setSaved] = useState(false);
