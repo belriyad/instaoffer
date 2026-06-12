@@ -9,7 +9,7 @@
  *
  * Runs unauthenticated (guest token) in the "public" Playwright project.
  */
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import { test, expect, type Locator } from '@playwright/test';
 
 // Pull the grouped numbers (>=4 digits) out of a "QAR 166,000 – 214,000" string.
 function nums(s: string): number[] {
