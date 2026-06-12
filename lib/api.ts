@@ -1451,10 +1451,21 @@ export async function getTradeInDetail(uid: string, token: string): Promise<Trad
 // endpoint (/trade-in/requests) only returns the caller's OWN submissions — not
 // the dealer queue. So resolve from the dealer queue (/dealer/trade-ins) instead.
 export async function getDealerTradeInDetail(uid: string, token: string): Promise<TradeInRequest> {
-  const { rows } = await getDealerTradeIns({ limit: 200 }, token);
-  const found = rows.find(r => (r.uid ?? r.trade_in_uid) === uid || String(r.id) === uid);
-  if (!found) throw new Error('Trade-in request not found');
-  return found;
+  const matches = (r: TradeInRequest) => (r.uid ?? r.trade_in_uid) === uid || String(r.id) === uid;
+  // Fast path: the default (no-status) feed returns only the active/open set.
+  const base = await getDealerTradeIns({ limit: 200 }, token);
+  const found = (base.rows ?? []).find(matches);
+  if (found) return found;
+  // It omits acted/terminal records (offer_made, accepted, …), so a request the
+  // dealer has already actioned would otherwise 404 from its own list/detail.
+  // Look those up explicitly and merge.
+  const OTHER_STATUSES = ['offer_made', 'accepted', 'rejected', 'under_review', 'expired', 'cancelled'];
+  const more = await Promise.all(
+    OTHER_STATUSES.map(status => getDealerTradeIns({ status, limit: 200 }, token).catch(() => ({ rows: [], total: 0 }))),
+  );
+  const acted = more.flatMap(l => l.rows ?? []).find(matches);
+  if (!acted) throw new Error('Trade-in request not found');
+  return acted;
 }
 
 export async function cancelTradeInRequest(uid: string, token: string): Promise<{ ok: boolean; request: TradeInRequest }> {
