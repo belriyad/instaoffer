@@ -18,6 +18,8 @@ export function imgProxyUrl(originalUrl: string): string {
   return `${BASE_URL}/img-proxy?url=${encodeURIComponent(originalUrl)}`;
 }
 
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
@@ -32,10 +34,31 @@ async function apiFetch<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  // Client-side retry for transient failures on idempotent reads. The proxy
+  // already retries backend hiccups, but a flaky proxy/network response (5xx or
+  // a dropped connection) should not collapse a page into a terminal error on
+  // the first try. 2 retries with backoff; never retry writes.
+  const method = (options.method ?? 'GET').toUpperCase();
+  const canRetry = method === 'GET' || method === 'HEAD';
+  const MAX_RETRIES = 2;
+
+  let res: Response;
+  let attempt = 0;
+  for (;;) {
+    try {
+      res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+    } catch (err) {
+      // Network error / dropped connection — retry idempotent reads.
+      if (canRetry && attempt < MAX_RETRIES) { await sleep(300 * (attempt + 1)); attempt++; continue; }
+      throw err;
+    }
+    if (canRetry && res.status >= 500 && attempt < MAX_RETRIES) {
+      await sleep(300 * (attempt + 1)); // 300ms, 600ms
+      attempt++;
+      continue;
+    }
+    break;
+  }
 
   if (!res.ok) {
     // Read once as text — the body may be JSON ({error}/{message}/FastAPI detail)

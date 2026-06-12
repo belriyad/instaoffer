@@ -110,6 +110,13 @@ async function handler(req: NextRequest, { params }: { params: Promise<{ path: s
     }
   });
 
+  // Cache the static-ish filter reference data at the CDN edge to take the
+  // cold-start hit off the listings browse path. Query-dependent reads (cars)
+  // are intentionally left uncached so listings stay fresh.
+  if (isSafe && backendRes.ok && pathStr === 'wakalat/filters') {
+    resHeaders.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=600');
+  }
+
   const resBody = await backendRes.arrayBuffer();
 
   // Sanitize raw DB/internal errors so they never reach end users.
