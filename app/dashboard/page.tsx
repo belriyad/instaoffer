@@ -6,8 +6,27 @@ import Link from 'next/link';
 import {
   Calculator, RefreshCw, Car, Clock, MapPin, Gauge, ChevronRight,
   Send, Package, Info, AlertCircle,
-  CheckCircle2, Filter, Inbox,
+  CheckCircle2, Filter, Inbox, ImageOff,
 } from 'lucide-react';
+
+// Request-card thumbnail: uploaded photos are served as relative /uploads/* paths
+// (rewritten to the backend in next.config). Lazy-load them and fall back to a
+// placeholder icon when a file is missing, instead of a blank/broken square.
+function Thumb({ url }: { url: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed || !url) {
+    return (
+      <div className="w-14 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+        <ImageOff size={14} className="text-gray-400" />
+      </div>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={url} alt="" loading="lazy" onError={() => setFailed(true)}
+      className="w-14 h-10 object-cover rounded-lg flex-shrink-0 bg-gray-100" />
+  );
+}
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { CardSkeleton } from '@/components/ui/Skeleton';
@@ -197,8 +216,7 @@ function RequestCard({
       {photoUrls.length > 0 && (
         <div className="flex gap-1 p-2 bg-gray-50 border-b border-gray-100">
           {photoUrls.slice(0, 5).map((url, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={url} alt="" className="w-14 h-10 object-cover rounded-lg flex-shrink-0" />
+            <Thumb key={i} url={url} />
           ))}
           {photoUrls.length > 5 && (
             <div className="w-14 h-10 rounded-lg bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500">

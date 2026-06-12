@@ -127,6 +127,10 @@ export default function TradeInDetailPage() {
       await submitTradeInProposal(uid, { offered_value_qar: offerNum, message: lines }, token);
       setProposalSent(true);
       setProposalOpen(false);
+      // Reflect the sent offer in the Status Timeline immediately (the list view
+      // shows this from its own refetch); optimistically set, then confirm.
+      setReq(prev => (prev ? { ...prev, status: 'offer_made' } : prev));
+      getDealerTradeInDetail(uid, token).then(setReq).catch(() => { /* keep optimistic */ });
     } catch (err) {
       setProposalError(err instanceof Error ? err.message : 'Failed to send proposal');
     } finally {
@@ -331,7 +335,7 @@ export default function TradeInDetailPage() {
                 <Clock size={15} className="text-yellow-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800 capitalize">{req.status}</p>
+                <p className="text-sm font-semibold text-gray-800">{STATUS_CONFIG[req.status]?.label ?? req.status}</p>
               </div>
             </div>
           )}
