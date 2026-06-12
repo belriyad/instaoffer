@@ -47,7 +47,7 @@ const en = {
     dealers: 'Verified Dealers',
     speed: 'To Get Estimate',
     free: 'Free for Sellers',
-    asOf: 'as of May 2026',
+    asOf: 'as of',
   },
 
   // How it works

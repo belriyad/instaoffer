@@ -44,7 +44,7 @@ const ar: Translations = {
     dealers:  'وكيل معتمد',
     speed:    'للحصول على التقييم',
     free:     'مجاني للبائعين',
-    asOf:     'حتى مايو 2026',
+    asOf:     'حتى',
   },
 
   how: {
