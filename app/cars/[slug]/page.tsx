@@ -12,6 +12,11 @@ import { useAuth } from '@/lib/auth-context';
 import { formatQAR } from '@/lib/utils';
 import { COMPARE_KEY, MAX_COMPARE } from '../compare/page';
 
+// URL-safe, shareable slug for a trim name, e.g. "GXR 3.5L Twin Turbo" -> "gxr-3-5l-twin-turbo".
+function trimSlug(name: string): string {
+  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
 function calcMonthlyPayment(price: number, downPayment: number, annualRate: number, termMonths: number): number {
   const principal = price - downPayment;
   if (principal <= 0 || termMonths <= 0) return 0;
@@ -111,10 +116,29 @@ export default function CarDetailPage() {
   useEffect(() => {
     if (!slug) return;
     getWakalatCar(slug)
-      .then(res => setCar(res.car))
+      .then(res => {
+        setCar(res.car);
+        // Restore the trim from the URL (?trim=<slug>) so shared links keep context.
+        const trimParam = new URLSearchParams(window.location.search).get('trim');
+        if (trimParam && res.car?.trims?.length) {
+          const idx = res.car.trims.findIndex(tr => trimSlug(tr.name) === trimParam.toLowerCase());
+          if (idx >= 0) setSelectedTrim(idx);
+        }
+      })
       .catch(() => setCar(null))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  // Reflect the selected trim in the URL as a shareable slug (e.g. ?trim=gxr-3-5l-twin-turbo)
+  // without triggering a navigation/refetch.
+  function selectTrim(i: number) {
+    setSelectedTrim(i);
+    const name = car?.trims?.[i]?.name;
+    if (!name) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('trim', trimSlug(name));
+    window.history.replaceState(null, '', url.toString());
+  }
 
   if (loading) return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc]">
@@ -249,7 +273,7 @@ export default function CarDetailPage() {
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Trim</h3>
                 <div className="flex flex-wrap gap-2">
                   {car.trims.map((trim, i) => (
-                    <button key={i} onClick={() => setSelectedTrim(i)}
+                    <button key={i} onClick={() => selectTrim(i)}
                       className={`px-3 py-1.5 rounded-xl text-sm font-semibold border transition-all ${selectedTrim === i ? 'bg-[#002b5b] text-white border-[#002b5b]' : 'bg-white text-gray-700 border-gray-200 hover:border-[#002b5b]'}`}>
                       {trim.name}
                       {trim.price_qar && <span className="ml-1.5 text-xs opacity-75">{formatQAR(trim.price_qar)}</span>}

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Shield, Clock, TrendingUp, ChevronRight, Star, CheckCircle2, Phone, Lock, DollarSign, Zap, RefreshCw, Search } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -15,6 +15,11 @@ const fadeUp = {
 const stagger = {
   visible: { transition: { staggerChildren: 0.12 } },
 };
+
+// Start reveal animations ~200px before a section scrolls into view so content
+// is already settled by the time the user reaches it — avoids blank gaps and
+// half-rendered sections during fast scrolling.
+const VIEWPORT = { once: true, margin: '0px 0px 200px 0px' };
 
 const STEPS = [
   { num: '1', title: 'Enter Car Details', desc: 'Make, model, year, mileage — takes 2 minutes.', icon: '🚗' },
@@ -34,7 +39,18 @@ const DEALER_POINTS = [
 const MAKES = ['Toyota', 'Nissan', 'Lexus', 'BMW', 'Mercedes', 'Honda', 'Hyundai', 'Kia', 'Ford', 'Chevrolet', 'Land Rover', 'Mitsubishi'];
 
 export default function Home() {
-  const { t, isRTL } = useLocale();
+  const { t, isRTL, locale } = useLocale();
+
+  // Respect prefers-reduced-motion: skip the fade/slide reveal and show content
+  // immediately (also avoids any chance of blank/half-faded areas mid-scroll).
+  const reduceMotion = useReducedMotion();
+  const revealInitial = reduceMotion ? 'visible' : 'hidden';
+
+  // Keep the "as of <month year>" stamp current instead of a hard-coded date.
+  const asOfDate = new Date().toLocaleDateString(locale === 'ar' ? 'ar' : 'en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
 
   const INTENT_CARDS_T = [
     { icon: '💡', key: 'value',  href: '/valuation',   accent: 'border-blue-200 hover:border-[#002b5b]',                                textAccent: 'text-[#002b5b]' },
@@ -52,7 +68,7 @@ export default function Home() {
       {/* ── HERO ── */}
       <section className="bg-gradient-to-br from-[#002b5b] via-[#00308f] to-[#001a3d] text-white">
         <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
-          <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center mb-12">
+          <motion.div initial={revealInitial} animate="visible" variants={stagger} className="text-center mb-12">
             <motion.div variants={fadeUp}>
               <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
                 {t.hero.badge}
@@ -85,7 +101,7 @@ export default function Home() {
           {/* Other options */}
           <p className="text-center text-blue-300 text-sm mb-4 font-medium">{t.hero.orChoose}</p>
           <motion.div
-            initial="hidden"
+            initial={revealInitial}
             animate="visible"
             variants={stagger}
             className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto"
@@ -115,7 +131,7 @@ export default function Home() {
             })}
           </motion.div>
 
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap justify-center gap-4 mt-10">
+          <motion.div initial={revealInitial} animate="visible" variants={fadeUp} className="flex flex-wrap justify-center gap-4 mt-10">
             {[t.trust.noSignup, t.trust.phonePrivate, t.trust.nonBinding, t.trust.free].map((label) => (
               <div key={label} className="flex items-center gap-1.5 text-sm text-blue-200">
                 <CheckCircle2 size={14} className="text-green-400 flex-shrink-0" />
@@ -147,14 +163,14 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <p className="text-center text-xs text-gray-400 mt-4">{t.proof.asOf}</p>
+          <p className="text-center text-xs text-gray-400 mt-4">{t.proof.asOf} {asOfDate}</p>
         </div>
       </section>
 
       {/* ── HOW IT WORKS ── */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
+          <motion.div initial={revealInitial} whileInView="visible" viewport={VIEWPORT} variants={stagger} className="text-center mb-12">
             <motion.div variants={fadeUp}>
               <span className="text-[#002b5b] font-bold text-sm uppercase tracking-widest">{t.how.eyebrow}</span>
             </motion.div>
@@ -163,7 +179,7 @@ export default function Home() {
           </motion.div>
           <div className="relative">
             <div className="hidden md:block absolute top-8 left-[10%] right-[10%] h-0.5 bg-gray-200 z-0" />
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 md:grid-cols-5 gap-6 relative z-10">
+            <motion.div initial={revealInitial} whileInView="visible" viewport={VIEWPORT} variants={stagger} className="grid grid-cols-1 md:grid-cols-5 gap-6 relative z-10">
               {STEPS.map((step, i) => (
                 <motion.div key={step.num} variants={fadeUp} className="flex flex-col items-center text-center">
                   <div className="w-16 h-16 bg-[#002b5b] text-white rounded-full flex items-center justify-center text-2xl mb-4 font-black shadow-md">
@@ -187,7 +203,7 @@ export default function Home() {
       {/* ── TRUST ── */}
       <section className="py-16 md:py-20 bg-[#f8fafc]">
         <div className="max-w-7xl mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
+          <motion.div initial={revealInitial} whileInView="visible" viewport={VIEWPORT} variants={stagger}>
             <motion.div variants={fadeUp} className="text-center mb-12">
               <span className="text-[#002b5b] font-bold text-sm uppercase tracking-widest">{t.trustSection.eyebrow}</span>
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mt-2">{t.trustSection.h2}</h2>
@@ -231,7 +247,7 @@ export default function Home() {
       {/* ── FOR DEALERS ── */}
       <section className="py-16 bg-[#002b5b] text-white">
         <div className="max-w-7xl mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
+          <motion.div initial={revealInitial} whileInView="visible" viewport={VIEWPORT} variants={stagger}>
             <motion.div variants={fadeUp} className="text-center mb-10">
               <Star size={32} className="text-[#005ca9] mx-auto mb-4" />
               <h2 className="text-3xl md:text-4xl font-black mb-3">Acquire profitable inventory faster than competitors</h2>

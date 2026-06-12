@@ -372,7 +372,8 @@ export function KmBucketPicker({
           key={b.label}
           type="button"
           onClick={() => onChange(b.value)}
-          className={`py-2.5 rounded-xl border-2 text-xs font-semibold transition-all text-center ${
+          aria-pressed={value === b.value}
+          className={`py-2.5 rounded-xl border-2 text-xs font-semibold transition-all text-center outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005ca9] ${
             value === b.value
               ? 'border-[#002b5b] bg-[#002b5b] text-white'
               : 'border-gray-200 hover:border-[#002b5b] text-gray-600'
