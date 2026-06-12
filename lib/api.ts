@@ -435,6 +435,21 @@ export async function getMyOfferRequests(token: string): Promise<{ rows: OfferRe
   return apiFetch('/instant-offers/requests/mine', {}, token);
 }
 
+// Dealer-facing open pool of seller-side leads (seller_offer, urgent_sale,
+// buyer_request, dealer_inquiry). The backend returns the open pool for a dealer
+// token and the customer's own for a customer token. Each row carries lead_type.
+export async function getDealerOfferLeads(
+  params: { status?: string; lead_type?: string; limit?: number },
+  token: string,
+): Promise<{ rows: OfferRequest[]; total: number }> {
+  const qs = '?' + new URLSearchParams(
+    Object.entries({ limit: 100, ...params })
+      .filter(([, v]) => v !== undefined && v !== '')
+      .map(([k, v]) => [k, String(v)]),
+  ).toString();
+  return apiFetch(`/instant-offers/requests${qs}`, {}, token);
+}
+
 export async function getOfferRequestDetail(
   uid: string,
   token: string

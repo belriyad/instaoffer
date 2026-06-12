@@ -32,8 +32,8 @@ import Footer from '@/components/Footer';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { useAuth } from '@/lib/auth-context';
 import {
-  getMLEstimate, getDealerTradeIns,
-  TradeInRequest, MLEstimate,
+  getMLEstimate, getDealerTradeIns, getDealerOfferLeads,
+  TradeInRequest, OfferRequest, MLEstimate,
 } from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
 import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
@@ -53,6 +53,48 @@ const REQUEST_STATUS_CONFIG: Record<string, { label: string; badgeClass: string;
 };
 
 type Tab = 'requests' | 'estimator';
+
+type LeadType = 'trade_in' | 'urgent_sale' | 'seller_offer' | 'buyer_request' | 'dealer_inquiry';
+
+const LEAD_TYPE_BADGE: Record<LeadType, { label: string; cls: string }> = {
+  urgent_sale:    { label: '⚡ Urgent Sale', cls: 'bg-orange-100 text-orange-700' },
+  seller_offer:   { label: 'Seller Lead',    cls: 'bg-blue-100 text-blue-700' },
+  trade_in:       { label: 'Trade-In',       cls: 'bg-green-100 text-green-700' },
+  buyer_request:  { label: 'Buyer Request',  cls: 'bg-purple-100 text-purple-700' },
+  dealer_inquiry: { label: 'Inquiry',        cls: 'bg-gray-100 text-gray-600' },
+};
+
+// Unified queue item rendered by RequestCard — sourced from BOTH the trade-in feed
+// and the instant-offer open pool, so every lead type (incl. urgent-sale) appears
+// with its true label instead of everything looking like a trade-in.
+// Only the fields RequestCard reads — kept loose so both TradeInRequest and
+// OfferRequest (whose `condition`/`status` enums differ) assign cleanly.
+interface CardRecord {
+  year?: number; make?: string; class_name?: string;
+  km?: number | null; city?: string | null; condition?: string; color?: string | null;
+  status: string; photo_urls_json?: string | null; notes?: string | null;
+  created_at?: string;
+  target_car_name?: string | null; target_price_qar?: number | null; market_est_qar?: number | null;
+}
+interface QueueItem {
+  uid: string;
+  leadType: LeadType;
+  detailHref: string;
+  record: CardRecord;
+}
+
+function normalizeTradeIn(r: TradeInRequest): QueueItem {
+  const uid = r.trade_in_uid ?? r.uid ?? String(r.id ?? '');
+  return { uid, leadType: 'trade_in', detailHref: `/dashboard/trade-ins/${uid}`, record: r };
+}
+function normalizeOffer(r: OfferRequest): QueueItem {
+  return {
+    uid: r.request_uid,
+    leadType: (r.lead_type ?? 'seller_offer') as LeadType,
+    detailHref: `/dashboard/leads/${r.request_uid}`,
+    record: r,
+  };
+}
 
 const STATUS_FILTERS = [
   { value: '',             label: 'All' },
@@ -196,12 +238,10 @@ function EstimatorTab() {
 }
 
 // ─── Request Card ─────────────────────────────────────────────────────────────
-function RequestCard({
-  req,
-}: {
-  req: TradeInRequest;
-}) {
-  const uid = req.trade_in_uid ?? req.uid ?? String(req.id ?? '');
+function RequestCard({ item }: { item: QueueItem }) {
+  const req = item.record;
+  const uid = item.uid;
+  const lead = LEAD_TYPE_BADGE[item.leadType];
   const st  = REQUEST_STATUS_CONFIG[req.status] ?? { label: req.status, badgeClass: 'bg-gray-100 text-gray-500', dot: 'bg-gray-300' };
   const tradeInRequired = req.notes?.includes('REQUIRED');
   const tradeInOptional = req.notes?.includes('Optional');
@@ -234,6 +274,7 @@ function RequestCard({
               <h3 className="font-black text-gray-900 text-lg leading-tight">
                 {req.year} {req.make} {req.class_name}
               </h3>
+              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${lead.cls}`}>{lead.label}</span>
               <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${st.badgeClass}`}>{st.label}</span>
             </div>
             <div className="flex flex-wrap gap-3 text-xs text-gray-500 mt-1">
@@ -244,7 +285,7 @@ function RequestCard({
             </div>
           </div>
           <p className="text-xs text-gray-400 shrink-0 flex items-center gap-1 mt-0.5">
-            <Clock size={11} />{formatDate(req.created_at)}
+            <Clock size={11} />{req.created_at ? formatDate(req.created_at) : ''}
           </p>
         </div>
 
@@ -287,17 +328,25 @@ function RequestCard({
         {/* Actions */}
         <div className="flex gap-2 flex-wrap">
           <Link
-            href={`/dashboard/trade-ins/${uid}`}
+            href={item.detailHref}
             className="flex items-center gap-1.5 text-sm font-bold text-[#002b5b] bg-[#ebf5ff] hover:bg-[#d6eeff] px-4 py-2.5 rounded-xl transition-colors"
           >
             View Details <ChevronRight size={14} />
           </Link>
-          {canAct && (
+          {canAct && item.leadType === 'trade_in' && (
             <Link
-              href={`/dashboard/trade-ins/${uid}#proposal`}
+              href={`${item.detailHref}#proposal`}
               className="flex items-center gap-1.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 px-4 py-2.5 rounded-xl transition-colors"
             >
               <Send size={14} /> Send Proposal
+            </Link>
+          )}
+          {canAct && (item.leadType === 'urgent_sale' || item.leadType === 'seller_offer') && (
+            <Link
+              href={item.detailHref}
+              className="flex items-center gap-1.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 px-4 py-2.5 rounded-xl transition-colors"
+            >
+              <Send size={14} /> Place Bid
             </Link>
           )}
           {req.status === 'offer_made' && (
@@ -318,7 +367,7 @@ function RequestCard({
 
 // ─── Requests Tab ─────────────────────────────────────────────────────────────
 function RequestsTab({ token }: { token: string }) {
-  const [requests,    setRequests]    = useState<TradeInRequest[]>([]);
+  const [requests,    setRequests]    = useState<QueueItem[]>([]);
   const [fetching,    setFetching]    = useState(true);
   const [fetchError,  setFetchError]  = useState('');
   const [statusFilter,setStatusFilter]= useState('open');
@@ -326,8 +375,17 @@ function RequestsTab({ token }: { token: string }) {
   const load = useCallback(async (status: string) => {
     setFetching(true); setFetchError('');
     try {
-      const res = await getDealerTradeIns({ status: status || undefined, limit: 100 }, token);
-      setRequests(res.rows ?? []);
+      // Merge the trade-in queue with the instant-offer open pool so every lead
+      // type (incl. urgent-sale) reaches the dealer, each with its true label.
+      const [tradeIns, offers] = await Promise.all([
+        getDealerTradeIns({ status: status || undefined, limit: 100 }, token).catch(() => ({ rows: [], total: 0 })),
+        getDealerOfferLeads({ status: status || undefined, limit: 100 }, token).catch(() => ({ rows: [], total: 0 })),
+      ]);
+      const merged = [
+        ...(tradeIns.rows ?? []).map(normalizeTradeIn),
+        ...(offers.rows ?? []).map(normalizeOffer),
+      ].sort((a, b) => String(b.record.created_at ?? '').localeCompare(String(a.record.created_at ?? '')));
+      setRequests(merged);
     } catch (e) {
       setFetchError(e instanceof Error ? e.message : 'Failed to load');
     } finally {
@@ -339,7 +397,7 @@ function RequestsTab({ token }: { token: string }) {
 
   // Status counts for filter pills
   const counts = requests.reduce<Record<string, number>>((acc, r) => {
-    acc[r.status] = (acc[r.status] ?? 0) + 1;
+    acc[r.record.status] = (acc[r.record.status] ?? 0) + 1;
     return acc;
   }, {});
 
@@ -383,15 +441,9 @@ function RequestsTab({ token }: { token: string }) {
       ) : (
         <div className="space-y-4">
           <p className="text-xs text-gray-400 font-medium">{requests.length} request{requests.length !== 1 ? 's' : ''}</p>
-          {requests.map(req => {
-            const uid = req.trade_in_uid ?? req.uid ?? String(req.id ?? '');
-            return (
-              <RequestCard
-                key={uid}
-                req={req}
-              />
-            );
-          })}
+          {requests.map(item => (
+            <RequestCard key={`${item.leadType}:${item.uid}`} item={item} />
+          ))}
         </div>
       )}
     </div>
