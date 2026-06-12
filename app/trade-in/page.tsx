@@ -142,6 +142,7 @@ function TradeInContent() {
       car_type:        carriedInputs.car_type,
       cylinder_count:  carriedInputs.cylinder_count ? Number(carriedInputs.cylinder_count) : undefined,
       warranty_status: carriedInputs.warranty_status,
+      seller_type:     'private', // match /valuation's private-seller basis
     })
       .then(r => setTradeEstimate(r.confidence_range))
       .catch(() => setTradeEstimate(null))

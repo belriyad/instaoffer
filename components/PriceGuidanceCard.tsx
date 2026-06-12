@@ -55,6 +55,9 @@ export default function PriceGuidanceCard({
       car_type:        car_type        || undefined,
       cylinder_count:  cylinder_count != null && cylinder_count !== '' ? Number(cylinder_count) : undefined,
       warranty_status: warranty_status || undefined,
+      // /valuation computes its bands as a private-seller valuation; match it so
+      // the ranges are identical (the model shifts ~0.4% on seller_type).
+      seller_type:     'private',
     })
       .then((res) => {
         if (!controller.signal.aborted) {
