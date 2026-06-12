@@ -12,6 +12,10 @@
  */
 import { test, expect } from '@playwright/test';
 
+// These assertions require an *anonymous* visitor. Force an empty storage state
+// so they stay correct even when swept into an authenticated browser project.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe('Dealer dashboard access control (anonymous)', () => {
   test('GET /dashboard redirects an anonymous visitor to the dealer login', async ({ page }) => {
     await page.goto('/dashboard');
