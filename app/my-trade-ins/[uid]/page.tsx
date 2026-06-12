@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -63,33 +63,36 @@ export default function MyTradeInDetailPage() {
     if (!loading && !user) router.push('/login?redirect=/my-offers');
   }, [user, loading, router]);
 
-  const loadOffers = useCallback(() => {
-    if (!token || !uid) return;
-    getTradeInOffers(uid, token)
-      .then(res => setOffers(res.offers ?? []))
-      .catch(() => { /* no offers / not yet */ });
-  }, [token, uid]);
-
+  // Single load effect keyed only on [token, uid] — no function in the deps, so
+  // there's no way for an unstable callback identity to re-trigger it in a loop.
   useEffect(() => {
     if (!token || !uid) return;
+    let cancelled = false;
     setFetching(true);
     getTradeInDetail(uid, token)
-      .then(setReq)
-      .catch(err => setFetchError(err instanceof Error ? err.message : 'Failed to load'))
-      .finally(() => setFetching(false));
-    loadOffers();
-  }, [token, uid, loadOffers]);
+      .then(r => { if (!cancelled) setReq(r); })
+      .catch(err => { if (!cancelled) setFetchError(err instanceof Error ? err.message : 'Failed to load'); })
+      .finally(() => { if (!cancelled) setFetching(false); });
+    getTradeInOffers(uid, token)
+      .then(res => { if (!cancelled) setOffers(res.offers ?? []); })
+      .catch(() => { /* no offers / not yet */ });
+    return () => { cancelled = true; };
+  }, [token, uid]);
 
   async function handleOfferAction(offerUid: string, action: 'accept' | 'decline') {
-    if (!token) return;
+    if (!token || !uid) return;
     if (action === 'accept' && !confirm('Accept this package proposal? This declines any other offers.')) return;
     setOfferAction(offerUid);
     try {
       if (action === 'accept') await acceptTradeInOffer(offerUid, token);
       else await declineTradeInOffer(offerUid, token);
-      // Refresh both the request (status) and the offers list.
-      getTradeInDetail(uid, token).then(setReq).catch(() => {});
-      loadOffers();
+      // Refresh status + offers once after the action.
+      const [r, o] = await Promise.all([
+        getTradeInDetail(uid, token).catch(() => null),
+        getTradeInOffers(uid, token).catch(() => null),
+      ]);
+      if (r) setReq(r);
+      if (o) setOffers(o.offers ?? []);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Could not update the offer. Please try again.');
     } finally {
