@@ -11,11 +11,23 @@ interface Props {
   year: string;
   km: string;
   city?: string;
+  // Optional estimate inputs — when provided they must match what /valuation
+  // sent so the ranges shown here are byte-identical to the valuation result.
+  condition?: string;
+  trim?: string;
+  fuel_type?: string;
+  gear_type?: string;
+  car_type?: string;
+  cylinder_count?: string | number;
+  warranty_status?: string;
 }
 
 type Bands = IntentPriceBands;
 
-export default function PriceGuidanceCard({ make, class_name, year, km, city = 'Doha' }: Props) {
+export default function PriceGuidanceCard({
+  make, class_name, year, km, city = 'Doha',
+  condition, trim, fuel_type, gear_type, car_type, cylinder_count, warranty_status,
+}: Props) {
   const [bands, setBands] = useState<Bands | null>(null);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -27,13 +39,22 @@ export default function PriceGuidanceCard({ make, class_name, year, km, city = '
     const controller = new AbortController();
     setLoading(true);
     setFailed(false);
+    // Send the full input set (same normalization as /valuation). The backend
+    // is deterministic, so identical inputs yield an identical estimate and,
+    // through the shared intentPriceBands(), identical ranges across pages.
     getMLEstimate({
       make,
       class_name,
       manufacture_year: parseInt(year),
       km: parseInt(km.replace(/,/g, '')),
       city,
-      condition: 'good',
+      condition: condition || 'good',
+      trim:            trim            || undefined,
+      fuel_type:       fuel_type       || undefined,
+      gear_type:       gear_type       || undefined,
+      car_type:        car_type        || undefined,
+      cylinder_count:  cylinder_count != null && cylinder_count !== '' ? Number(cylinder_count) : undefined,
+      warranty_status: warranty_status || undefined,
     })
       .then((res) => {
         if (!controller.signal.aborted) {
@@ -46,7 +67,7 @@ export default function PriceGuidanceCard({ make, class_name, year, km, city = '
       .catch(() => { if (!controller.signal.aborted) setFailed(true); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [make, class_name, year, km, city, ready]);
+  }, [make, class_name, year, km, city, condition, trim, fuel_type, gear_type, car_type, cylinder_count, warranty_status, ready]);
 
   if (!ready || failed) return null;
 

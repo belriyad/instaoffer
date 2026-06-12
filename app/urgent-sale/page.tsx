@@ -85,10 +85,26 @@ function UrgentSaleContent() {
   const [form, setForm] = useState<FormState>({
     make: params.get('make') ?? '', class_name: params.get('class_name') ?? '',
     year: params.get('year') ?? '', km: snapKm(initKmNum),
-    condition: 'good', city: params.get('city') ?? 'Doha',
+    condition: params.get('condition') ?? 'good', city: params.get('city') ?? 'Doha',
     contact_name: '', contact_phone: '',
     urgency_reason: '', sell_priority: 'balanced',
   });
+
+  // The km picker snaps to buckets, but the estimate must use the *exact* km the
+  // user entered on /valuation so the ranges match. Track it separately; a manual
+  // bucket change updates it to the bucket value (see KmBucketPicker onChange).
+  const [estimateKm, setEstimateKm] = useState<number | null>(initKmNum);
+
+  // Extra estimate inputs carried from /valuation (not editable here) — passed
+  // straight through so PriceGuidanceCard reproduces the valuation estimate.
+  const carriedInputs = {
+    trim:            params.get('trim')            ?? undefined,
+    fuel_type:       params.get('fuel_type')       ?? undefined,
+    gear_type:       params.get('gear_type')       ?? undefined,
+    car_type:        params.get('car_type')        ?? undefined,
+    cylinder_count:  params.get('cylinder_count')  ?? undefined,
+    warranty_status: params.get('warranty_status') ?? undefined,
+  };
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
   const [errorField, setErrorField] = useState('');
@@ -315,7 +331,7 @@ function UrgentSaleContent() {
                 <div data-error-anchor="km">
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
                   <div className={errorField === 'km' ? 'rounded-lg ring-2 ring-red-400' : ''}>
-                    <KmBucketPicker value={form.km} onChange={v => { setForm(prev => ({ ...prev, km: v })); clearError(); }} />
+                    <KmBucketPicker value={form.km} onChange={v => { setForm(prev => ({ ...prev, km: v })); setEstimateKm(v); clearError(); }} />
                   </div>
                   {errorField === 'km' && <p className="text-xs text-red-600 mt-1">{error}</p>}
                 </div>
@@ -340,7 +356,11 @@ function UrgentSaleContent() {
                 </div>
               </div>
             </div>
-            <PriceGuidanceCard make={form.make} class_name={form.class_name} year={form.year} km={form.km != null ? String(form.km) : ''} city={form.city} />
+            <PriceGuidanceCard
+              make={form.make} class_name={form.class_name} year={form.year}
+              km={estimateKm != null ? String(estimateKm) : (form.km != null ? String(form.km) : '')}
+              city={form.city} condition={form.condition} {...carriedInputs}
+            />
           </div>
         )}
 

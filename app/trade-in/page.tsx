@@ -76,7 +76,18 @@ function TradeInContent() {
   const [curModel,     setCurModel]     = useState(params.get('cur_model')     ?? params.get('class_name') ?? '');
   const [curYear,      setCurYear]      = useState(params.get('cur_year')      ?? params.get('year')       ?? '');
   const [curCity,      setCurCity]      = useState(params.get('cur_city')      ?? params.get('city')       ?? 'Doha');
-  const [curCondition, setCurCondition] = useState(params.get('cur_condition') ?? 'good');
+  const [curCondition, setCurCondition] = useState(params.get('cur_condition') ?? params.get('condition') ?? 'good');
+
+  // Extra estimate inputs carried from /valuation — passed through so the
+  // current-car estimate matches the numbers the user saw there.
+  const carriedInputs = {
+    trim:            params.get('trim')            ?? undefined,
+    fuel_type:       params.get('fuel_type')       ?? undefined,
+    gear_type:       params.get('gear_type')       ?? undefined,
+    car_type:        params.get('car_type')        ?? undefined,
+    cylinder_count:  params.get('cylinder_count')  ?? undefined,
+    warranty_status: params.get('warranty_status') ?? undefined,
+  };
 
   const snapKm = (raw: string | null): number | null => {
     if (!raw) return null;
@@ -88,6 +99,13 @@ function TradeInContent() {
   const [curKm, setCurKm] = useState<number | null>(
     snapKm(params.get('cur_km') ?? params.get('km'))
   );
+  // Exact km for the estimate (the bucket picker snaps for display only).
+  const initExactKm = (() => {
+    const raw = params.get('cur_km') ?? params.get('km');
+    const n = raw ? parseInt(raw.replace(/[^0-9]/g, '')) : NaN;
+    return isNaN(n) ? null : n;
+  })();
+  const [estimateKm, setEstimateKm] = useState<number | null>(initExactKm);
 
   /** Build a redirect URL that carries all current form state so the user returns to a fully-populated form. */
   function buildLoginRedirect(loginPath: string) {
@@ -115,11 +133,22 @@ function TradeInContent() {
   useEffect(() => {
     if (!curMake || !curModel || !curYear || !curKm) return;
     setEstimateLoading(true);
-    getMLEstimate({ make: curMake, class_name: curModel, manufacture_year: parseInt(curYear), km: curKm, city: curCity || undefined })
+    getMLEstimate({
+      make: curMake, class_name: curModel, manufacture_year: parseInt(curYear),
+      km: estimateKm ?? curKm, city: curCity || undefined, condition: curCondition || 'good',
+      trim:            carriedInputs.trim,
+      fuel_type:       carriedInputs.fuel_type,
+      gear_type:       carriedInputs.gear_type,
+      car_type:        carriedInputs.car_type,
+      cylinder_count:  carriedInputs.cylinder_count ? Number(carriedInputs.cylinder_count) : undefined,
+      warranty_status: carriedInputs.warranty_status,
+    })
       .then(r => setTradeEstimate(r.confidence_range))
       .catch(() => setTradeEstimate(null))
       .finally(() => setEstimateLoading(false));
-  }, [curMake, curModel, curYear, curKm, curCity]);
+  // carriedInputs is derived from immutable URL params; re-running on the editable fields is enough.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [curMake, curModel, curYear, curKm, estimateKm, curCity, curCondition]);
 
   // auth guard is now rendered inline — no redirect needed
 
@@ -366,7 +395,7 @@ function TradeInContent() {
                 <div data-error-anchor="km">
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
                   <div className={errorField === 'km' ? 'rounded-lg ring-2 ring-red-400' : ''}>
-                    <KmBucketPicker value={curKm} onChange={v => { setCurKm(v); clearError(); }} />
+                    <KmBucketPicker value={curKm} onChange={v => { setCurKm(v); setEstimateKm(v); clearError(); }} />
                   </div>
                   {errorField === 'km' && <p className="text-xs text-red-600 mt-1">{error}</p>}
                 </div>
@@ -419,7 +448,11 @@ function TradeInContent() {
               </div>
             )}
 
-            <PriceGuidanceCard make={curMake} class_name={curModel} year={curYear} km={curKm != null ? String(curKm) : ''} city={curCity} />
+            <PriceGuidanceCard
+              make={curMake} class_name={curModel} year={curYear}
+              km={estimateKm != null ? String(estimateKm) : (curKm != null ? String(curKm) : '')}
+              city={curCity} condition={curCondition} {...carriedInputs}
+            />
           </div>
         )}
 

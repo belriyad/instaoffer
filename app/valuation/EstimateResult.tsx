@@ -58,7 +58,8 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [saved, setSaved] = useState(false);
   const [priceTab, setPriceTab] = useState(0);
-  const validDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  // Spell out the month so the date is unambiguous (DD/MM vs MM/DD), e.g. "10 June 2026".
+  const validDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const carLabel = [data.year, data.make, data.class_name, data.trim].filter(Boolean).join(' ')
     + (data.km ? ` · ${formatKM(data.km)}` : '')
@@ -73,15 +74,22 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
     ...(data.trim  ? { trim:  data.trim  } : {}),
   }).toString();
 
-  const urgentParams = new URLSearchParams({
+  // Carry the full estimate input set so the sell flows recompute the *same*
+  // numbers the user just saw (the backend is deterministic for identical
+  // inputs). Dropping these is what made /urgent-sale diverge by ~4%.
+  const estInputs: Record<string, string> = {
     make: data.make, class_name: data.class_name,
     year: String(data.year ?? ''), km: String(data.km ?? ''), city: data.city,
-  }).toString();
-
-  const tradeParams = new URLSearchParams({
-    make: data.make, class_name: data.class_name,
-    year: String(data.year ?? ''), km: String(data.km ?? ''), city: data.city,
-  }).toString();
+    ...(data.condition       ? { condition:       data.condition }              : {}),
+    ...(data.trim            ? { trim:            data.trim }                   : {}),
+    ...(data.fuel_type       ? { fuel_type:       data.fuel_type }              : {}),
+    ...(data.gear_type       ? { gear_type:       data.gear_type }              : {}),
+    ...(data.car_type        ? { car_type:        data.car_type }               : {}),
+    ...(data.cylinder_count != null ? { cylinder_count: String(data.cylinder_count) } : {}),
+    ...(data.warranty_status ? { warranty_status: data.warranty_status }        : {}),
+  };
+  const urgentParams = new URLSearchParams(estInputs).toString();
+  const tradeParams = new URLSearchParams(estInputs).toString();
 
   // ── Urgency-aware recommendation ────────────────────────────────────────────
   // Derive a recommendation from time-to-sell if available
