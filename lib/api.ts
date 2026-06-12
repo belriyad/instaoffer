@@ -964,7 +964,13 @@ export async function getPhoneRequests(
   requestUid: string,
   token: string
 ): Promise<{ requests: import('./api-types').PhoneRequest[] }> {
-  return apiFetch(`/instant-offers/requests/${requestUid}/phone-requests`, {}, token);
+  // The backend returns { phone_requests: [...] }; normalize to { requests } so
+  // callers (seller approval UI) actually see them. Tolerate { requests } too.
+  const res = await apiFetch<{
+    phone_requests?: import('./api-types').PhoneRequest[];
+    requests?: import('./api-types').PhoneRequest[];
+  }>(`/instant-offers/requests/${requestUid}/phone-requests`, {}, token);
+  return { requests: res.phone_requests ?? res.requests ?? [] };
 }
 
 export async function approvePhoneRequest(
@@ -1556,6 +1562,16 @@ export async function withdrawTradeInOffer(offerUid: string, token: string): Pro
   return apiFetch<{ ok: boolean }>(`/trade-in/offers/${offerUid}/withdraw`, {
     method: 'POST',
   }, token);
+}
+
+// Customer accepts a trade-in offer (auto-declines all other pending offers).
+export async function acceptTradeInOffer(offerUid: string, token: string): Promise<{ ok: boolean }> {
+  return apiFetch<{ ok: boolean }>(`/trade-in/offers/${offerUid}/accept`, { method: 'POST' }, token);
+}
+
+// Customer declines a trade-in offer.
+export async function declineTradeInOffer(offerUid: string, token: string): Promise<{ ok: boolean }> {
+  return apiFetch<{ ok: boolean }>(`/trade-in/offers/${offerUid}/decline`, { method: 'POST' }, token);
 }
 
 // ─── Admin ────────────────────────────────────────────────────────────────────

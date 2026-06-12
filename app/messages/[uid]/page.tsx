@@ -61,8 +61,10 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
     }
   }, [loading, token, router]);
 
-  // Load messages
-  const loadMessages = async () => {
+  // Load messages. `isInitial` distinguishes the first load (where a failure
+  // should surface the error screen) from background polls (where a transient
+  // 503 must NOT wipe the already-loaded thread).
+  const loadMessages = async (isInitial = false) => {
     if (!token || !uid) return;
     try {
       const data = await getMessages(uid, token);
@@ -73,17 +75,18 @@ export default function MessagesPage({ params }: { params: Promise<{ uid: string
       setMessages(raw.map(normalizeMessage));
       setFetchError(null);
     } catch (err) {
-      setFetchError(err instanceof Error ? err.message : 'Failed to load messages');
+      if (isInitial) setFetchError(err instanceof Error ? err.message : 'Failed to load messages');
+      // else: keep the current thread; the next poll will retry.
     } finally {
-      setFetching(false);
+      if (isInitial) setFetching(false);
     }
   };
 
   useEffect(() => {
     if (token && uid) {
-      loadMessages();
+      loadMessages(true);
       // Poll every 5 seconds for new messages
-      pollRef.current = setInterval(loadMessages, 5000);
+      pollRef.current = setInterval(() => loadMessages(false), 5000);
     }
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);

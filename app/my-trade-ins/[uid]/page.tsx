@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -11,7 +11,10 @@ import {
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getTradeInDetail, cancelTradeInRequest, TradeInRequest } from '@/lib/api';
+import {
+  getTradeInDetail, cancelTradeInRequest, getTradeInOffers,
+  acceptTradeInOffer, declineTradeInOffer, TradeInRequest, TradeInOffer,
+} from '@/lib/api';
 import { formatQAR, formatDate } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; desc: string }> = {
@@ -53,10 +56,19 @@ export default function MyTradeInDetailPage() {
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [offers, setOffers] = useState<TradeInOffer[]>([]);
+  const [offerAction, setOfferAction] = useState<string | null>(null); // offer_uid being acted on
 
   useEffect(() => {
     if (!loading && !user) router.push('/login?redirect=/my-offers');
   }, [user, loading, router]);
+
+  const loadOffers = useCallback(() => {
+    if (!token || !uid) return;
+    getTradeInOffers(uid, token)
+      .then(res => setOffers(res.offers ?? []))
+      .catch(() => { /* no offers / not yet */ });
+  }, [token, uid]);
 
   useEffect(() => {
     if (!token || !uid) return;
@@ -65,7 +77,25 @@ export default function MyTradeInDetailPage() {
       .then(setReq)
       .catch(err => setFetchError(err instanceof Error ? err.message : 'Failed to load'))
       .finally(() => setFetching(false));
-  }, [token, uid]);
+    loadOffers();
+  }, [token, uid, loadOffers]);
+
+  async function handleOfferAction(offerUid: string, action: 'accept' | 'decline') {
+    if (!token) return;
+    if (action === 'accept' && !confirm('Accept this package proposal? This declines any other offers.')) return;
+    setOfferAction(offerUid);
+    try {
+      if (action === 'accept') await acceptTradeInOffer(offerUid, token);
+      else await declineTradeInOffer(offerUid, token);
+      // Refresh both the request (status) and the offers list.
+      getTradeInDetail(uid, token).then(setReq).catch(() => {});
+      loadOffers();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Could not update the offer. Please try again.');
+    } finally {
+      setOfferAction(null);
+    }
+  }
 
   async function handleCancel() {
     if (!token || !uid) return;
@@ -123,7 +153,6 @@ export default function MyTradeInDetailPage() {
 
   // Parse notes — separate internal metadata from free-text notes
   const notesLines = (req.notes ?? '').split('\n').filter(Boolean);
-  const proposalLines = notesLines.filter(l => l.startsWith('•') || l.startsWith('📦'));
   const timelineLine  = notesLines.find(l => l.startsWith('Timeline:'));
   const tradeInLine   = notesLines.find(l => l.startsWith('Trade-in:'));
   const userNotes     = notesLines
@@ -131,7 +160,6 @@ export default function MyTradeInDetailPage() {
     .join('\n');
   const tradeInRequired = tradeInLine?.includes('REQUIRED');
   const timelineLabel   = timelineLine?.replace('Timeline:', '').trim();
-  const hasProposal     = req.status === 'offer_made' && proposalLines.length > 0;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc]">
@@ -191,18 +219,63 @@ export default function MyTradeInDetailPage() {
           </p>
         </div>
 
-        {/* ── Dealer proposal ── */}
-        {hasProposal && (
-          <div className="bg-white rounded-2xl border-2 border-purple-200 shadow-sm p-5 mb-4">
-            <SectionHeader icon={Package} title="Dealer Package Proposal" />
-            <div className="bg-purple-50 rounded-xl p-4 space-y-1.5">
-              {proposalLines.map((line, i) => (
-                <p key={i} className={`text-sm ${line.startsWith('📦') ? 'font-black text-gray-900' : 'text-gray-700'}`}>{line}</p>
-              ))}
-            </div>
-            <p className="text-xs text-gray-400 mt-3 flex items-center gap-1">
-              <Info size={11} /> Contact the dealer to accept or negotiate.
-            </p>
+        {/* ── Dealer proposals (fetched from the trade-in offers API) ── */}
+        {offers.length > 0 && (
+          <div className="space-y-4 mb-4">
+            {offers.map(offer => {
+              const acting = offerAction === offer.offer_uid;
+              const canAct = offer.status === 'pending' && req.status !== 'accepted' && req.status !== 'cancelled';
+              return (
+                <div key={offer.offer_uid} className={`bg-white rounded-2xl border-2 shadow-sm p-5 ${offer.status === 'accepted' ? 'border-green-300' : 'border-purple-200'}`}>
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <SectionHeader icon={Package} title="Dealer Package Proposal" />
+                    <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                      offer.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                      offer.status === 'declined' ? 'bg-red-50 text-red-600' :
+                      offer.status === 'withdrawn' || offer.status === 'expired' ? 'bg-gray-100 text-gray-500' :
+                      'bg-amber-50 text-amber-700'
+                    }`}>
+                      {offer.status === 'pending' ? 'Awaiting your response' : offer.status}
+                    </span>
+                  </div>
+
+                  <div className="flex items-baseline gap-2 mb-3">
+                    <span className="text-xs text-gray-500">Trade-in offer</span>
+                    <span className="text-2xl font-black text-[#002b5b]">{formatQAR(offer.offered_value_qar)}</span>
+                  </div>
+
+                  {offer.message && (
+                    <div className="bg-purple-50 rounded-xl p-4 space-y-1.5 whitespace-pre-line text-sm text-gray-700">
+                      {offer.message}
+                    </div>
+                  )}
+
+                  {canAct ? (
+                    <div className="flex gap-2 mt-4">
+                      <button
+                        onClick={() => handleOfferAction(offer.offer_uid, 'accept')}
+                        disabled={acting}
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-bold px-4 py-2.5 rounded-xl transition-colors"
+                      >
+                        <CheckCircle2 size={15} /> {acting ? 'Working…' : 'Accept Proposal'}
+                      </button>
+                      <button
+                        onClick={() => handleOfferAction(offer.offer_uid, 'decline')}
+                        disabled={acting}
+                        className="flex items-center justify-center gap-1.5 border border-gray-200 hover:border-red-300 hover:text-red-600 text-gray-600 font-bold px-4 py-2.5 rounded-xl transition-colors disabled:opacity-60"
+                      >
+                        <Ban size={15} /> Decline
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 mt-3 flex items-center gap-1">
+                      <Info size={11} />
+                      {offer.status === 'accepted' ? 'You accepted this proposal — the dealer will be in touch to finalise.' : 'This proposal is no longer actionable.'}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 

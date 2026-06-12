@@ -59,8 +59,13 @@ function BuyRequestContent() {
     setForm(f => ({ ...f, [key]: value }));
   }
 
+  const makeVal  = desiredMake  || car.make;
+  const modelVal = desiredModel || car.class_name;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!makeVal.trim())  { setError('Please choose a make.'); return; }
+    if (!modelVal.trim()) { setError('Please choose a model.'); return; } // API requires it
     if (!form.contact_name.trim() || !form.contact_phone.trim()) {
       setError('Name and phone number are required.');
       return;
@@ -69,8 +74,8 @@ function BuyRequestContent() {
     setError('');
     try {
       await createBuyRequest({
-        make:           desiredMake  || car.make,
-        class_name:     desiredModel || car.class_name,
+        make:           makeVal,
+        class_name:     modelVal,
         trim:           car.trim     || undefined,
         body_type:      bodyType     || undefined,
         year_min:       form.year_min ? Number(form.year_min) : undefined,
@@ -88,7 +93,12 @@ function BuyRequestContent() {
       });
       setDone(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submission failed. Please try again.');
+      const raw = err instanceof Error ? err.message : '';
+      // Map raw API field errors to friendly copy.
+      const friendly = /make.*class_name.*required|class_name.*required/i.test(raw)
+        ? 'Please choose both a make and a model.'
+        : (raw || 'Submission failed. Please try again.');
+      setError(friendly);
     } finally {
       setSubmitting(false);
     }
@@ -109,9 +119,9 @@ function BuyRequestContent() {
             </div>
             <h2 className="text-2xl font-black text-gray-900 mb-2">Request Submitted!</h2>
             <p className="text-gray-500 mb-6">
-              We've received your request for a{' '}
+              We&apos;ve received your request for{' '}
               <span className="font-semibold text-gray-800">
-                {[car.year, car.make, car.class_name, car.trim].filter(Boolean).join(' ')}
+                {[makeVal, modelVal].filter(Boolean).join(' ') || 'your next car'}
               </span>
               . Dealers matching your criteria will reach out to you.
             </p>
@@ -178,8 +188,8 @@ function BuyRequestContent() {
                   <SearchableMakeSelect value={desiredMake} onChange={v => { setDesiredMake(v); setDesiredModel(''); }} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Model</label>
-                  <SearchableModelSelect make={desiredMake} value={desiredModel} onChange={setDesiredModel} placeholder="Any model" />
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Model *</label>
+                  <SearchableModelSelect make={desiredMake} value={desiredModel} onChange={setDesiredModel} placeholder="Select a model" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Body Type</label>

@@ -183,8 +183,11 @@ function CompareInner() {
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Specification</span>
                 </th>
                 {activeCars.map((car, i) => {
+                  // Prefer a real API image URL; fall back to thumbnail (the same
+                  // URL the listing cards use). NOT image_urls_json — those are
+                  // server filesystem paths and render broken.
                   const imgUrl = car.images?.find(img => img.type === 'detail' || img.type === 'card')?.url
-                    ?? car.image_urls_json?.[0];
+                    ?? car.thumbnail;
                   const trimPrice = car.trims?.[0]?.price_qar ?? car.base_price_qar;
                   return (
                     <th key={car.slug} className="px-3 pb-4 align-top">
