@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 
-// Keep-warm endpoint hit by a Vercel cron (see vercel.json). The backend is a
-// SQLite-backed API that suffers slow cold starts; pinging /health on a schedule
-// keeps the process and DB connection warm so real users don't eat the 8–15s
-// cold start. Also warms the read path used by the listings pages.
+// Keep-warm endpoint. The backend is a SQLite-backed API that suffers slow cold
+// starts; pinging /health on a schedule keeps the process and DB connection warm
+// so real users don't eat the 8–15s cold start. Also warms the listings read path.
+//
+// Scheduling: the Hobby plan caps Vercel Cron at once/day, which is too infrequent
+// to keep anything warm, so there is no cron in vercel.json. Drive this every few
+// minutes from a free external uptime monitor (cron-job.org / UptimeRobot) hitting
+// GET /api/keep-warm, or add a Vercel cron here after upgrading to Pro.
 export const dynamic = 'force-dynamic';
 
 const BACKEND = process.env.API_BASE_URL || 'http://174.165.78.29:8090/api';
