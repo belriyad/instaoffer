@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Shield, Phone, Star } from 'lucide-react';
-import { waLink } from '@/lib/utils';
+import { waLink, WHATSAPP_ENABLED } from '@/lib/utils';
 
 export default function Footer() {
   return (
@@ -62,7 +62,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><Link href="/privacy" className="text-gray-400 text-sm hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="text-gray-400 text-sm hover:text-white transition-colors">Terms of Use</Link></li>
-              <li><a href={waLink('Hi InstaOffer, I need some help')} target="_blank" rel="noopener noreferrer" className="text-gray-400 text-sm hover:text-white transition-colors">Contact Us</a></li>
+              {WHATSAPP_ENABLED && <li><a href={waLink('Hi InstaOffer, I need some help')} target="_blank" rel="noopener noreferrer" className="text-gray-400 text-sm hover:text-white transition-colors">Contact Us</a></li>}
             </ul>
           </div>
         </div>

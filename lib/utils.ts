@@ -1,9 +1,15 @@
 // ─── WhatsApp contact number ──────────────────────────────────────────────────
-// TODO (#114): Replace with real business WhatsApp number before launch.
-export const WA_NUMBER = '97430000000';
+// Support line in wa.me format (digits only, no '+'). Configurable per
+// environment via NEXT_PUBLIC_SUPPORT_WHATSAPP; falls back to the known business
+// line (+974 5204 6176). Set the env var to an empty string to hide WhatsApp UI.
+export const WA_NUMBER = (process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? '97452046176').replace(/\D/g, '');
 
-/** Build a wa.me URL with an optional pre-filled message */
+/** Whether a support WhatsApp number is configured — callers hide the UI if not. */
+export const WHATSAPP_ENABLED = WA_NUMBER.length > 0;
+
+/** Build a wa.me URL with an optional pre-filled message, or '' when unconfigured. */
 export function waLink(message = ''): string {
+  if (!WA_NUMBER) return '';
   return `https://wa.me/${WA_NUMBER}${message ? `?text=${encodeURIComponent(message)}` : ''}`;
 }
 

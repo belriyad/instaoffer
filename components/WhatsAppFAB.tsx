@@ -1,8 +1,11 @@
 'use client';
 
-import { waLink } from '@/lib/utils';
+import { waLink, WHATSAPP_ENABLED } from '@/lib/utils';
 
 export default function WhatsAppFAB() {
+  // Hide the widget entirely when no support number is configured — never
+  // render a dead wa.me link.
+  if (!WHATSAPP_ENABLED) return null;
   return (
     <a
       href={waLink('Hi InstaOffer, I need some help')}
