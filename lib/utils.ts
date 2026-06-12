@@ -21,8 +21,16 @@ export function formatKM(km: number): string {
   return `${km.toLocaleString('en-QA')} km`;
 }
 
-export function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-QA', {
+// Unambiguous, localized date: "12 Jun 2026" (en) or the Arabic equivalent.
+// The month is always spelled out so it can't be misread as DD/MM vs MM/DD.
+// Locale defaults to whatever the LocaleProvider set on <html lang> so every
+// call site localizes automatically; pass an explicit locale to override.
+export function formatDate(iso: string, locale?: string): string {
+  const lang = locale
+    || (typeof document !== 'undefined' ? document.documentElement.lang : '')
+    || 'en';
+  const loc = lang.startsWith('ar') ? 'ar' : 'en-QA';
+  return new Date(iso).toLocaleDateString(loc, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

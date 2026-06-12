@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronDown, TrendingUp, Shield, ArrowRight, Clock, Zap, RefreshCw, Bookmark } from 'lucide-react';
 import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate, mlPriceBand, intentPriceBands } from '@/lib/api';
-import { formatQAR, formatKM } from '@/lib/utils';
+import { formatQAR, formatKM, formatDate } from '@/lib/utils';
 import { ValuationData } from './page';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -58,8 +58,8 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [saved, setSaved] = useState(false);
   const [priceTab, setPriceTab] = useState(0);
-  // Spell out the month so the date is unambiguous (DD/MM vs MM/DD), e.g. "10 June 2026".
-  const validDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  // Unambiguous, locale-aware date, e.g. "12 Jun 2026" (shared with the rest of the app).
+  const validDate = formatDate(new Date().toISOString());
 
   const carLabel = [data.year, data.make, data.class_name, data.trim].filter(Boolean).join(' ')
     + (data.km ? ` · ${formatKM(data.km)}` : '')
