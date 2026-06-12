@@ -2137,6 +2137,18 @@ paths:
           name: search
           schema: { type: string }
         - in: query
+          name: q
+          description: Free-text search across make, class, city, contact_name and request_uid
+          schema: { type: string }
+        - in: query
+          name: seller_name
+          description: Filter by contact_name (substring, case-insensitive)
+          schema: { type: string }
+        - in: query
+          name: created_on
+          description: Filter by creation date (YYYY-MM-DD, UTC)
+          schema: { type: string, format: date }
+        - in: query
           name: limit
           schema: { type: integer, default: 50 }
         - in: query
@@ -2145,6 +2157,29 @@ paths:
       responses:
         "200":
           description: All offer requests
+  /admin/instant-offers/requests/{request_uid}:
+    delete:
+      tags: [InstantOffers]
+      summary: Admin — hard-delete an offer request (and its bids, messages, alerts, phone-access rows, and photo files)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RequestUid"
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request_uid: { type: string }
+                  deleted: { type: boolean }
+                  photos_removed: { type: integer }
+        "403":
+          description: Admin role required
+        "404":
+          description: Unknown request_uid
   /admin/instant-offers/requests/{request_uid}/moderate:
     post:
       tags: [InstantOffers]

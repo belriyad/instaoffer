@@ -448,6 +448,15 @@ export async function getOfferRequestDetail(
   return { ...res.request, bids: res.bids ?? [], market_comps: res.market_comps };
 }
 
+// Admin — hard-delete an offer request and its bids, messages, alerts,
+// phone-access rows, and photo files. Admin role enforced server-side (403).
+export async function adminDeleteOfferRequest(
+  requestUid: string,
+  token: string,
+): Promise<{ request_uid: string; deleted: boolean; photos_removed: number }> {
+  return apiFetch(`/admin/instant-offers/requests/${requestUid}`, { method: 'DELETE' }, token);
+}
+
 // Dealer-side lead detail. The per-ID GET (/instant-offers/requests/{uid}) is
 // owner-only — dealers get "Access denied". Resolve from the dealer feed
 // (/instant-offers/requests) instead, finding the row by request_uid.

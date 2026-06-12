@@ -39,4 +39,16 @@ test.describe('Dealer dashboard access control (anonymous)', () => {
     });
     expect(res.status()).toBe(403);
   });
+
+  test('admin hard-delete route is locked: 401 token-less, 403 for a guest token', async ({ request }) => {
+    const path = '/api/proxy/admin/instant-offers/requests/or_nonexistent';
+
+    const noAuth = await request.delete(path);
+    expect(noAuth.status()).toBe(401);
+
+    const login = await request.post('/api/proxy/auth/guest/login', { data: {} });
+    const { access_token } = await login.json();
+    const guest = await request.delete(path, { headers: { Authorization: `Bearer ${access_token}` } });
+    expect(guest.status()).toBe(403);
+  });
 });
