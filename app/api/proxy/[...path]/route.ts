@@ -23,6 +23,17 @@ async function handler(req: NextRequest, { params }: { params: Promise<{ path: s
   const { path } = await params;
   const pathStr = path.join('/');
 
+  // Server-side guard for dealer-only endpoints: reject anonymous (token-less)
+  // calls here so the dealer area is never reachable without credentials, even
+  // if a client guard is bypassed. The backend additionally enforces role for
+  // present-but-non-dealer tokens (guest tokens get 403 "not allowed").
+  if (pathStr === 'dealer' || pathStr.startsWith('dealer/')) {
+    const auth = req.headers.get('authorization') || '';
+    if (!/^bearer\s+\S/i.test(auth)) {
+      return NextResponse.json({ message: 'Authentication required.' }, { status: 401 });
+    }
+  }
+
   // Preserve query string
   const search = req.nextUrl.search ?? '';
   const targetUrl = `${BACKEND}/${pathStr}${search}`;

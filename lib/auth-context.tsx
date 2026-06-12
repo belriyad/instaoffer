@@ -111,6 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.removeItem(TOKEN_KEY);
             localStorage.removeItem(REFRESH_KEY);
             setToken(null);
+            setUser(null); // never leave a stale (e.g. dealer) user when auth can't be restored
           }
         })
         .finally(() => {

@@ -26,12 +26,15 @@ function LoginContent() {
 
   // Dealers reaching /login?role=dealer get the dedicated, branded dealer login
   // (also gives them a fresh form rather than reusing the seller form's state).
+  const redirectParam = searchParams.get('redirect');
+
   const isDealerRole = searchParams.get('role') === 'dealer';
   useEffect(() => {
-    if (isDealerRole) router.replace('/login/dealer');
-  }, [isDealerRole, router]);
-
-  const redirectParam = searchParams.get('redirect');
+    if (isDealerRole) {
+      // Carry the return URL through to the branded dealer login.
+      router.replace(`/login/dealer${redirectParam ? `?redirect=${encodeURIComponent(redirectParam)}` : ''}`);
+    }
+  }, [isDealerRole, redirectParam, router]);
   // Send dealers to their dashboard, sellers to my-offers — unless an explicit
   // ?redirect= target was provided (e.g. returning to a gated page).
   const destFor = (role: string) =>
