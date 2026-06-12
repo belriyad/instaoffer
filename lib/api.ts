@@ -472,6 +472,15 @@ export async function adminDeleteOfferRequest(
   return apiFetch(`/admin/instant-offers/requests/${requestUid}`, { method: 'DELETE' }, token);
 }
 
+// Admin — hard-delete a trade-in request and its dealer offers and photo files.
+// Admin role enforced server-side (403).
+export async function adminDeleteTradeInRequest(
+  uid: string,
+  token: string,
+): Promise<{ trade_in_uid: string; deleted: boolean; photos_removed: number }> {
+  return apiFetch(`/admin/trade-in/requests/${uid}`, { method: 'DELETE' }, token);
+}
+
 // Dealer-side lead detail. The per-ID GET (/instant-offers/requests/{uid}) is
 // owner-only — dealers get "Access denied". Resolve from the dealer feed
 // (/instant-offers/requests) instead, finding the row by request_uid.

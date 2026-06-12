@@ -6,6 +6,8 @@ info:
     API contract for listings, valuation, alerts, notifications, push/WhatsApp channels,
     authentication, user/profile management, and listing CRUD.
 servers:
+  - url: http://174.165.78.29:8090/api
+    description: Production (public; plain HTTP — bearer token travels unencrypted)
   - url: http://192.168.4.244:8090/api
     description: LXC production (LAN)
   - url: http://localhost:8090/api
@@ -2200,6 +2202,32 @@ paths:
       responses:
         "200":
           description: Moderated
+  /admin/trade-in/requests/{uid}:
+    delete:
+      tags: [TradeIns]
+      summary: Admin — hard-delete a trade-in request (and its dealer offers and photo files)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trade_in_uid: { type: string }
+                  deleted: { type: boolean }
+                  photos_removed: { type: integer }
+        "403":
+          description: Admin role required
+        "404":
+          description: Unknown uid
   /admin/instant-offers/bids:
     get:
       tags: [InstantOffers]
