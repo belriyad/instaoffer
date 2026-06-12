@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { waLink, WHATSAPP_ENABLED } from '@/lib/utils';
 
 export const metadata = {
   title: 'Privacy Policy — InstaOffer',
@@ -102,10 +103,14 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-3">9. Contact us</h2>
               <p>
-                For privacy questions or data requests, please contact:{' '}
-                <a href="mailto:privacy@instaoffer.qa" className="text-[#002b5b] hover:underline">
-                  privacy@instaoffer.qa
-                </a>
+                For privacy questions or data requests, please contact us
+                {WHATSAPP_ENABLED ? (
+                  <>{' '}on{' '}
+                    <a href={waLink('Hi InstaOffer, I have a privacy question / data request')} target="_blank" rel="noopener noreferrer" className="text-[#002b5b] hover:underline">
+                      WhatsApp
+                    </a>.
+                  </>
+                ) : '.'}
               </p>
             </section>
           </div>

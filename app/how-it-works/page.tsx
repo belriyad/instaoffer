@@ -38,7 +38,7 @@ export default function HowItWorksPage() {
             },
             {
               num: '02', icon: '💡', title: 'Get an Instant AI Estimate',
-              desc: 'Our LightGBM ML model, trained on thousands of real Qatar car sales, gives you a realistic price range based on current market conditions.',
+              desc: 'Our AI pricing model, trained on thousands of real Qatar car sales, gives you a realistic price range based on current market conditions.',
               note: 'Powered by real Qatar market data',
             },
             {
@@ -93,7 +93,7 @@ export default function HowItWorksPage() {
               { q: 'Can dealers see my phone number?', a: 'No. Your phone number is hidden by default. A dealer must click "Request Phone Number" and you must approve it before they can see it. You can reject any request.' },
               { q: 'Are the offers legally binding?', a: 'No. All offers from dealers are non-binding and subject to physical inspection. You are not obligated to sell even after accepting an offer.' },
               { q: 'Do I need to sign up to get a valuation?', a: 'No. You can get an instant AI-powered estimate with no account. You only need to sign up when you\'re ready to receive real dealer offers.' },
-              { q: 'How do I know the dealers are legitimate?', a: 'All dealers on InstaOffer are manually verified and must hold an active subscription (1,000 QAR/month) to place offers. Admin reviews all dealer applications.' },
+              { q: 'How do I know the dealers are legitimate?', a: 'All dealers on InstaOffer are manually verified and must hold an active subscription to place offers. Admin reviews all dealer applications.' },
               { q: 'Can I cancel my request?', a: 'Yes. You can cancel your offer request at any time from your dashboard before accepting an offer.' },
             ].map(({ q, a }) => (
               <div key={q} className="bg-white rounded-2xl border border-gray-100 p-5">

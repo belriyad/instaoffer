@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Shield, Clock, TrendingUp, ChevronRight, Star, CheckCircle2, Phone, Lock, DollarSign, Zap, RefreshCw, Search } from 'lucide-react';
+import { Shield, Clock, TrendingUp, ChevronRight, CheckCircle2, Phone, Lock, DollarSign, Zap } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useLocale } from '@/lib/locale-context';
@@ -27,13 +27,6 @@ const STEPS = [
   { num: '3', title: 'Request Dealer Offers', desc: 'Create a free account and let verified dealers compete for your car.', icon: '📨' },
   { num: '4', title: 'Compare Offers', desc: 'Side-by-side view. No pressure. No obligation.', icon: '⚖️' },
   { num: '5', title: 'Choose & Close', desc: "Accept the offer that works for you. That's it.", icon: '✅' },
-];
-
-const DEALER_POINTS = [
-  { icon: Zap, title: 'Urgent sellers first', desc: 'Receive real-time alerts when motivated sellers list cars that match your acquisition criteria.' },
-  { icon: TrendingUp, title: 'Margin visibility before you bid', desc: 'Every listing shows market estimate, potential margin, and opportunity score — so you only act on high-ROI deals.' },
-  { icon: Search, title: 'Beat competitors to the deal', desc: 'High-score listings are flagged instantly. First dealers to bid on urgent sellers win the deal.' },
-  { icon: RefreshCw, title: 'Only high-signal inventory', desc: 'AI filters out noise. You see motivated sellers, trust-scored listings, and deals classified by opportunity.' },
 ];
 
 const MAKES = ['Toyota', 'Nissan', 'Lexus', 'BMW', 'Mercedes', 'Honda', 'Hyundai', 'Kia', 'Ford', 'Chevrolet', 'Land Rover', 'Mitsubishi'];
@@ -241,72 +234,6 @@ export default function Home() {
               </Link>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── FOR DEALERS ── */}
-      <section className="py-16 bg-[#002b5b] text-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <motion.div initial={revealInitial} whileInView="visible" viewport={VIEWPORT} variants={stagger}>
-            <motion.div variants={fadeUp} className="text-center mb-10">
-              <Star size={32} className="text-[#005ca9] mx-auto mb-4" />
-              <h2 className="text-3xl md:text-4xl font-black mb-3">Acquire profitable inventory faster than competitors</h2>
-              <p className="text-blue-200 text-lg max-w-2xl mx-auto">
-                InstaOffer is a dealer acquisition intelligence system — not a lead-gen platform. From <strong className="text-white">499 QAR / month</strong>. First 30 days free.
-              </p>
-            </motion.div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-              {DEALER_POINTS.map((pt) => (
-                <motion.div key={pt.title} variants={fadeUp} className="bg-white/10 border border-white/10 rounded-2xl p-5 hover:bg-white/15 transition-colors">
-                  <pt.icon size={24} className="text-[#005ca9] mb-3" />
-                  <h3 className="font-bold text-white mb-1.5 text-sm">{pt.title}</h3>
-                  <p className="text-blue-200 text-xs leading-relaxed">{pt.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-            <motion.div variants={fadeUp} className="text-center">
-              <Link href="/for-dealers" className="inline-flex items-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-bold px-8 py-4 rounded-lg text-lg transition-all">
-                Start Acquiring Smarter <ChevronRight size={20} />
-              </Link>
-            </motion.div>
-
-            {/* Dealer alert preview */}
-            <motion.div variants={fadeUp} className="mt-12 max-w-sm mx-auto">
-              <p className="text-center text-xs text-blue-300 uppercase tracking-widest font-bold mb-3">Example dealer alert</p>
-              <div className="bg-white/10 border border-white/20 rounded-2xl p-5 text-left">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="bg-[#005ca9] text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">⚡ Urgent</span>
-                  <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">🔥 Score 87</span>
-                  <span className="text-xs text-blue-300 ml-auto">2 min ago</span>
-                </div>
-                <p className="font-black text-white text-base mb-1">2022 Toyota Land Cruiser</p>
-                <p className="text-blue-200 text-xs mb-3">82,000 km · Excellent · Doha · Leaving Qatar</p>
-                <div className="grid grid-cols-3 gap-2 mb-4 text-center">
-                  <div className="bg-white/10 rounded-xl py-2 px-1">
-                    <p className="text-[10px] text-blue-300 uppercase tracking-wide">Market Est</p>
-                    <p className="text-white font-black text-sm">325k QAR</p>
-                  </div>
-                  <div className="bg-white/10 rounded-xl py-2 px-1">
-                    <p className="text-[10px] text-blue-300 uppercase tracking-wide">Asking</p>
-                    <p className="text-[#005ca9] font-black text-sm">295k QAR</p>
-                  </div>
-                  <div className="bg-green-400/20 border border-green-400/30 rounded-xl py-2 px-1">
-                    <p className="text-[10px] text-green-300 uppercase tracking-wide">Margin</p>
-                    <p className="text-green-300 font-black text-sm">~30k</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex-1 bg-[#005ca9] text-white text-center text-xs font-bold py-2 rounded-xl cursor-default">
-                    Place Bid
-                  </div>
-                  <div className="flex-1 bg-white/10 text-white text-center text-xs font-semibold py-2 rounded-xl cursor-default">
-                    View Details
-                  </div>
-                </div>
-              </div>
-              <p className="text-center text-xs text-blue-400 mt-3">Dealers who act first win the deal</p>
-            </motion.div>
-          </motion.div>
         </div>
       </section>
 

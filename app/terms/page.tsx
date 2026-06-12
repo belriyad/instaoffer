@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { waLink, WHATSAPP_ENABLED } from '@/lib/utils';
 
 export const metadata = {
   title: 'Terms of Service — InstaOffer',
@@ -53,7 +54,7 @@ export default function TermsPage() {
               <h2 className="text-xl font-bold text-gray-900 mb-3">4. Dealer obligations</h2>
               <ul className="list-disc pl-5 space-y-2">
                 <li>Dealers must hold a valid Qatar commercial licence for car trading.</li>
-                <li>Dealers agree to pay the monthly subscription fee of 1,000 QAR.</li>
+                <li>Dealers agree to pay the monthly subscription fee of 499 QAR.</li>
                 <li>Dealers may not contact sellers through means other than those provided by the platform without explicit seller approval.</li>
                 <li>Dealers must not misrepresent their identity or offer terms.</li>
               </ul>
@@ -122,10 +123,14 @@ export default function TermsPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-3">12. Contact</h2>
               <p>
-                For questions about these terms:{' '}
-                <a href="mailto:legal@instaoffer.qa" className="text-[#002b5b] hover:underline">
-                  legal@instaoffer.qa
-                </a>
+                For questions about these terms, contact us
+                {WHATSAPP_ENABLED ? (
+                  <>{' '}on{' '}
+                    <a href={waLink('Hi InstaOffer, I have a question about your Terms of Service')} target="_blank" rel="noopener noreferrer" className="text-[#002b5b] hover:underline">
+                      WhatsApp
+                    </a>.
+                  </>
+                ) : '.'}
               </p>
             </section>
           </div>

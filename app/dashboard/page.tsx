@@ -156,9 +156,9 @@ function EstimatorTab() {
           </div>
 
           {result.segment && (
-            <p className="text-xs text-gray-500">
+            // Internal model version kept in a hover tooltip, not shown inline.
+            <p className="text-xs text-gray-500" title={result.model_version ? `Model ${result.model_version}` : undefined}>
               Segment: <strong>{result.segment}</strong>
-              {result.model_version && <> · Model: {result.model_version}</>}
             </p>
           )}
           {result.consensus_status === 'diverged' && (

@@ -197,7 +197,21 @@ function BrowseCarsInner() {
   // Tab-level body_type constraint (comma-separated) sent to API when no specific body_type chosen
   const tabBodyTypeConstraint = tabBodyTypes.length ? tabBodyTypes.join(',') : undefined;
 
+  // Only show a vehicle tab once there's inventory for it — Cars always shows;
+  // Motorcycles/Watercrafts appear only when the filter list has matching body
+  // types. This also keeps the results count honest (every visible tab is then
+  // API-constrained, so `total` reflects the active tab instead of all cars).
+  const availableTabs = !filterOpts?.body_types?.length
+    ? VEHICLE_TABS.filter(t => t.id === 'cars')
+    : VEHICLE_TABS.filter(t => t.id === 'cars' || bodyTypesForTab(filterOpts.body_types, t.id).length > 0);
+
   useEffect(() => { getWakalatFilters().then(setFilterOpts).catch(() => {}); }, []);
+
+  // If the URL pointed at a tab that has no inventory, fall back to Cars.
+  useEffect(() => {
+    if (filterOpts && !availableTabs.some(t => t.id === activeTab)) setActiveTab('cars');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterOpts]);
 
   const fetchCars = useCallback(async (p = 1) => {
     setLoading(true); setError('');
@@ -253,7 +267,7 @@ function BrowseCarsInner() {
 
       <div className="bg-[#002b5b] text-white pt-8 pb-0">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-2xl md:text-3xl font-black mb-0.5">New Vehicle Inventory</h1>
+          <h1 className="text-2xl md:text-3xl font-black mb-0.5">Browse Cars</h1>
           <p className="text-blue-200 text-sm">Brand-new dealer inventory across Qatar</p>
           <div className="mt-5 flex gap-2 max-w-2xl">
             <div className="relative flex-1">
@@ -269,9 +283,10 @@ function BrowseCarsInner() {
             </button>
           </div>
 
-          {/* Tabs */}
+          {/* Tabs — only rendered when more than one vehicle category has inventory */}
+          {availableTabs.length > 1 && (
           <div className="flex gap-1 mt-6">
-            {VEHICLE_TABS.map(tab => {
+            {availableTabs.map(tab => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;
               return (
@@ -290,6 +305,7 @@ function BrowseCarsInner() {
               );
             })}
           </div>
+          )}
         </div>
       </div>
 
