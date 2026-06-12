@@ -5,13 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ChevronLeft, Car, Clock, AlertCircle, MapPin, Gauge,
-  Send, CheckCircle2, Star, Zap, FileText, Phone, RefreshCw, ExternalLink,
+  Send, CheckCircle2, Star, Zap, FileText, Phone, RefreshCw, ExternalLink, Lock,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { DetailSkeleton } from '@/components/ui/Skeleton';
 import { useAuth } from '@/lib/auth-context';
-import { getDealerLeadDetail, placeBid, OfferRequest, OfferBid } from '@/lib/api';
+import { getDealerLeadDetail, placeBid, requestPhoneAccess, OfferRequest, OfferBid } from '@/lib/api';
 import { formatQAR, formatDate, formatKM } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
@@ -77,6 +77,14 @@ export default function DealerLeadDetailPage() {
   const [bidSent, setBidSent] = useState(false);
   const [bidError, setBidError] = useState<string | null>(null);
 
+  // Phone-access gate: the seller is promised their number is only shared with
+  // dealers they personally approve (urgent-sale form: "Only shared with dealers
+  // you personally approve"). The dealer must request access; the number is not
+  // shown outright. (Reveal-after-approval requires the backend to withhold
+  // contact_phone until approved — see note in the JSX.)
+  const [phoneRequested, setPhoneRequested] = useState(false);
+  const [phoneLoading, setPhoneLoading] = useState(false);
+
   useEffect(() => {
     if (!loading && !user) router.push('/login/dealer');
   }, [user, loading, router]);
@@ -89,6 +97,22 @@ export default function DealerLeadDetailPage() {
       .catch(err => setFetchError(err instanceof Error ? err.message : 'Failed to load'))
       .finally(() => setFetching(false));
   }, [token, request_uid]);
+
+  async function handleRequestPhone() {
+    if (!token || !request_uid) return;
+    setPhoneLoading(true);
+    try {
+      await requestPhoneAccess(request_uid, token);
+      setPhoneRequested(true);
+    } catch (err) {
+      // "Already requested" also means the seller has been notified.
+      const msg = err instanceof Error ? err.message : '';
+      if (/already/i.test(msg)) setPhoneRequested(true);
+      else alert(msg || 'Failed to request phone access');
+    } finally {
+      setPhoneLoading(false);
+    }
+  }
 
   async function handlePlaceBid() {
     if (!token || !req) return;
@@ -355,30 +379,31 @@ export default function DealerLeadDetailPage() {
           </Section>
         )}
 
-        {/* Seller Contact */}
-        {(req.contact_name || req.contact_phone) && (
-          <Section title="Seller Contact">
-            <Row label="Name" value={req.contact_name} />
-            {req.contact_phone && (
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm text-gray-500">Phone</span>
-                <div className="flex items-center gap-2">
-                  <a href={`tel:${req.contact_phone}`}
-                    className="flex items-center gap-1.5 text-sm font-semibold text-[#002b5b] hover:underline">
-                    <Phone size={13} /> {req.contact_phone}
-                  </a>
-                  <a
-                    href={`https://wa.me/${req.contact_phone.replace(/\D/g, '')}`}
-                    target="_blank" rel="noopener noreferrer"
-                    className="text-xs bg-green-100 hover:bg-green-200 text-green-700 font-bold px-2.5 py-1 rounded-lg transition-colors"
-                  >
-                    WhatsApp
-                  </a>
-                </div>
+        {/* Seller Contact — the phone is never shown outright; the dealer must
+            request access and the seller approves (platform privacy promise). */}
+        <Section title="Seller Contact">
+          {req.contact_name && <Row label="Name" value={req.contact_name} />}
+          <div className="py-2">
+            {phoneRequested ? (
+              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
+                <Clock size={14} className="shrink-0" /> Phone request sent — the seller will be notified and can approve sharing their number.
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <span className="flex items-center gap-1.5 text-sm text-gray-500">
+                  <Lock size={13} /> Number hidden — sellers share it only with dealers they approve.
+                </span>
+                <button
+                  onClick={handleRequestPhone}
+                  disabled={phoneLoading}
+                  className="flex items-center justify-center gap-1.5 text-sm font-bold text-white bg-[#002b5b] hover:bg-[#001a3d] disabled:opacity-60 px-4 py-2 rounded-xl transition-colors"
+                >
+                  <Phone size={13} /> {phoneLoading ? 'Requesting…' : 'Request Phone Number'}
+                </button>
               </div>
             )}
-          </Section>
-        )}
+          </div>
+        </Section>
 
         {/* Existing Bids */}
         {req.bids && req.bids.length > 0 && (
