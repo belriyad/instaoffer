@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Info, Building2, FileText, Zap, RefreshCw, Search, ShoppingCart, MessageSquare, Bell, Settings, Car } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Tag, Info, Building2, FileText, Zap, RefreshCw, Search, ShoppingCart, MessageSquare, Bell, Settings, Car, Globe } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useLocale } from '@/lib/locale-context';
 import { useRouter, usePathname } from 'next/navigation';
@@ -181,6 +181,14 @@ export default function Navbar() {
               </div>
             ) : user ? (
               <>
+                {/* Language toggle — available when signed in too (was logged-out only) */}
+                <button
+                  onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')}
+                  className="text-sm font-semibold text-gray-500 hover:text-[#002b5b] px-2 py-1 rounded-lg border border-gray-200 hover:border-[#002b5b] transition-colors"
+                  aria-label="Switch language"
+                >
+                  {t.nav.langToggle}
+                </button>
                 {/* Shortcut for dealers */}
                 {isDealer && (
                   <Link
@@ -353,6 +361,11 @@ export default function Navbar() {
                     <FileText size={16} className="text-gray-400" />
                     <span className="text-sm font-semibold">My Offers</span>
                   </Link>
+                  <button onClick={() => { setLocale(locale === 'en' ? 'ar' : 'en'); closeMobile(); }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl mx-2 w-[calc(100%-16px)] text-left text-gray-700 hover:bg-gray-50 transition-colors">
+                    <Globe size={16} className="text-gray-400" />
+                    <span className="text-sm font-semibold">{t.nav.langToggle}</span>
+                  </button>
                   <button onClick={() => { closeMobile(); handleSignOut(); }}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl mx-2 w-[calc(100%-16px)] text-left text-red-600 hover:bg-red-50 transition-colors">
                     <LogOut size={16} />

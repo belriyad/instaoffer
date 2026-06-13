@@ -421,7 +421,7 @@ export default function DealerLeadDetailPage() {
                     bid.status === 'rejected' ? 'bg-red-100 text-red-700' :
                     'bg-blue-100 text-blue-700'
                   }`}>
-                    {bid.status}
+                    {bid.status?.replace(/_/g, ' ')}
                   </span>
                 </div>
               ))}

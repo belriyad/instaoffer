@@ -7,7 +7,10 @@ interface StepIndicatorProps {
 
 export default function StepIndicator({ steps, current }: StepIndicatorProps) {
   return (
-    <div className="mb-6">
+    // Force LTR: the step count ("1 of 4") and the dot progression must read
+    // left-to-right; in an RTL (Arabic) page the neutral-separated numbers would
+    // otherwise visually flip (e.g. "2 / 1").
+    <div className="mb-6" dir="ltr">
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
           Step {current + 1} of {steps.length}

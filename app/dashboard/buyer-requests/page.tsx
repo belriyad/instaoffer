@@ -193,7 +193,7 @@ export default function BuyerRequestsPage() {
             >
               ← Prev
             </button>
-            <span className="text-sm text-gray-500">{page + 1} / {totalPages}</span>
+            <span className="text-sm text-gray-500" dir="ltr">{page + 1} / {totalPages}</span>
             <button
               disabled={page + 1 >= totalPages}
               onClick={() => setPage(p => p + 1)}
