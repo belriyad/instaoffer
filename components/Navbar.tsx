@@ -151,7 +151,7 @@ export default function Navbar() {
               }`}
             >
               <Car size={14} />
-              Browse Cars
+              {t.nav.browseCars}
               {(pathname === '/listings' || pathname.startsWith('/listings/')) && (
                 <span className="w-1 h-1 rounded-full bg-[#005ca9]" />
               )}
@@ -161,7 +161,7 @@ export default function Navbar() {
             <span className="w-px h-4 bg-gray-200 mx-2" />
 
             {/* Sell group */}
-            <NavDropdown label="Sell My Car" links={sellLinks} pathname={pathname} onClose={() => {}} />
+            <NavDropdown label={t.nav.sell} links={sellLinks} pathname={pathname} onClose={() => {}} />
 
             {/* Divider */}
             <span className="w-px h-4 bg-gray-200 mx-2" />
@@ -199,7 +199,7 @@ export default function Navbar() {
                         : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
-                    <LayoutDashboard size={15} /> Dashboard
+                    <LayoutDashboard size={15} /> {t.nav.dashboard}
                   </Link>
                 )}
 
@@ -213,30 +213,30 @@ export default function Navbar() {
                     <div className="w-6 h-6 rounded-full bg-[#002b5b] text-white flex items-center justify-center text-xs font-black">
                       {(user.full_name?.[0] || user.email?.[0] || 'U').toUpperCase()}
                     </div>
-                    <span className="max-w-[80px] truncate">{user.full_name?.split(' ')[0] || 'Account'}</span>
+                    <span className="max-w-[80px] truncate">{user.full_name?.split(' ')[0] || t.nav.account}</span>
                     <ChevronDown size={13} className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {userMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
                       <div className="px-4 py-2 border-b border-gray-50 mb-1">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">{isDealer ? 'Dealer Account' : 'My Account'}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">{isDealer ? t.nav.dealerAccount : t.nav.myAccount}</p>
                         <p className="text-sm font-semibold text-gray-800 truncate mt-0.5">{user.full_name || user.email}</p>
                       </div>
                       {isDealer && (
                         <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
-                          <LayoutDashboard size={14} className="text-[#002b5b]" /> Dashboard
+                          <LayoutDashboard size={14} className="text-[#002b5b]" /> {t.nav.dashboard}
                         </Link>
                       )}
                       <Link href="/my-offers" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
-                        <FileText size={14} className="text-[#002b5b]" /> My Offers
+                        <FileText size={14} className="text-[#002b5b]" /> {t.nav.myOffers}
                       </Link>
                       <Link href="/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
-                        <User size={14} className="text-[#002b5b]" /> My Profile
+                        <User size={14} className="text-[#002b5b]" /> {t.nav.myProfile}
                       </Link>
                       <hr className="my-1.5 border-gray-100" />
                       <button onClick={handleSignOut} className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 w-full text-left rounded-b-2xl">
-                        <LogOut size={14} /> Sign Out
+                        <LogOut size={14} /> {t.nav.signOut}
                       </button>
                     </div>
                   )}
@@ -252,13 +252,13 @@ export default function Navbar() {
                   {t.nav.langToggle}
                 </button>
                 <Link href="/login" className="text-sm font-semibold text-gray-600 hover:text-[#002b5b] px-2 py-2 transition-colors">
-                  Sign In
+                  {t.nav.signIn}
                 </Link>
                 <Link
                   href="/valuation"
                   className="bg-[#005ca9] hover:bg-[#004a87] text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5"
                 >
-                  <Zap size={14} /> Sell My Car
+                  <Zap size={14} /> {t.nav.sell}
                 </Link>
               </>
             )}
@@ -287,47 +287,47 @@ export default function Navbar() {
 
             {/* Browse Cars */}
             <div className="pt-4 pb-2">
-              <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Browse</p>
+              <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t.nav.secBrowse}</p>
               <Link href="/listings" onClick={closeMobile}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl mx-2 transition-colors ${pathname.startsWith('/listings') ? 'bg-[#002b5b]/10 text-[#002b5b]' : 'text-gray-700 hover:bg-gray-50'}`}>
                 <Car size={16} className="text-[#002b5b]" />
                 <div>
-                  <div className="text-sm font-semibold">Browse Cars</div>
-                  <div className="text-xs text-gray-400">Dealer inventory across Qatar</div>
+                  <div className="text-sm font-semibold">{t.nav.browseCars}</div>
+                  <div className="text-xs text-gray-400">{t.nav.browseCarsDesc}</div>
                 </div>
               </Link>
             </div>
 
             {/* Sell section */}
             <div className="pt-4 pb-2">
-              <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Sell Your Car</p>
+              <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t.nav.secSell}</p>
               <Link href="/valuation" onClick={closeMobile}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl mx-2 transition-colors ${pathname === '/valuation' ? 'bg-[#002b5b]/10 text-[#002b5b]' : 'text-gray-700 hover:bg-gray-50'}`}>
                 <Zap size={16} className="text-[#005ca9]" />
                 <div>
-                  <div className="text-sm font-semibold">Get Instant Offer</div>
-                  <div className="text-xs text-gray-400">Free valuation in 60 seconds</div>
+                  <div className="text-sm font-semibold">{t.nav.getInstantOffer}</div>
+                  <div className="text-xs text-gray-400">{t.nav.getInstantOfferDesc}</div>
                 </div>
               </Link>
               <Link href="/how-it-works" onClick={closeMobile}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl mx-2 transition-colors ${pathname === '/how-it-works' ? 'bg-[#002b5b]/10 text-[#002b5b]' : 'text-gray-700 hover:bg-gray-50'}`}>
                 <Info size={16} className="text-gray-400" />
                 <div>
-                  <div className="text-sm font-semibold">How It Works</div>
-                  <div className="text-xs text-gray-400">Step-by-step seller guide</div>
+                  <div className="text-sm font-semibold">{t.nav.howItWorks}</div>
+                  <div className="text-xs text-gray-400">{t.nav.howItWorksDesc}</div>
                 </div>
               </Link>
             </div>
 
             {/* Dealers section */}
             <div className="pt-2 pb-2">
-              <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Dealers</p>
+              <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t.nav.secDealers}</p>
               <Link href="/for-dealers" onClick={closeMobile}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl mx-2 transition-colors ${pathname === '/for-dealers' ? 'bg-[#002b5b]/10 text-[#002b5b]' : 'text-gray-700 hover:bg-gray-50'}`}>
                 <Building2 size={16} className="text-gray-400" />
                 <div>
-                  <div className="text-sm font-semibold">For Dealers</div>
-                  <div className="text-xs text-gray-400">Grow your acquisition pipeline</div>
+                  <div className="text-sm font-semibold">{t.nav.dealers}</div>
+                  <div className="text-xs text-gray-400">{t.nav.forDealersDesc}</div>
                 </div>
               </Link>
               {isDealer && (
@@ -335,8 +335,8 @@ export default function Navbar() {
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl mx-2 transition-colors ${pathname.startsWith('/dashboard') ? 'bg-[#002b5b]/10 text-[#002b5b]' : 'text-gray-700 hover:bg-gray-50'}`}>
                   <LayoutDashboard size={16} className="text-[#002b5b]" />
                   <div>
-                    <div className="text-sm font-semibold">Dealer Dashboard</div>
-                    <div className="text-xs text-gray-400">Leads, bids & analytics</div>
+                    <div className="text-sm font-semibold">{t.nav.dealerDashboard}</div>
+                    <div className="text-xs text-gray-400">{t.nav.dealerDashboardDesc}</div>
                   </div>
                 </Link>
               )}
@@ -344,7 +344,7 @@ export default function Navbar() {
 
             {/* Account section */}
             <div className="border-t border-gray-100 pt-3 mt-2">
-              <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Account</p>
+              <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t.nav.secAccount}</p>
               {user ? (
                 <>
                   <div className="flex items-center gap-3 px-4 py-2 mx-2 mb-1">
@@ -352,14 +352,14 @@ export default function Navbar() {
                       {(user.full_name?.[0] || 'U').toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-800">{user.full_name || 'Account'}</p>
-                      <p className="text-xs text-gray-400">{isDealer ? 'Dealer' : 'Seller'}</p>
+                      <p className="text-sm font-bold text-gray-800">{user.full_name || t.nav.account}</p>
+                      <p className="text-xs text-gray-400">{isDealer ? t.nav.roleDealer : t.nav.roleSeller}</p>
                     </div>
                   </div>
                   <Link href="/my-offers" onClick={closeMobile}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl mx-2 text-gray-700 hover:bg-gray-50 transition-colors">
                     <FileText size={16} className="text-gray-400" />
-                    <span className="text-sm font-semibold">My Offers</span>
+                    <span className="text-sm font-semibold">{t.nav.myOffers}</span>
                   </Link>
                   <button onClick={() => { setLocale(locale === 'en' ? 'ar' : 'en'); closeMobile(); }}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl mx-2 w-[calc(100%-16px)] text-left text-gray-700 hover:bg-gray-50 transition-colors">
@@ -369,14 +369,14 @@ export default function Navbar() {
                   <button onClick={() => { closeMobile(); handleSignOut(); }}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl mx-2 w-[calc(100%-16px)] text-left text-red-600 hover:bg-red-50 transition-colors">
                     <LogOut size={16} />
-                    <span className="text-sm font-semibold">Sign Out</span>
+                    <span className="text-sm font-semibold">{t.nav.signOut}</span>
                   </button>
                 </>
               ) : (
                 <div className="flex flex-col gap-2 px-2">
                   <Link href="/login" onClick={closeMobile}
                     className="flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:border-[#002b5b] hover:text-[#002b5b] transition-colors">
-                    <User size={15} /> Sign In
+                    <User size={15} /> {t.nav.signIn}
                   </Link>
                   <Link href="/valuation" onClick={closeMobile}
                     className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#005ca9] text-white font-bold text-sm hover:bg-[#004a87] transition-colors">
