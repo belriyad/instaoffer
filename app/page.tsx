@@ -40,13 +40,6 @@ export default function Home() {
     year: 'numeric',
   });
 
-  const INTENT_CARDS_T = [
-    { icon: '💡', key: 'value',  href: '/valuation',   accent: 'border-blue-200 hover:border-[#002b5b]',                                textAccent: 'text-[#002b5b]' },
-    { icon: '⚡', key: 'urgent', href: '/urgent-sale',  accent: 'border-orange-300 hover:border-[#005ca9] bg-gradient-to-br from-orange-50 to-white', textAccent: 'text-[#005ca9]', highlight: true },
-    { icon: '🔄', key: 'trade',  href: '/trade-in',    accent: 'border-green-200 hover:border-green-500',                               textAccent: 'text-green-700' },
-    { icon: '🔍', key: 'buy',    href: '/buy-request', accent: 'border-purple-200 hover:border-purple-500',                             textAccent: 'text-purple-700' },
-  ] as const;
-
   const TRUST_ICONS = [Lock, Shield, Phone, DollarSign];
 
   return (
@@ -70,53 +63,21 @@ export default function Home() {
             <motion.p variants={fadeUp} className="text-lg text-blue-200 max-w-xl mx-auto mb-8">
               {t.hero.sub}
             </motion.p>
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
-              <Link
-                href="/urgent-sale"
-                className="inline-flex items-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-black px-8 py-4 rounded-xl text-lg shadow-lg transition-all hover:scale-105"
-              >
-                <Zap size={20} /> {t.hero.ctaSell}
-              </Link>
+            {/* One primary path: get the estimate first, then branch on the result page. */}
+            <motion.div variants={fadeUp} className="flex flex-col items-center gap-4 mb-2">
               <Link
                 href="/valuation"
-                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl text-base transition-all"
+                className="inline-flex items-center gap-2 bg-[#005ca9] hover:bg-[#004a87] text-white font-black px-10 py-4 rounded-xl text-lg shadow-lg transition-all hover:scale-105"
               >
-                {t.hero.ctaValuation}
+                <Zap size={20} /> {t.hero.ctaPrimary}
+              </Link>
+              <Link
+                href="/listings"
+                className="text-blue-200 hover:text-white text-sm font-semibold underline-offset-4 hover:underline transition-colors"
+              >
+                {t.hero.buyLink}
               </Link>
             </motion.div>
-          </motion.div>
-
-          {/* Other options */}
-          <p className="text-center text-blue-300 text-sm mb-4 font-medium">{t.hero.orChoose}</p>
-          <motion.div
-            initial={false}
-            animate="visible"
-            variants={stagger}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto"
-          >
-            {INTENT_CARDS_T.map((card) => {
-              const item = t.intent[card.key];
-              return (
-                <motion.div key={card.href} variants={fadeUp}>
-                  <Link
-                    href={card.href}
-                    className={`flex flex-col h-full bg-white rounded-2xl border-2 p-6 shadow-sm hover:shadow-lg transition-all group ${card.accent} ${'highlight' in card && card.highlight ? 'ring-2 ring-[#005ca9]/40' : ''}`}
-                  >
-                    <span className="text-4xl mb-3">{card.icon}</span>
-                    <h2 className={`font-black text-lg mb-2 transition-colors ${'highlight' in card && card.highlight ? card.textAccent : 'text-gray-900'}`}>
-                      {item.label}
-                      {'badge' in item && item.badge && (
-                        <span className="ms-2 text-xs font-bold bg-[#005ca9] text-white px-2 py-0.5 rounded-full align-middle">{item.badge}</span>
-                      )}
-                    </h2>
-                    <p className="text-sm text-gray-500 flex-1 leading-relaxed">{item.desc}</p>
-                    <div className={`mt-4 flex items-center gap-1 text-sm font-semibold ${card.textAccent}`}>
-                      {t.hero.getStarted} <ChevronRight size={16} />
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
           </motion.div>
 
           <motion.div initial={false} animate="visible" variants={fadeUp} className="flex flex-wrap justify-center gap-4 mt-10">

@@ -69,6 +69,8 @@ const en = {
     sub: 'Free valuation in 2 minutes. Verified dealers compete. You choose the best offer.',
     ctaSell: 'Sell My Car Fast — Free',
     ctaValuation: 'Just want a valuation →',
+    ctaPrimary: 'Get My Free Valuation',
+    buyLink: 'Looking to buy? Browse cars →',
     orChoose: 'Or choose what fits you best:',
     getStarted: 'Get started',
     finalCtaH2: 'Ready to sell your car?',
