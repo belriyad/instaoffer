@@ -154,11 +154,17 @@ function MyOffersContent() {
     ]).then(([offersRes, tradeInsRes]) => {
       if (offersRes.status === 'fulfilled') {
         const rows = (offersRes.value as { rows?: OfferRequest[] }).rows || [];
-        setOffers(dedupeByKey(rows, r => r.request_uid));
+        // The backend sometimes returns rows with an empty request_uid. Dedupe on
+        // uid when present, else on a content signature, so genuine duplicate rows
+        // collapse while distinct requests are all kept — keeping the tab badge in
+        // step with the rendered cards.
+        setOffers(dedupeByKey(rows, r =>
+          r.request_uid || `${r.make}|${r.class_name}|${r.year}|${r.km}|${r.created_at}|${r.status}`));
       }
       if (tradeInsRes.status === 'fulfilled') {
         const rows = tradeInsRes.value.rows || [];
-        setTradeIns(dedupeByKey(rows, r => r.uid ?? r.trade_in_uid));
+        setTradeIns(dedupeByKey(rows, r =>
+          (r.uid || r.trade_in_uid) || `${r.make}|${r.class_name}|${r.year}|${r.km}|${r.created_at}`));
       }
     }).finally(() => setFetching(false));
   }, [token]);
@@ -256,14 +262,14 @@ function MyOffersContent() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {tradeIns.map(req => {
+                  {tradeIns.map((req, i) => {
                     const uid = req.uid ?? req.trade_in_uid ?? '';
                     const st = TRADEIN_STATUS[req.status] ?? { label: req.status, color: 'bg-gray-100 text-gray-500' };
                     const canCancel = !['cancelled', 'closed', 'accepted'].includes(req.status);
                     const isCancelling = cancellingUid === uid;
                     const tradeInMustHave = req.notes?.includes('REQUIRED');
                     return (
-                      <motion.div key={uid} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                      <motion.div key={`${uid || 'tradein'}-${i}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                         className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
@@ -360,10 +366,10 @@ function MyOffersContent() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {offers.map(req => {
+                  {offers.map((req, i) => {
                     const status = OFFER_STATUS[req.status] || { label: req.status, color: 'bg-gray-100 text-gray-500' };
                     return (
-                      <motion.div key={req.request_uid} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                      <motion.div key={`${req.request_uid || 'offer'}-${i}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                         className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
