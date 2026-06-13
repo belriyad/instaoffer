@@ -31,6 +31,35 @@ const en = {
     searchCars: 'Search make, model, dealer…',
   },
 
+  // Auth / login
+  auth: {
+    welcomeBack: 'Welcome back',
+    createAccount: 'Create your account',
+    loginSub: 'Sign in to view your offers and messages',
+    registerSub: 'Sign up free — get real dealer offers on your car',
+    signInTab: 'Sign In',
+    signUpTab: 'Sign Up',
+    fullName: 'Full Name',
+    fullNamePlaceholder: 'Your full name',
+    emailLabel: 'Email Address',
+    passwordLabel: 'Password',
+    forgotPassword: 'Forgot password?',
+    minChars: 'Minimum 8 characters',
+    submitSignIn: 'Sign In',
+    submitCreate: 'Create Free Account',
+    termsPrefix: 'By continuing, you agree to our',
+    terms: 'Terms',
+    and: 'and',
+    privacy: 'Privacy Policy',
+    phoneNote: 'Your phone number is never shared without your approval.',
+    dealerQ: 'Are you a dealer?',
+    dealerLogin: 'Dealer login →',
+    errNameShort: 'Please enter your full name (at least 2 characters).',
+    errEmail: 'Please enter a valid email address.',
+    errPassword: 'Password must be at least 8 characters.',
+    errGeneric: 'Something went wrong. Please try again.',
+  },
+
   // Hero
   hero: {
     badge: "🇶🇦 Designed for Qatar's car market",

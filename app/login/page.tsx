@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, AlertCircle, CheckCircle2, Mail, Lock, User } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useLocale } from '@/lib/locale-context';
 import Navbar from '@/components/Navbar';
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, signUp } = useAuth();
+  const { t } = useLocale();
 
   const [mode, setMode] = useState<'login' | 'register'>(
     searchParams.get('mode') === 'register' ? 'register' : 'login'
@@ -57,15 +59,15 @@ function LoginContent() {
     // ── Client-side validation ──────────────────────────────────────────────
     if (mode === 'register') {
       if (fullName.trim().length < 2) {
-        setError('Please enter your full name (at least 2 characters).');
+        setError(t.auth.errNameShort);
         return;
       }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        setError('Please enter a valid email address.');
+        setError(t.auth.errEmail);
         return;
       }
       if (password.length < 8) {
-        setError('Password must be at least 8 characters.');
+        setError(t.auth.errPassword);
         return;
       }
     }
@@ -118,12 +120,10 @@ function LoginContent() {
               </div>
             </Link>
             <h1 className="text-2xl font-black text-gray-900 mt-4">
-              {mode === 'login' ? 'Welcome back' : 'Create your account'}
+              {mode === 'login' ? t.auth.welcomeBack : t.auth.createAccount}
             </h1>
             <p className="text-gray-500 mt-1 text-sm">
-              {mode === 'login'
-                ? 'Sign in to view your offers and messages'
-                : 'Sign up free — get real dealer offers on your car'}
+              {mode === 'login' ? t.auth.loginSub : t.auth.registerSub}
             </p>
           </div>
 
@@ -140,7 +140,7 @@ function LoginContent() {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {m === 'login' ? 'Sign In' : 'Sign Up'}
+                {m === 'login' ? t.auth.signInTab : t.auth.signUpTab}
               </button>
             ))}
           </div>
@@ -158,7 +158,7 @@ function LoginContent() {
                   transition={{ duration: 0.2 }}
                 >
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Full Name
+                    {t.auth.fullName}
                   </label>
                   <div className="relative">
                     <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -167,7 +167,7 @@ function LoginContent() {
                       value={fullName}
                       onChange={e => setFullName(e.target.value)}
                       autoComplete="name"
-                      placeholder="Your full name"
+                      placeholder={t.auth.fullNamePlaceholder}
                       className={inputCls}
                     />
                   </div>
@@ -178,7 +178,7 @@ function LoginContent() {
             {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Email Address
+                {t.auth.emailLabel}
               </label>
               <div className="relative">
                 <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -197,10 +197,10 @@ function LoginContent() {
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-semibold text-gray-700">Password</label>
+                <label className="block text-sm font-semibold text-gray-700">{t.auth.passwordLabel}</label>
                 {mode === 'login' && (
                   <Link href="/forgot-password" className="text-xs text-[#002b5b] hover:underline">
-                    Forgot password?
+                    {t.auth.forgotPassword}
                   </Link>
                 )}
               </div>
@@ -226,7 +226,7 @@ function LoginContent() {
               </div>
               {mode === 'register' && (
                 <p className="text-xs text-gray-400 mt-1.5 ml-1">
-                  Minimum 8 characters
+                  {t.auth.minChars}
                   {password.length >= 8 && (
                     <span className="text-green-600 ml-2">✓</span>
                   )}
@@ -272,24 +272,24 @@ function LoginContent() {
             >
               {loading ? (
                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : mode === 'login' ? 'Sign In' : 'Create Free Account'}
+              ) : mode === 'login' ? t.auth.submitSignIn : t.auth.submitCreate}
             </button>
           </form>
 
           {/* Trust note */}
           <p className="text-center text-xs text-gray-400 mt-6">
-            By continuing, you agree to our{' '}
-            <Link href="/terms" className="underline hover:text-gray-600">Terms</Link>
-            {' '}and{' '}
-            <Link href="/privacy" className="underline hover:text-gray-600">Privacy Policy</Link>.
-            <br />Your phone number is never shared without your approval.
+            {t.auth.termsPrefix}{' '}
+            <Link href="/terms" className="underline hover:text-gray-600">{t.auth.terms}</Link>
+            {' '}{t.auth.and}{' '}
+            <Link href="/privacy" className="underline hover:text-gray-600">{t.auth.privacy}</Link>.
+            <br />{t.auth.phoneNote}
           </p>
 
           <div className="mt-4 border-t border-gray-100 pt-4">
             <p className="text-center text-sm text-gray-500">
-              Are you a dealer?{' '}
+              {t.auth.dealerQ}{' '}
               <Link href="/login/dealer" className="text-[#002b5b] font-semibold hover:underline">
-                Dealer login →
+                {t.auth.dealerLogin}
               </Link>
             </p>
           </div>
