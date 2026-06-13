@@ -454,6 +454,90 @@ export function CityPicker({
   );
 }
 
+// ─── CarDetailsFields ─────────────────────────────────────────────────────────
+/**
+ * The one shared "describe your car" field set, used identically across every
+ * sell flow (valuation, urgent-sale, trade-in). Field order, labels, and control
+ * types are defined ONCE here so the data-entry step looks the same everywhere —
+ * a change here propagates to all flows. Flows add their own extra fields
+ * (target vehicle, urgency, contact, etc.) before/after this block rather than
+ * forking it.
+ *
+ * Required fields (Make, Model, Year, Mileage) carry a `*` and a `data-error-anchor`
+ * so a flow's scroll-to-error logic can target them; Condition and City have safe
+ * defaults and are optional.
+ */
+export interface CarDetailsValue {
+  make: string;
+  class_name: string;
+  year: number | null;
+  km: number | null;
+  condition: string;
+  city: string;
+}
+
+const CD_LABEL = 'block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide';
+
+export function CarDetailsFields({
+  value,
+  onChange,
+  errorField,
+  errorMessage,
+  onClearError,
+}: {
+  value: CarDetailsValue;
+  onChange: (patch: Partial<CarDetailsValue>) => void;
+  errorField?: string;
+  errorMessage?: string;
+  onClearError?: () => void;
+}) {
+  const clear = onClearError ?? (() => {});
+  const isErr = (field: string) => errorField === field;
+
+  return (
+    <div className="space-y-4">
+      <div data-error-anchor="make">
+        <label className={CD_LABEL}>Make *</label>
+        <div className={isErr('make') ? 'rounded-xl ring-2 ring-red-400' : ''}>
+          <SearchableMakeSelect value={value.make} onChange={v => { onChange({ make: v, class_name: '' }); clear(); }} />
+        </div>
+        {isErr('make') && <p className="text-xs text-red-600 mt-1">{errorMessage}</p>}
+      </div>
+
+      <div>
+        <label className={CD_LABEL}>Model *</label>
+        <SearchableModelSelect make={value.make} value={value.class_name} onChange={v => { onChange({ class_name: v }); clear(); }} />
+      </div>
+
+      <div data-error-anchor="year">
+        <label className={CD_LABEL}>Year *</label>
+        <div className={isErr('year') ? 'rounded-xl ring-2 ring-red-400 p-1' : ''}>
+          <YearTiles value={value.year} onChange={y => { onChange({ year: y }); clear(); }} />
+        </div>
+        {isErr('year') && <p className="text-xs text-red-600 mt-1">{errorMessage}</p>}
+      </div>
+
+      <div data-error-anchor="km">
+        <label className={CD_LABEL}>Mileage (km) *</label>
+        <div className={isErr('km') ? 'rounded-xl ring-2 ring-red-400 p-1' : ''}>
+          <KmBucketPicker value={value.km} onChange={k => { onChange({ km: k }); clear(); }} />
+        </div>
+        {isErr('km') && <p className="text-xs text-red-600 mt-1">{errorMessage}</p>}
+      </div>
+
+      <div>
+        <label className={CD_LABEL}>Condition</label>
+        <ConditionPicker value={value.condition} onChange={v => { onChange({ condition: v }); clear(); }} />
+      </div>
+
+      <div>
+        <label className={CD_LABEL}>City</label>
+        <CityPicker value={value.city} onChange={v => { onChange({ city: v }); clear(); }} />
+      </div>
+    </div>
+  );
+}
+
 // ─── PillGroupPicker ──────────────────────────────────────────────────────────
 /** Generic pill-chip list — used for Fuel, Gear, Body type */
 export function PillGroupPicker({

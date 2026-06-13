@@ -15,9 +15,7 @@ import PriceGuidanceCard from '@/components/PriceGuidanceCard';
 import PhoneInput from '@/components/PhoneInput';
 import { useAuth } from '@/lib/auth-context';
 import { createOfferRequest, uploadFile } from '@/lib/api';
-import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
-
-const CITIES = ['Doha', 'Al Rayyan', 'Al Wakrah', 'Al Khor', 'Lusail', 'Umm Salal', 'Al Daayen', 'Al Shamal'];
+import { CarDetailsFields, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
 
 const URGENCY_OPTIONS = [
   { value: 'leaving_qatar', label: '✈️ Leaving Qatar soon',   desc: 'Need to sell before departure' },
@@ -51,9 +49,6 @@ const EVIDENCE_CATEGORIES: {
 ];
 
 const REQUIRED_CATEGORIES: EvidenceCategory[] = ['exterior', 'interior', 'odometer'];
-
-const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: 25 }, (_, i) => CURRENT_YEAR - i);
 
 type UrgencyReason = 'leaving_qatar' | 'need_cash' | 'upgrading' | 'other';
 type SellPriority  = 'speed' | 'price' | 'balanced';
@@ -305,56 +300,31 @@ function UrgentSaleContent() {
           <div className="space-y-5">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <h2 className="font-bold text-gray-900 mb-4 text-base">🚗 Your Car</h2>
-              <div className="space-y-4">
-                <div data-error-anchor="make">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Make *</label>
-                  <div className={errorField === 'make' ? 'rounded-lg ring-2 ring-red-400' : ''}>
-                    <SearchableMakeSelect value={form.make} onChange={v => { set('make', v); set('class_name', ''); }} />
-                  </div>
-                  {errorField === 'make' && <p className="text-xs text-red-600 mt-1">{error}</p>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Model *</label>
-                  <SearchableModelSelect make={form.make} value={form.class_name} onChange={v => set('class_name', v)} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div data-error-anchor="year">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Year *</label>
-                    <select value={form.year} onChange={e => set('year', e.target.value)}
-                      className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b] ${errorField === 'year' ? 'border-red-400 ring-2 ring-red-200' : 'border-gray-300'}`}>
-                      <option value="">Year</option>
-                      {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                    </select>
-                    {errorField === 'year' && <p className="text-xs text-red-600 mt-1">{error}</p>}
-                  </div>
-                </div>
-                <div data-error-anchor="km">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
-                  <div className={errorField === 'km' ? 'rounded-lg ring-2 ring-red-400' : ''}>
-                    <KmBucketPicker value={form.km} onChange={v => { setForm(prev => ({ ...prev, km: v })); setEstimateKm(v); clearError(); }} />
-                  </div>
-                  {errorField === 'km' && <p className="text-xs text-red-600 mt-1">{error}</p>}
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Condition</label>
-                    <select value={form.condition} onChange={e => set('condition', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]">
-                      <option value="excellent">Excellent</option>
-                      <option value="good">Good</option>
-                      <option value="fair">Fair</option>
-                      <option value="poor">Poor</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">City</label>
-                    <select value={form.city} onChange={e => set('city', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]">
-                      {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </div>
+              <CarDetailsFields
+                value={{
+                  make: form.make,
+                  class_name: form.class_name,
+                  year: form.year ? parseInt(form.year) : null,
+                  km: form.km,
+                  condition: form.condition,
+                  city: form.city,
+                }}
+                onChange={patch => {
+                  setForm(prev => ({
+                    ...prev,
+                    ...(patch.make       !== undefined ? { make: patch.make } : {}),
+                    ...(patch.class_name !== undefined ? { class_name: patch.class_name } : {}),
+                    ...(patch.year       !== undefined ? { year: patch.year != null ? String(patch.year) : '' } : {}),
+                    ...(patch.km         !== undefined ? { km: patch.km } : {}),
+                    ...(patch.condition  !== undefined ? { condition: patch.condition } : {}),
+                    ...(patch.city       !== undefined ? { city: patch.city } : {}),
+                  }));
+                  if (patch.km !== undefined) setEstimateKm(patch.km ?? null);
+                }}
+                errorField={errorField}
+                errorMessage={error}
+                onClearError={clearError}
+              />
             </div>
             <PriceGuidanceCard
               make={form.make} class_name={form.class_name} year={form.year}

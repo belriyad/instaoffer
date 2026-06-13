@@ -12,7 +12,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StepIndicator from '@/components/StepIndicator';
 import PriceGuidanceCard from '@/components/PriceGuidanceCard';
-import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel, ConditionPicker } from '@/lib/form-controls';
+import { SearchableMakeSelect, SearchableModelSelect, KM_BUCKETS, kmLabel, CarDetailsFields } from '@/lib/form-controls';
 import { formatQAR } from '@/lib/utils';
 import { getMLEstimate, createTradeInRequest, uploadFile } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -23,7 +23,6 @@ const STEPS_WITHOUT_TARGET = ['Your trade-in car', 'Photos & Documents', 'Desire
 
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 25 }, (_, i) => CURRENT_YEAR - i);
-const CITIES = ['Doha', 'Al Rayyan', 'Al Wakrah', 'Al Khor', 'Lusail', 'Umm Salal', 'Al Daayen', 'Al Shamal'];
 
 const TIMELINE_OPTIONS = [
   { value: 'urgent',   icon: Clock,       label: '⚡ ASAP',             desc: 'I want to close within days',   border: 'border-orange-400 bg-orange-50' },
@@ -372,46 +371,27 @@ function TradeInContent() {
               <h2 className="font-bold text-gray-900 mb-4 text-base flex items-center gap-2">
                 <Car size={16} className="text-[#002b5b]" /> Your Current Vehicle
               </h2>
-              <div className="space-y-4">
-                <div data-error-anchor="make">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Make *</label>
-                  <div className={errorField === 'make' ? 'rounded-lg ring-2 ring-red-400' : ''}>
-                    <SearchableMakeSelect value={curMake} onChange={v => { setCurMake(v); setCurModel(''); clearError(); }} />
-                  </div>
-                  {errorField === 'make' && <p className="text-xs text-red-600 mt-1">{error}</p>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Model *</label>
-                  <SearchableModelSelect make={curMake} value={curModel} onChange={v => { setCurModel(v); clearError(); }} />
-                </div>
-                <div data-error-anchor="year">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Year *</label>
-                  <select value={curYear} onChange={e => { setCurYear(e.target.value); clearError(); }}
-                    className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b] ${errorField === 'year' ? 'border-red-400 ring-2 ring-red-200' : 'border-gray-300'}`}>
-                    <option value="">Select year</option>
-                    {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                  </select>
-                  {errorField === 'year' && <p className="text-xs text-red-600 mt-1">{error}</p>}
-                </div>
-                <div data-error-anchor="km">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Mileage (km) *</label>
-                  <div className={errorField === 'km' ? 'rounded-lg ring-2 ring-red-400' : ''}>
-                    <KmBucketPicker value={curKm} onChange={v => { setCurKm(v); setEstimateKm(v); clearError(); }} />
-                  </div>
-                  {errorField === 'km' && <p className="text-xs text-red-600 mt-1">{error}</p>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">City</label>
-                  <select value={curCity} onChange={e => setCurCity(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#002b5b]">
-                    {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Condition</label>
-                  <ConditionPicker value={curCondition} onChange={setCurCondition} />
-                </div>
-              </div>
+              <CarDetailsFields
+                value={{
+                  make: curMake,
+                  class_name: curModel,
+                  year: curYear ? parseInt(curYear) : null,
+                  km: curKm,
+                  condition: curCondition,
+                  city: curCity,
+                }}
+                onChange={patch => {
+                  if (patch.make       !== undefined) setCurMake(patch.make);
+                  if (patch.class_name !== undefined) setCurModel(patch.class_name);
+                  if (patch.year       !== undefined) setCurYear(patch.year != null ? String(patch.year) : '');
+                  if (patch.km         !== undefined) { setCurKm(patch.km ?? null); setEstimateKm(patch.km ?? null); }
+                  if (patch.condition  !== undefined) setCurCondition(patch.condition);
+                  if (patch.city       !== undefined) setCurCity(patch.city);
+                }}
+                errorField={errorField}
+                errorMessage={error}
+                onClearError={clearError}
+              />
             </div>
 
             {/* ML estimate + diff vs target */}
