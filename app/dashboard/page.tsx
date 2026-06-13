@@ -35,7 +35,7 @@ import {
   getMLEstimate, getDealerTradeIns, getDealerOfferLeads,
   TradeInRequest, OfferRequest, MLEstimate,
 } from '@/lib/api';
-import { formatQAR, formatDate } from '@/lib/utils';
+import { formatQAR, formatEstimate, formatDate } from '@/lib/utils';
 import { SearchableMakeSelect, SearchableModelSelect, KmBucketPicker, KM_BUCKETS, kmLabel } from '@/lib/form-controls';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -204,7 +204,7 @@ function EstimatorTab() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-green-50 rounded-xl p-4 text-center">
               <p className="text-xs font-bold text-green-700 uppercase tracking-wide mb-1">Market Value</p>
-              <p className="text-2xl font-black text-green-800">{formatQAR(result.estimated_price_qar)}</p>
+              <p className="text-2xl font-black text-green-800">{formatEstimate(result.estimated_price_qar)}</p>
             </div>
             <div className="bg-blue-50 rounded-xl p-4 text-center">
               <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-1">Low</p>

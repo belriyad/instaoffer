@@ -17,6 +17,21 @@ export function formatQAR(amount: number): string {
   return `QAR ${amount.toLocaleString('en-QA')}`;
 }
 
+// The canonical display rounding for any car estimate. The number that *is* the
+// product must read identically on every surface (resume card, result page,
+// saved list, dashboards), so every point-estimate render site rounds to the
+// nearest 1,000 here rather than each formatting the raw value differently —
+// which is what made one car show 178,044 on the resume card and 178,000 on the
+// result page.
+export function roundToNearest1000(amount: number): number {
+  return Math.round(amount / 1000) * 1000;
+}
+
+/** Format a car estimate for display — rounded to the nearest 1,000, then as QAR. */
+export function formatEstimate(amount: number): string {
+  return formatQAR(roundToNearest1000(amount));
+}
+
 export function formatKM(km: number): string {
   return `${km.toLocaleString('en-QA')} km`;
 }
@@ -39,6 +54,23 @@ export function formatDate(iso: string, locale?: string): string {
 
 export function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+// Keep the first item for each distinct key, preserving order. Used where a tab
+// badge count and its rendered list must agree: React collapses elements that
+// share a `key`, so duplicate rows from the API (e.g. dupe submissions) would
+// otherwise inflate a `.length` badge above the number of cards actually shown.
+export function dedupeByKey<T>(items: T[], keyOf: (item: T) => string | undefined | null): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const item of items) {
+    const key = keyOf(item);
+    if (key == null || key === '') { out.push(item); continue; }
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
 }
 
 export const CAR_MAKES = [

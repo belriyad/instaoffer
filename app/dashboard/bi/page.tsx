@@ -15,7 +15,7 @@ import {
   getDealerMarginCalc, getMarketComps,
   MLEstimate, MLForecast, MLTimeToSellEstimate, MarginCalcResult, OfferComps,
 } from '@/lib/api';
-import { formatQAR, formatKM, MODEL_DEFAULTS, WARRANTY_STATUSES, SELLER_TYPES } from '@/lib/utils';
+import { formatQAR, formatEstimate, formatKM, MODEL_DEFAULTS, WARRANTY_STATUSES, SELLER_TYPES } from '@/lib/utils';
 import {
   MakeSelect, ModelSelect, TrimSelect,
   YearTiles, KmBucketPicker, kmLabel,
@@ -423,7 +423,7 @@ export default function BIPage() {
                   <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                     <div>
                       <div className="text-4xl font-black text-[#002b5b]">
-                        {formatQAR(results.estimate.estimated_price_qar)}
+                        {formatEstimate(results.estimate.estimated_price_qar)}
                       </div>
                       <div className="text-sm text-gray-400 mt-1">
                         Confidence range: {formatQAR(results.estimate.confidence_range[0])} – {formatQAR(results.estimate.confidence_range[1])}
@@ -459,12 +459,12 @@ export default function BIPage() {
                       {/* Current */}
                       <div className="flex-1 min-w-[90px] bg-gray-50 rounded-xl p-3 text-center">
                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Now</div>
-                        <div className="text-sm font-black text-gray-900">{formatQAR(results.forecast.current.estimated_price_qar)}</div>
+                        <div className="text-sm font-black text-gray-900">{formatEstimate(results.forecast.current.estimated_price_qar)}</div>
                       </div>
                       {results.forecast.forecast.map(pt => (
                         <div key={pt.horizon} className="flex-1 min-w-[90px] bg-gray-50 rounded-xl p-3 text-center">
                           <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">{pt.horizon}</div>
-                          <div className="text-sm font-black text-gray-900">{formatQAR(pt.estimated_price_qar)}</div>
+                          <div className="text-sm font-black text-gray-900">{formatEstimate(pt.estimated_price_qar)}</div>
                           <div className={`text-[10px] font-bold mt-0.5 ${pt.change_pct >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                             {pt.change_pct >= 0 ? '+' : ''}{pt.change_pct.toFixed(1)}%
                           </div>

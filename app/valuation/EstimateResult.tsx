@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronDown, TrendingUp, Shield, ArrowRight, Clock, Zap, RefreshCw, Bookmark } from 'lucide-react';
 import { MLEstimate, MLForecast, OfferComps, MLTimeToSellEstimate, mlPriceBand, intentPriceBands } from '@/lib/api';
-import { formatQAR, formatKM, formatDate } from '@/lib/utils';
+import { formatQAR, formatKM, formatDate, roundToNearest1000 } from '@/lib/utils';
 import { ValuationData } from './page';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -177,7 +177,7 @@ export default function EstimateResult({ estimate, forecast, comps, timeToSell, 
               },
             ];
             const cur = tabs[priceTab];
-            const value = Math.round((cur.low + cur.high) / 2);
+            const value = roundToNearest1000((cur.low + cur.high) / 2);
             const rangeStr = `QAR ${cur.low.toLocaleString()} – ${cur.high.toLocaleString()}`;
             return (
               <>

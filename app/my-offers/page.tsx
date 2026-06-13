@@ -12,7 +12,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/lib/auth-context';
 import { getMyOfferRequests, getMyTradeInRequests, cancelTradeInRequest, OfferRequest, TradeInRequest } from '@/lib/api';
-import { formatQAR, formatDate, waLink } from '@/lib/utils';
+import { formatQAR, formatDate, waLink, dedupeByKey } from '@/lib/utils';
 
 const OFFER_STATUS: Record<string, { label: string; color: string }> = {
   open:        { label: 'Open',           color: 'bg-blue-50 text-blue-700' },
@@ -153,10 +153,12 @@ function MyOffersContent() {
       getMyTradeInRequests(token),
     ]).then(([offersRes, tradeInsRes]) => {
       if (offersRes.status === 'fulfilled') {
-        setOffers((offersRes.value as { rows?: OfferRequest[] }).rows || []);
+        const rows = (offersRes.value as { rows?: OfferRequest[] }).rows || [];
+        setOffers(dedupeByKey(rows, r => r.request_uid));
       }
       if (tradeInsRes.status === 'fulfilled') {
-        setTradeIns(tradeInsRes.value.rows || []);
+        const rows = tradeInsRes.value.rows || [];
+        setTradeIns(dedupeByKey(rows, r => r.uid ?? r.trade_in_uid));
       }
     }).finally(() => setFetching(false));
   }, [token]);

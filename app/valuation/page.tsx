@@ -8,7 +8,7 @@ import Navbar from '@/components/Navbar';
 import { useLocale } from '@/lib/locale-context';
 import { FormSkeleton } from '@/components/ui/Skeleton';
 import {
-  FUEL_TYPES, GEAR_TYPES, CAR_TYPES, formatKM, formatQAR, MODEL_DEFAULTS, WARRANTY_STATUSES,
+  FUEL_TYPES, GEAR_TYPES, CAR_TYPES, formatKM, formatEstimate, MODEL_DEFAULTS, WARRANTY_STATUSES,
 } from '@/lib/utils';
 import {
   MakeSelect, ModelSelect, TrimSelect,
@@ -435,7 +435,7 @@ function ValuationContent() {
               {s.data.condition && <p className="text-xs text-gray-500 mt-0.5">{s.data.condition} condition · {s.data.city || 'Qatar'}</p>}
               {s.estimate && (
                 <p className="text-xs text-[#002b5b] font-semibold mt-2">
-                  Last estimate: {formatQAR(s.estimate.estimated_price_qar)}
+                  Last estimate: {formatEstimate(s.estimate.estimated_price_qar)}
                 </p>
               )}
             </div>
