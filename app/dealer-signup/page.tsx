@@ -1,17 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, CheckCircle2, Building2 } from 'lucide-react';
+import { ChevronRight, CheckCircle2, Building2, LayoutDashboard, UserCheck } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/lib/auth-context';
 import { waLink } from '@/lib/utils';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
+
+// Strip a stored phone (e.g. "+974 5555 1234") down to the local digits the
+// WhatsApp field expects — no country code, no separators.
+function localPhone(phone?: string): string {
+  if (!phone) return '';
+  const digits = phone.replace(/\D/g, '');
+  return digits.startsWith('974') ? digits.slice(3) : digits;
+}
 
 const SPECIALIZATIONS = [
   'Luxury / Premium',
@@ -34,6 +43,9 @@ interface FormState {
 }
 
 export default function DealerSignupPage() {
+  const { user } = useAuth();
+  const isAlreadyDealer = user?.role === 'dealer' || user?.role === 'admin';
+
   const [form, setForm] = useState<FormState>({
     business_name: '',
     cr_number: '',
@@ -45,6 +57,19 @@ export default function DealerSignupPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [prefilled, setPrefilled] = useState(false);
+
+  // Pre-fill known account details once the session resolves — without
+  // clobbering anything the visitor has already typed. Fields stay editable.
+  useEffect(() => {
+    if (!user || prefilled) return;
+    setForm(prev => ({
+      ...prev,
+      email: prev.email || user.email || '',
+      whatsapp: prev.whatsapp || localPhone(user.phone),
+    }));
+    setPrefilled(true);
+  }, [user, prefilled]);
 
   function set<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm(prev => ({ ...prev, [k]: v }));
@@ -57,7 +82,10 @@ export default function DealerSignupPage() {
     setLoading(true);
     setError('');
     try {
-      // TODO: wire to POST /api/dealer-applications when backend ships
+      // TODO: wire to POST /api/dealer-applications when backend ships.
+      // When signed in, send the bearer token so the application is linked to
+      // the existing account (one identity with seller + pending-dealer roles)
+      // rather than creating an orphan record.
       await new Promise(res => setTimeout(res, 1200));
       setSubmitted(true);
     } catch {
@@ -65,6 +93,34 @@ export default function DealerSignupPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // A user who already holds a dealer/admin account shouldn't see a blank
+  // application — show their status and point them to the workspace.
+  if (isAlreadyDealer) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#f8fafc]">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center px-4 py-16">
+          <div className="max-w-md w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <UserCheck size={30} className="text-green-500" />
+            </div>
+            <h1 className="text-2xl font-black text-gray-900 mb-2">You&apos;re already a dealer</h1>
+            <p className="text-gray-500 mb-6">
+              {user?.full_name || user?.email} is set up with a dealer account — no need to apply again.
+            </p>
+            <Link
+              href="/dashboard"
+              className="flex items-center justify-center gap-2 w-full bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold py-3 rounded-xl transition-colors"
+            >
+              <LayoutDashboard size={16} /> Go to your dashboard
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
   if (submitted) {
@@ -126,6 +182,23 @@ export default function DealerSignupPage() {
           </div>
         </motion.div>
 
+        {/* Signed-in seller context — recognise the account and link the application. */}
+        {user && (
+          <motion.div initial={false} animate="visible" variants={fadeUp}
+            className="bg-[#ebf5ff] border border-[#d0e0ff] rounded-2xl p-4 mb-4 flex items-start gap-3">
+            <UserCheck size={18} className="text-[#002b5b] mt-0.5 shrink-0" />
+            <div className="text-sm">
+              <p className="font-bold text-[#002b5b]">
+                You&apos;re signed in as {user.full_name || user.email} (seller)
+              </p>
+              <p className="text-gray-600 mt-0.5">
+                We&apos;ll add the dealer account to your existing profile and have pre-filled what we know.
+                You can edit any field below.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         <motion.div initial={false} animate="visible" variants={fadeUp} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
 
           <div>
@@ -176,7 +249,7 @@ export default function DealerSignupPage() {
               type="email"
               value={form.email}
               onChange={e => set('email', e.target.value)}
-              placeholder="dealer@example.com"
+              placeholder="you@business.com"
               className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#002b5b] focus:ring-2 focus:ring-[#002b5b]/10"
             />
           </div>
