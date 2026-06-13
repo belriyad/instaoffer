@@ -20,6 +20,14 @@ const TOKEN_KEY        = 'instaoffer_token';
 const REFRESH_KEY      = 'instaoffer_refresh';
 const GUEST_TOKEN_KEY  = 'instaoffer_guest_token';
 const GUEST_REFRESH_KEY = 'instaoffer_guest_refresh';
+const USER_KEY         = 'instaoffer_user'; // cached profile for instant header paint
+
+function readCachedUser(): User | null {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(USER_KEY) : null;
+    return raw ? JSON.parse(raw) as User : null;
+  } catch { return null; }
+}
 
 // Refresh 5 minutes before the 1-hour expiry (i.e. every 55 minutes)
 const REFRESH_INTERVAL_MS = 55 * 60 * 1000;
@@ -52,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem(TOKEN_KEY);
           localStorage.removeItem(REFRESH_KEY);
           setToken(null);
-          setUser(null);
+          clearUser();
         }
         initGuestToken();
       }
@@ -92,9 +100,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (stored && storedRefresh) {
       setToken(stored);
+      // Paint the header immediately from the cached profile so it never sits in
+      // a loading skeleton while getMe (which can be slow on a cold backend)
+      // resolves. getMe then revalidates and corrects/clears it below.
+      const cached = readCachedUser();
+      if (cached) { setUser(cached); setLoading(false); }
       getMe(stored)
         .then(me => {
-          setUser(me);
+          applyUser(me);
           scheduleRefresh(storedRefresh, false);
         })
         .catch(async () => {
@@ -105,13 +118,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem(REFRESH_KEY, tokens.refresh_token);
             setToken(tokens.access_token);
             const me = await getMe(tokens.access_token);
-            setUser(me);
+            applyUser(me);
             scheduleRefresh(tokens.refresh_token, false);
           } catch {
             localStorage.removeItem(TOKEN_KEY);
             localStorage.removeItem(REFRESH_KEY);
             setToken(null);
-            setUser(null); // never leave a stale (e.g. dealer) user when auth can't be restored
+            clearUser(); // never leave a stale (e.g. dealer) user when auth can't be restored
           }
         })
         .finally(() => {
@@ -131,6 +144,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── User state + cache helpers ───────────────────────────────────────────────
+  function applyUser(me: User) {
+    setUser(me);
+    try { localStorage.setItem(USER_KEY, JSON.stringify(me)); } catch { /* ignore */ }
+  }
+  function clearUser() {
+    setUser(null);
+    try { localStorage.removeItem(USER_KEY); } catch { /* ignore */ }
+  }
+
   // ── Persist real user tokens ─────────────────────────────────────────────────
   function persist(tokens: AuthTokens) {
     localStorage.setItem(TOKEN_KEY, tokens.access_token);
@@ -143,7 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const tokens = await login({ login: loginVal, password });
     persist(tokens);
     const me = await getMe(tokens.access_token);
-    setUser(me);
+    applyUser(me);
     return me;
   }
 
@@ -151,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const tokens = await register({ email, password, full_name: fullName });
     persist(tokens);
     const me = await getMe(tokens.access_token);
-    setUser(me);
+    applyUser(me);
     return me;
   }
 
@@ -159,7 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const tokens = await register({ email, password, full_name: fullName, role: 'dealer' });
     persist(tokens);
     const me = await getMe(tokens.access_token);
-    setUser(me);
+    applyUser(me);
     return me;
   }
 
@@ -169,7 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_KEY);
     setToken(null);
-    setUser(null);
+    clearUser();
     // Reinitialise guest token so unauthenticated features keep working
     initGuestToken();
   }
