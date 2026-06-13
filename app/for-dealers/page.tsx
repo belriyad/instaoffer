@@ -101,7 +101,7 @@ export default function ForDealersPage() {
       {/* Hero */}
       <section className="bg-gradient-to-br from-[#002b5b] to-[#001a3d] text-white py-20">
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <motion.div initial="hidden" animate="visible" variants={stagger}>
+          <motion.div initial={false} animate="visible" variants={stagger}>
             <motion.span variants={fadeUp} className="inline-block bg-[#005ca9] text-white text-xs font-bold px-3 py-1.5 rounded-full mb-6">
               For Car Dealers in Qatar
             </motion.span>
@@ -127,11 +127,11 @@ export default function ForDealersPage() {
       {/* Pricing */}
       <section className="py-16 bg-white">
         <div className="max-w-5xl mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
+          <motion.div initial={false} whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
             <motion.h2 variants={fadeUp} className="text-3xl font-black text-gray-900 mb-3">Simple, Transparent Pricing</motion.h2>
             <motion.p variants={fadeUp} className="text-gray-500 text-lg">Start free — upgrade when you&apos;re ready.</motion.p>
           </motion.div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div initial={false} whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {PLANS.map(plan => (
               <motion.div
                 key={plan.name}
@@ -189,7 +189,7 @@ export default function ForDealersPage() {
       {/* Comparison table */}
       <section className="py-16 bg-[#f8fafc]">
         <div className="max-w-4xl mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
+          <motion.div initial={false} whileInView="visible" viewport={{ once: true }} variants={stagger}>
             <motion.h2 variants={fadeUp} className="text-3xl font-black text-gray-900 text-center mb-10">
               Why InstaOffer Beats the Alternatives
             </motion.h2>
@@ -230,7 +230,7 @@ export default function ForDealersPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black text-gray-900">Everything Dealers Need</h2>
           </div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div initial={false} whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map(f => (
               <motion.div key={f.title} variants={fadeUp} className="bg-[#f8fafc] rounded-2xl p-6 border border-gray-100">
                 <div className="w-11 h-11 bg-[#002b5b] rounded-xl flex items-center justify-center mb-4">
@@ -247,7 +247,7 @@ export default function ForDealersPage() {
       {/* Lead Types */}
       <section className="py-16 bg-[#f8fafc]">
         <div className="max-w-5xl mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
+          <motion.div initial={false} whileInView="visible" viewport={{ once: true }} variants={stagger}>
             <motion.div variants={fadeUp} className="text-center mb-12">
               <h2 className="text-3xl font-black text-gray-900 mb-3">5 Lead Types — All in One Platform</h2>
               <p className="text-gray-500 text-lg max-w-2xl mx-auto">

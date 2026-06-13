@@ -111,7 +111,7 @@ export default function DealerSignupPage() {
       <Navbar />
 
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-8">
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} className="mb-6">
+        <motion.div initial={false} animate="visible" variants={fadeUp} className="mb-6">
           <Link href="/for-dealers" className="text-sm text-gray-400 hover:text-[#002b5b] transition-colors">
             ← For Dealers
           </Link>
@@ -126,7 +126,7 @@ export default function DealerSignupPage() {
           </div>
         </motion.div>
 
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+        <motion.div initial={false} animate="visible" variants={fadeUp} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
 
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1.5">Business Name *</label>

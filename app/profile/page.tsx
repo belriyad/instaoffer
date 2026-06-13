@@ -149,7 +149,7 @@ export default function ProfilePage() {
       <div className="max-w-2xl mx-auto px-4 py-10">
         {/* Header card */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 flex items-center gap-5"
         >
@@ -186,7 +186,7 @@ export default function ProfilePage() {
 
         {/* Profile info form */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6"
@@ -263,7 +263,7 @@ export default function ProfilePage() {
 
         {/* Password change */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6"
@@ -308,7 +308,7 @@ export default function ProfilePage() {
 
         {/* Account actions */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"

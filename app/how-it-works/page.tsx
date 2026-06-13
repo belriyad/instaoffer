@@ -20,7 +20,7 @@ export default function HowItWorksPage() {
       {/* Hero */}
       <section className="bg-[#002b5b] text-white py-16">
         <div className="max-w-3xl mx-auto px-4 text-center">
-          <motion.div initial="hidden" animate="visible" variants={stagger}>
+          <motion.div initial={false} animate="visible" variants={stagger}>
             <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl font-black mb-4">How InstaOffer Works</motion.h1>
             <motion.p variants={fadeUp} className="text-blue-200 text-lg">Simple, transparent, and designed around your privacy.</motion.p>
           </motion.div>
@@ -59,7 +59,7 @@ export default function HowItWorksPage() {
           ].map((step, i) => (
             <motion.div
               key={step.num}
-              initial="hidden"
+              initial={false}
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeUp}

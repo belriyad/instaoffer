@@ -142,7 +142,7 @@ function BuyRequestContent() {
     <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-[#002b5b] rounded-xl flex items-center justify-center flex-shrink-0">
               <ShoppingCart size={20} className="text-white" />

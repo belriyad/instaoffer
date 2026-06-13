@@ -40,13 +40,13 @@ function UnauthenticatedState() {
     <div className="flex flex-col min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <h1 className="text-3xl font-black text-gray-900 mb-2">My Requests</h1>
           <p className="text-gray-500">Track offers and trade-in requests</p>
         </motion.div>
 
         {/* Blurred mock cards */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="relative mb-8">
+        <motion.div initial={false} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="relative mb-8">
           <div className="space-y-3">
             {[
               { dealer: 'Al Meera Cars', amount: '285,000 QAR', badge: '🏆 Best Offer' },
@@ -74,7 +74,7 @@ function UnauthenticatedState() {
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-3">
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-3">
           <Link href="/login?redirect=/my-offers"
             className="flex items-center justify-center gap-2 w-full bg-[#002b5b] hover:bg-[#001a3d] text-white font-black py-4 rounded-xl text-lg shadow-md transition-all">
             Sign In to View Requests
