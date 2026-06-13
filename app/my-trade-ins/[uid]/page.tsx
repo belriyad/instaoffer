@@ -69,6 +69,7 @@ export default function MyTradeInDetailPage() {
     if (!token || !uid) return;
     let cancelled = false;
     setFetching(true);
+    setFetchError(null); // clear any prior (e.g. transient 401) error on token change / retry
     getTradeInDetail(uid, token)
       .then(r => { if (!cancelled) setReq(r); })
       .catch(err => { if (!cancelled) setFetchError(err instanceof Error ? err.message : 'Failed to load'); })

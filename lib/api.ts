@@ -57,6 +57,22 @@ async function apiFetch<T>(
       attempt++;
       continue;
     }
+    // Token-refresh race: an authenticated read can 401 if it fires while the
+    // auth context is rotating the token. Back off, re-read the freshest token
+    // from storage, and retry — so a flaky poll self-heals instead of surfacing
+    // "Unauthorized" or blocking a follow-up action. (Writes are never retried.)
+    // Skip /me and /auth/* — their 401 is the signal the auth context uses to
+    // trigger a refresh, so it must fail fast rather than retry.
+    const isAuthPath = /^\/(auth|me)\b/.test(path);
+    if (canRetry && res.status === 401 && token && !isAuthPath && attempt < MAX_RETRIES) {
+      await sleep(400 * (attempt + 1)); // 400ms, 800ms — give the refresh time to land
+      if (typeof localStorage !== 'undefined') {
+        const fresh = localStorage.getItem('instaoffer_token') || localStorage.getItem('instaoffer_guest_token');
+        if (fresh) headers['Authorization'] = `Bearer ${fresh}`;
+      }
+      attempt++;
+      continue;
+    }
     break;
   }
 
