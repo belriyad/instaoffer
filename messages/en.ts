@@ -29,6 +29,8 @@ const en = {
     roleSeller: 'Seller',
     roleDealer: 'Dealer',
     searchCars: 'Search make, model, dealer…',
+    findCar: 'Find my next car',
+    findCarDesc: 'Dealers bring the car to you',
   },
 
   // Auth / login

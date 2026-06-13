@@ -13,10 +13,13 @@ const SELL_LINKS = [
   { href: '/valuation',    label: 'Know my car value',  icon: <Zap size={15} />,      desc: 'AI-powered valuation in seconds' },
   { href: '/urgent-sale',  label: 'Sell my car fast',   icon: <Zap size={15} />,      desc: 'Get dealer offers within hours' },
   { href: '/trade-in',     label: 'Trade in my car',    icon: <RefreshCw size={15} />, desc: 'Upgrade in one transaction' },
-  { href: '/buy-request',  label: 'Find my next car',   icon: <Search size={15} />,   desc: 'Dealers bring the car to you' },
 ];
 
-const BUY_LINKS: never[] = [];
+// Buyer intent lives with browsing, not selling.
+const BUY_LINKS = [
+  { href: '/listings',     label: 'Browse all cars',    icon: <Car size={15} />,    desc: 'New dealer inventory across Qatar' },
+  { href: '/buy-request',  label: 'Find my next car',   icon: <Search size={15} />, desc: 'Dealers bring the car to you' },
+];
 
 const DEALER_LINKS = [
   { href: '/for-dealers',                  label: 'For Dealers',         icon: <Building2 size={15} />,       desc: 'Grow your acquisition pipeline' },
@@ -141,21 +144,8 @@ export default function Navbar() {
           {/* Desktop centre nav — grouped by intent */}
           <div className="hidden md:flex items-center gap-1 flex-1">
 
-            {/* Browse Cars */}
-            <Link
-              href="/listings"
-              className={`flex items-center gap-1.5 text-sm font-semibold py-1 px-2 rounded-lg transition-colors ${
-                pathname === '/listings' || pathname.startsWith('/listings/')
-                  ? 'text-[#002b5b]'
-                  : 'text-gray-600 hover:text-[#002b5b]'
-              }`}
-            >
-              <Car size={14} />
-              {t.nav.browseCars}
-              {(pathname === '/listings' || pathname.startsWith('/listings/')) && (
-                <span className="w-1 h-1 rounded-full bg-[#005ca9]" />
-              )}
-            </Link>
+            {/* Browse / Buy group */}
+            <NavDropdown label={t.nav.browseCars} links={BUY_LINKS} pathname={pathname} onClose={() => {}} />
 
             {/* Divider */}
             <span className="w-px h-4 bg-gray-200 mx-2" />
@@ -166,8 +156,19 @@ export default function Navbar() {
             {/* Divider */}
             <span className="w-px h-4 bg-gray-200 mx-2" />
 
-            {/* Dealers group */}
-            <NavDropdown label="For Dealers" links={dealerLinks} pathname={pathname} onClose={() => {}} />
+            {/* Dealers — sellers/guests get the marketing page only; dealers get the workspace dropdown */}
+            {isDealer ? (
+              <NavDropdown label={t.nav.dealers} links={dealerLinks} pathname={pathname} onClose={() => {}} />
+            ) : (
+              <Link
+                href="/for-dealers"
+                className={`flex items-center gap-1.5 text-sm font-semibold py-1 px-2 rounded-lg transition-colors ${
+                  pathname === '/for-dealers' ? 'text-[#002b5b]' : 'text-gray-600 hover:text-[#002b5b]'
+                }`}
+              >
+                {t.nav.dealers}
+              </Link>
+            )}
           </div>
 
           {/* Desktop right — auth */}
@@ -294,6 +295,14 @@ export default function Navbar() {
                 <div>
                   <div className="text-sm font-semibold">{t.nav.browseCars}</div>
                   <div className="text-xs text-gray-400">{t.nav.browseCarsDesc}</div>
+                </div>
+              </Link>
+              <Link href="/buy-request" onClick={closeMobile}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl mx-2 transition-colors ${pathname === '/buy-request' ? 'bg-[#002b5b]/10 text-[#002b5b]' : 'text-gray-700 hover:bg-gray-50'}`}>
+                <Search size={16} className="text-[#002b5b]" />
+                <div>
+                  <div className="text-sm font-semibold">{t.nav.findCar}</div>
+                  <div className="text-xs text-gray-400">{t.nav.findCarDesc}</div>
                 </div>
               </Link>
             </div>

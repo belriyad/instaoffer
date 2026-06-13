@@ -157,7 +157,7 @@ function DealerLoginContent() {
                   onChange={e => setEmail(e.target.value)}
                   autoComplete="email"
                   required
-                  placeholder="dealer@example.com"
+                  placeholder="you@business.com"
                   className={inputCls}
                 />
               </div>

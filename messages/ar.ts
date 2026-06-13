@@ -30,6 +30,8 @@ const ar: Translations = {
     roleSeller: 'بائع',
     roleDealer: 'وكيل',
     searchCars: 'ابحث بالماركة أو الموديل أو الوكيل…',
+    findCar: 'ابحث عن سيارتي التالية',
+    findCarDesc: 'الوكلاء يجلبون السيارة إليك',
   },
 
   auth: {
