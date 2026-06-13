@@ -249,7 +249,7 @@ function MyOffersContent() {
                   <p className="text-gray-500 mb-6">Browse vehicles and start a trade-in from any car listing.</p>
                   <Link href="/listings"
                     className="inline-flex items-center gap-2 bg-[#002b5b] hover:bg-[#1a7fd4] text-white font-bold px-6 py-3 rounded-xl transition-colors">
-                    Browse Vehicles <ChevronRight size={18} />
+                    Browse Cars <ChevronRight size={18} />
                   </Link>
                 </div>
               ) : (

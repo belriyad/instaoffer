@@ -13,7 +13,7 @@ const en = {
     account: 'Account',
     myAccount: 'My Account',
     dealerAccount: 'Dealer Account',
-    myOffers: 'My Offers',
+    myOffers: 'My Requests',
     myProfile: 'My Profile',
     browseCarsDesc: 'Dealer inventory across Qatar',
     secBrowse: 'Browse',

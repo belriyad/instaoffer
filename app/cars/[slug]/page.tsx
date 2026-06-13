@@ -155,7 +155,7 @@ export default function CarDetailPage() {
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <p className="text-gray-500 font-medium">Car not found</p>
         <Link href="/listings" className="text-[#002b5b] font-semibold hover:underline flex items-center gap-1">
-          <ChevronLeft size={16} /> Browse Vehicles
+          <ChevronLeft size={16} /> Browse Cars
         </Link>
       </div>
     </div>
@@ -178,7 +178,12 @@ export default function CarDetailPage() {
     { label: 'Torque', value: car.torque_nm ? `${car.torque_nm} Nm` : null },
     { label: '0–100 km/h', value: car.accel_0_100_s ? `${car.accel_0_100_s}s` : null },
     { label: 'Top Speed', value: car.top_speed_kmh ? `${car.top_speed_kmh} km/h` : null },
-    { label: 'Fuel Consumption', value: car.fuel_consumption_l100 ? `${car.fuel_consumption_l100} L/100km` : null },
+    // Guard against bad backend data (e.g. an SEO string written into this field):
+    // only show when it parses to a plausible L/100km figure.
+    { label: 'Fuel Consumption', value: (() => {
+      const n = Number(car.fuel_consumption_l100);
+      return car.fuel_consumption_l100 != null && Number.isFinite(n) && n > 0 && n < 100 ? `${n} L/100km` : null;
+    })() },
     { label: 'Fuel Tank', value: car.tank_l ? `${car.tank_l} L` : null },
     { label: 'Battery', value: car.battery_kwh ? `${car.battery_kwh} kWh` : null },
     { label: 'Displacement', value: car.displacement_cc ? `${car.displacement_cc} cc` : null },
@@ -194,7 +199,7 @@ export default function CarDetailPage() {
       <div className="max-w-5xl mx-auto w-full px-4 py-6 flex-1">
         {/* Back */}
         <Link href="/listings" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#002b5b] font-medium mb-5 transition-colors">
-          <ChevronLeft size={16} /> Browse Vehicles
+          <ChevronLeft size={16} /> Browse Cars
         </Link>
 
         <div className="grid md:grid-cols-2 gap-8">

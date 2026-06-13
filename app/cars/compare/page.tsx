@@ -144,7 +144,7 @@ function CompareInner() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <Link href="/cars" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#002b5b] font-medium transition-colors">
-          <ChevronLeft size={16} /> Browse Vehicles
+          <ChevronLeft size={16} /> Browse Cars
         </Link>
         <div>
           <h1 className="text-2xl font-black text-gray-900">Compare Cars</h1>
@@ -165,7 +165,7 @@ function CompareInner() {
           <AlertCircle size={32} className="text-gray-300 mx-auto mb-3" />
           <p className="font-bold text-gray-500 mb-2">No cars to compare</p>
           <p className="text-xs text-gray-400 mb-4">Go to the cars listing and tap "+ Compare" on any car</p>
-          <Link href="/cars" className="text-[#002b5b] text-sm font-bold hover:underline">Browse vehicles →</Link>
+          <Link href="/cars" className="text-[#002b5b] text-sm font-bold hover:underline">Browse cars →</Link>
         </div>
       ) : (
         <div className="overflow-x-auto pb-4">

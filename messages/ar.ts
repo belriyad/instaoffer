@@ -14,7 +14,7 @@ const ar: Translations = {
     account: 'الحساب',
     myAccount: 'حسابي',
     dealerAccount: 'حساب الوكيل',
-    myOffers: 'عروضي',
+    myOffers: 'طلباتي',
     myProfile: 'ملفي الشخصي',
     browseCarsDesc: 'مخزون الوكلاء في جميع أنحاء قطر',
     secBrowse: 'تصفّح',
